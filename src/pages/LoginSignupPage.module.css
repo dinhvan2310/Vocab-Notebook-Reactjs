@@ -1,0 +1,19 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
+.wallpaperContainer {
+    display: flex;
+    flex: 1;
+}
+.wallpaper {
+    width: 100%;
+    object-fit: cover;
+}
+.contentContainer {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
