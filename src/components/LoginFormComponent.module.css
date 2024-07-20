@@ -1,0 +1,25 @@
+.container {
+    width: 100%;
+    background-color: coral;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.sub-container{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    max-width: 600px;
+    width: 80%;
+}
+
+.tab-link-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    background-color: white;
+}

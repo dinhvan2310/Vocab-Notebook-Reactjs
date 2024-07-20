@@ -13,6 +13,7 @@
     align-items: center;
     width: 100%;
     justify-content: center;
+    margin-bottom: 16px;
 }
 
 .button:hover {
