@@ -2,6 +2,17 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+
+  
+}
+
+:root {
+  --primary-color: rgb(27, 20, 233);
+  --primary-color-light: rgb(20, 20, 185);
+  --primary-color-dark: rgb(19, 19, 124);
+
+  --gray-color: rgb(217, 221, 232),
+  --text-color: rgb(88, 99, 128),
 }
 
 

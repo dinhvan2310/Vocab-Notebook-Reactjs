@@ -16,6 +16,20 @@
     margin-bottom: 16px;
 }
 
+.button.primary {
+    background-color: var(--primary-color);
+    border: 2px solid transparent;
+    color: white;
+}
+
+.button.primary:hover {
+    background-color: var(--primary-color-light);
+}
+
+.button.primary:active {
+    background-color: var(--primary-color-dark);
+}
+
 .button:hover {
     background-color: rgb(237, 239, 244);
     cursor: pointer;

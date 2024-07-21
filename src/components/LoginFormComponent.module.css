@@ -1,11 +1,11 @@
 .container {
     width: 100%;
-    background-color: coral;
-    padding: 32px;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-top: 72px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
 .sub-container{
@@ -21,5 +21,4 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    background-color: white;
 }

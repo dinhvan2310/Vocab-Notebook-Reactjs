@@ -1,5 +1,5 @@
-import React from "react";
-import styles from "./TabLinkComponent.module.css";
+import React from 'react';
+import styles from './TabLinkComponent.module.css';
 
 interface TabLinkComponentProps {
     text: string;
@@ -11,12 +11,11 @@ function TabLinkComponent(props: TabLinkComponentProps) {
 
     return (
         <div
-            className={styles["tab-link"]}
+            className={`${styles['tab-link']} ${active ? styles['active'] : ''}`}
             onClick={onClick}
             style={{
-                color: active ? "rgb(46, 56, 86)" : "rgb(88, 99, 128)",
-            }}
-        >
+                color: active ? '' : ''
+            }}>
             {text}
         </div>
     );
