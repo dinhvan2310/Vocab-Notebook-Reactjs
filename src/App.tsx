@@ -4,6 +4,7 @@ import WebFont from 'webfontloader';
 import LoginSignupPage from './pages/LoginSignupPage';
 import HomePage from './pages/HomePage';
 import AuthProvider from './utils/AuthProvider';
+import MainLayout from './layouts/MainLayout';
 
 function App() {
     useEffect(() => {
@@ -21,7 +22,13 @@ function App() {
             children: [
                 {
                     path: '/',
-                    element: <HomePage />
+                    element: <MainLayout />,
+                    children: [
+                        {
+                            path: '/',
+                            element: <HomePage />
+                        }
+                    ]
                 },
                 {
                     path: '/login',
