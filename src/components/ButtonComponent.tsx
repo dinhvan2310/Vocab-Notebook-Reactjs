@@ -6,19 +6,22 @@ import { colors } from '../utils/constanst';
 interface ButtonComponentProps {
     text: string;
     icon?: ReactNode;
-    type?: 'button' | 'submit' | 'reset';
+    type?: 'button' | 'submit' | 'reset' | 'mini';
     onClick: () => void;
+    style?: React.CSSProperties;
 }
 function ButtonComponent(props: ButtonComponentProps) {
-    const { text, onClick, icon, type } = props;
+    const { text, onClick, icon, type, style } = props;
 
     return (
         <div
-            onTouchMove={() => {}}
             onClick={onClick}
-            className={`${styles['button']} ${type === 'submit' ? styles['primary'] : ''}`}>
+            className={`${styles['button']} ${type === 'submit' ? styles['primary'] : ''}
+                ${type === 'mini' ? styles['mini'] : ''}
+            `}
+            style={style}>
+            {icon && <SpaceComponent width={16} />}
             {icon}
-            <SpaceComponent width={16} />
             {text}
         </div>
     );
