@@ -23,9 +23,14 @@ function FloatingActionButton(props: FloatingActionButtonProps) {
         setOpen(!open);
     };
 
-    const handleClickOutside = () => {
-        setOpen(false);
-        removeEventListener('click', handleClickOutside);
+    const handleClickOutside = (event: MouseEvent) => {
+        const floatingContainer = document.querySelector(`.${styles.floatingContainer}`);
+        if (floatingContainer) {
+            if (!floatingContainer.contains(event.target as Node)) {
+                setOpen(false);
+                document.removeEventListener('click', handleClickOutside);
+            }
+        }
     };
 
     return (

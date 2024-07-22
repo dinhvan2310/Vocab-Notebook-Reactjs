@@ -1,30 +1,20 @@
+import { Add, Additem, FolderAdd, HambergerMenu, Home, Logout } from 'iconsax-react';
 import React from 'react';
-import styles from './MainLayout.module.css';
 import { Outlet } from 'react-router-dom';
-import { Add, Additem, FolderAdd, HambergerMenu, Home } from 'iconsax-react';
-import TitleComponent from '../components/TitleComponent';
-import SearchBoxComponent from '../components/SearchBoxComponent';
-import FloatingActionButton from '../components/FloatingActionButton';
-import { FLoatingButtonItemProps } from '../models/FloatingButtonItemType';
-import RowComponent from '../components/RowComponent';
-import SpaceComponent from '../components/SpaceComponent';
 import ButtonComponent from '../components/ButtonComponent';
+import FloatingActionButton from '../components/FloatingActionButton';
+import RowComponent from '../components/RowComponent';
+import SearchBoxComponent from '../components/SearchBoxComponent';
+import SpaceComponent from '../components/SpaceComponent';
+import TitleComponent from '../components/TitleComponent';
+import { useAuth } from '../hooks/useAuth';
+import styles from './MainLayout.module.css';
 
 function MainLayout() {
     const [searchValue, setSearchValue] = React.useState('');
 
-    const floatingButtonList: FLoatingButtonItemProps[] = [
-        {
-            text: 'Học phần',
-            icon: <Additem size={20} />,
-            onClick: () => console.log('Học phần')
-        },
-        {
-            text: 'Thư mục',
-            icon: <FolderAdd size="20" />,
-            onClick: () => console.log('Thư mục')
-        }
-    ];
+    const { user, signOut } = useAuth();
+
     return (
         <div className={styles.container}>
             <div className={styles.headerContainer}>
@@ -36,7 +26,18 @@ function MainLayout() {
                 <RowComponent>
                     <FloatingActionButton
                         icon={<Add size="32" color="#fff" />}
-                        floatingButtonItems={floatingButtonList}
+                        floatingButtonItems={[
+                            {
+                                text: 'Học phần',
+                                icon: <Additem size={20} />,
+                                onClick: () => console.log('Học phần')
+                            },
+                            {
+                                text: 'Thư mục',
+                                icon: <FolderAdd size="20" />,
+                                onClick: () => console.log('Thư mục')
+                            }
+                        ]}
                         type="icon"
                     />
                     <SpaceComponent width={32} />
@@ -48,8 +49,16 @@ function MainLayout() {
                     <SpaceComponent width={32} />
 
                     <FloatingActionButton
-                        imageUrl="https://firebasestorage.googleapis.com/v0/b/plantsnap-419307.appspot.com/o/photos%2F1718478722497.jpg?alt=media&token=ee97500a-93fc-4f93-98c8-afe17ff8c3e9"
-                        floatingButtonItems={floatingButtonList}
+                        imageUrl={user?.photoURL || ''}
+                        floatingButtonItems={[
+                            {
+                                text: 'Log out',
+                                icon: <Logout size={20} />,
+                                onClick: () => {
+                                    signOut();
+                                }
+                            }
+                        ]}
                         type="image"
                     />
                 </RowComponent>

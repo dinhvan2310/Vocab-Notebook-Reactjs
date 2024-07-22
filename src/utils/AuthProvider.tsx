@@ -5,7 +5,7 @@ import { User } from 'firebase/auth';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 export interface AuthContextType {
-    user: string | null;
+    user: User | null;
     signInWithGoogle: () => void;
     signInWithFacebook: () => void;
     signOut: () => void;
@@ -57,7 +57,7 @@ function AuthProvider() {
 
     const value = useMemo(() => {
         return {
-            user: user ? user.uid : null,
+            user: user ? user : null,
             signInWithGoogle,
             signInWithFacebook,
             signOut
