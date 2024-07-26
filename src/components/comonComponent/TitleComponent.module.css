@@ -10,22 +10,14 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    color: rgb(66, 85, 255);
+    color: var(--text-color)
 }
 
 .title {
 	font-size: 1.4em;
-	font-style: normal;
-	font-variant: normal;
 	font-weight: 600;
-	letter-spacing: normal;
 	line-height: 20px;
 	text-align: start;
-	text-indent: 0px;
-	text-transform: none;
-	white-space: nowrap;
-	word-spacing: 0px;
-
 	/* Color & Background */
-	color: rgb(66, 85, 255);
+	color: var(--text-color)
 }

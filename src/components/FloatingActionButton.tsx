@@ -1,10 +1,10 @@
 import React from 'react';
-import { FLoatingButtonItemProps } from '../models/FloatingButtonItemType';
 import styles from './FloatingActionButton.module.css';
-import SpaceComponent from './SpaceComponent';
+import { MenuItem } from '../models/MenuItemType';
+import MenuItemsComponent from './MenuItemsComponent';
 
 interface FloatingActionButtonProps {
-    floatingButtonItems: FLoatingButtonItemProps[];
+    floatingButtonItems: MenuItem[];
     type: 'image' | 'icon';
     imageUrl?: string;
     icon?: React.ReactNode;
@@ -15,50 +15,34 @@ function FloatingActionButton(props: FloatingActionButtonProps) {
     const [open, setOpen] = React.useState(false);
 
     const handleClick = () => {
-        if (!open) {
-            document.addEventListener('click', handleClickOutside, {
-                capture: true
-            });
-        }
         setOpen(!open);
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-        const floatingContainer = document.querySelector(`.${styles.floatingContainer}`);
-        if (floatingContainer) {
-            if (!floatingContainer.contains(event.target as Node)) {
-                setOpen(false);
-                document.removeEventListener('click', handleClickOutside);
-            }
-        }
     };
 
     return (
         <div
             className={`${styles.container} 
-        ${type === 'icon' && styles.typeIcon}`}>
+                        ${type === 'icon' && styles.typeIcon}`}>
             {type === 'icon' && (
-                <div className={styles.floatingButton} onClick={handleClick}>
+                <div
+                    className={styles.floatingButton}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        handleClick();
+                    }}>
                     {icon}
                 </div>
             )}
             {type === 'image' && (
-                <div className={styles.imageContainer} onClick={handleClick}>
+                <div
+                    className={styles.imageContainer}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        handleClick();
+                    }}>
                     <img className={styles.image} src={imageUrl} alt="" />
                 </div>
             )}
-            {open && (
-                <div className={styles.floatingContainer}>
-                    {open &&
-                        floatingButtonItems.map((item, index) => (
-                            <div key={index} className={styles.floatingItem} onClick={item.onClick}>
-                                {item.icon}
-                                <SpaceComponent width={16} />
-                                <div className={styles.floatingItemText}>{item.text}</div>
-                            </div>
-                        ))}
-                </div>
-            )}
+            {open && <MenuItemsComponent border={true} menuItems={floatingButtonItems} />}
         </div>
     );
 }

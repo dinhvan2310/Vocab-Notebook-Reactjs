@@ -5,6 +5,8 @@ import LoginSignupPage from './pages/LoginSignupPage';
 import HomePage from './pages/HomePage';
 import AuthProvider from './utils/AuthProvider';
 import MainLayout from './layouts/MainLayout';
+import FolderPage from './pages/FolderPage';
+import { getUser } from './firebase/userAPI';
 
 function App() {
     useEffect(() => {
@@ -27,6 +29,14 @@ function App() {
                         {
                             path: '/',
                             element: <HomePage />
+                        },
+                        {
+                            path: '/user/:userId/folders',
+                            element: <FolderPage />,
+                            loader: async ({ params }) => {
+                                const user = await getUser(params.userId ?? '');
+                                return { user };
+                            }
                         }
                     ]
                 },

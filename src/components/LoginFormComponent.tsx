@@ -1,14 +1,14 @@
 import React from 'react';
 import GoogleSVG from '../assets/icons/icons8-google.svg';
 import FacebookSVG from '../assets/icons/icons8-facebook.svg';
-import ButtonComponent from './ButtonComponent';
 import TabLinkComponent from './TabLinkComponent';
-import SpaceComponent from './SpaceComponent';
 import styles from './LoginFormComponent.module.css';
-import HorizontalRuleComponent from './HorizontalRuleComponent';
 import { useAuth } from '../hooks/useAuth';
-import InputComponent from './InputComponent';
-import ErrorTextComponent from './ErrorTextComponent';
+import SpaceComponent from './comonComponent/SpaceComponent';
+import ButtonComponent from './comonComponent/ButtonComponent';
+import HorizontalRuleComponent from './comonComponent/HorizontalRuleComponent';
+import InputComponent from './comonComponent/InputComponent';
+import ErrorTextComponent from './comonComponent/ErrorTextComponent';
 
 function LoginFormComponent() {
     const { signInWithGoogle, signInWithFacebook } = useAuth();
