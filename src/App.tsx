@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
-import LoginSignupPage from './pages/LoginSignupPage';
+import { AuthLayout } from './features/authentication/AuthLayout';
 import HomePage from './pages/HomePage';
-import AuthProvider from './utils/AuthProvider';
+import LoginSignupPage from './pages/LoginSignupPage';
 import MainLayout from './layouts/MainLayout';
-import FolderPage from './pages/FolderPage';
-import { getUser } from './firebase/userAPI';
+import ProtectedRoute from './features/authentication/ProtectedRoute';
 
 function App() {
     useEffect(() => {
@@ -20,7 +19,7 @@ function App() {
     const router = createBrowserRouter([
         {
             path: '/',
-            element: <AuthProvider />,
+            element: <AuthLayout />,
             children: [
                 {
                     path: '/',
@@ -28,15 +27,13 @@ function App() {
                     children: [
                         {
                             path: '/',
-                            element: <HomePage />
-                        },
-                        {
-                            path: '/user/:userId/folders',
-                            element: <FolderPage />,
-                            loader: async ({ params }) => {
-                                const user = await getUser(params.userId ?? '');
-                                return { user };
-                            }
+                            element: <ProtectedRoute />,
+                            children: [
+                                {
+                                    path: '/',
+                                    element: <HomePage />
+                                }
+                            ]
                         }
                     ]
                 },
