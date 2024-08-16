@@ -1,6 +1,5 @@
-import React from 'react';
-import styles from './SearchBoxComponent.module.css';
 import { SearchNormal } from 'iconsax-react';
+import './SearchBoxComponent.scss';
 
 interface SearchBoxComponentProps {
     placeholder?: string;
@@ -12,10 +11,10 @@ function SearchBoxComponent(props: SearchBoxComponentProps) {
     const { placeholder = 'Tìm kiếm', value = '', onChange } = props;
 
     return (
-        <div className={styles.container}>
-            <SearchNormal className={styles.searchIcon} />
+        <div className="search-box">
+            <SearchNormal className="searchIcon" />
             <input
-                className={styles.input}
+                className="input"
                 type="text"
                 placeholder={placeholder}
                 value={value}

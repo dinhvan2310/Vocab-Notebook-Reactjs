@@ -2,13 +2,16 @@ import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
 import { AuthLayout } from './features/authentication/AuthLayout';
+import ProtectedRoute from './features/authentication/ProtectedRoute';
+import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import LoginSignupPage from './pages/LoginSignupPage';
-import MainLayout from './layouts/MainLayout';
-import ProtectedRoute from './features/authentication/ProtectedRoute';
 
 function App() {
     useEffect(() => {
+        //  Set the default theme to light
+        document.body.dataset.theme = 'light';
+        //  Load the Google fonts
         WebFont.load({
             google: {
                 families: ['Droid Sans', 'Roboto', 'Poppins']

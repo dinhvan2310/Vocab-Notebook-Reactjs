@@ -47,6 +47,9 @@ function LoginFormComponent() {
                 </div>
                 <SpaceComponent height={32} />
                 <ButtonComponent
+                    borderColor="var(--border-color)"
+                    backgroundHoverColor="var(--bg-hover-color)"
+                    backgroundActiveColor="var(--border-color)"
                     icon={
                         <img
                             style={{
@@ -59,7 +62,11 @@ function LoginFormComponent() {
                     text="Đăng nhập bằng Google"
                     onClick={signInWithGoogle}
                 />
+                <SpaceComponent height={16} />
                 <ButtonComponent
+                    borderColor="var(--border-color)"
+                    backgroundHoverColor="var(--bg-hover-color)"
+                    backgroundActiveColor="var(--border-color)"
                     icon={
                         <img
                             style={{
@@ -106,11 +113,14 @@ function LoginFormComponent() {
                         <SpaceComponent height={8} />
 
                         <ButtonComponent
+                            backgroundColor="var(--primary-color)"
+                            backgroundHoverColor="var(--primary-hover-color)"
+                            backgroundActiveColor="var(--primary-active-color)"
+                            textColor="var(--white-color)"
                             text="Đăng nhập"
                             onClick={() => {
                                 setError('Email hoặc mật khẩu không đúng');
                             }}
-                            type="submit"
                         />
                     </>
                 ) : (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface RowComponentProps {
+interface ColumnComponentProps {
     children: React.ReactNode;
     justifyContent?:
         | 'center'
@@ -13,16 +13,16 @@ interface RowComponentProps {
     flexWrap?: 'wrap' | 'nowrap' | 'wrap-reverse';
     style?: React.CSSProperties;
 }
-function RowComponent(props: RowComponentProps) {
+function ColumnComponent(props: ColumnComponentProps) {
     const { children, justifyContent, alignItems, flexWrap, style } = props;
     return (
         <div
             style={{
                 display: 'flex',
-                flexDirection: 'row',
-                justifyContent: justifyContent || 'flex-start',
-                alignItems: alignItems || 'flex-start',
-                flexWrap: flexWrap || 'nowrap',
+                flexDirection: 'column',
+                justifyContent: justifyContent || 'center',
+                alignItems: alignItems || 'center',
+                flexWrap: flexWrap || 'wrap',
                 ...style
             }}>
             {children}
@@ -30,4 +30,4 @@ function RowComponent(props: RowComponentProps) {
     );
 }
 
-export default RowComponent;
+export default ColumnComponent;

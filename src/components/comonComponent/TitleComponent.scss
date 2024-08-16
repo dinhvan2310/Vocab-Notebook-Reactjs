@@ -1,0 +1,25 @@
+.title-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    .iconContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-color)
+    }
+
+    .title {
+        font-weight: 600;
+        line-height: 20px;
+        text-align: start;
+        /* Color & Background */
+        color: var(--text-color)
+    }
+}
+
+
+

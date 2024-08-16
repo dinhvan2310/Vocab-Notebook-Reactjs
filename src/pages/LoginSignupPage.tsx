@@ -4,9 +4,8 @@ import imageWallpaper from '../assets/wallpapers/loginsignupWallpaper.png';
 import style from './LoginSignupPage.module.css';
 import LoginFormComponent from '../components/LoginFormComponent';
 
-interface LoginSignupPageProps {}
 function LoginSignupPage() {
-    const { isDesktopOrLaptop, isTabletOrMobile } = useResponsive();
+    const { isDesktopOrLaptop } = useResponsive();
 
     return (
         <div>

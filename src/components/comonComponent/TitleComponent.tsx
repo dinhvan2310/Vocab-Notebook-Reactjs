@@ -1,21 +1,27 @@
 import React from 'react';
-import styles from './TitleComponent.module.css';
 import SpaceComponent from './SpaceComponent';
+import './TitleComponent.scss';
 
 interface TitleComponentProps {
     title: string;
     icon?: React.ReactNode;
     containerStyle?: React.CSSProperties;
     titleStyle?: React.CSSProperties;
+    fontSize?: string;
 }
 function TitleComponent(props: TitleComponentProps) {
-    const { title, icon, containerStyle, titleStyle } = props;
+    const { title, icon, containerStyle, titleStyle, fontSize } = props;
 
     return (
-        <div className={styles.container} style={containerStyle}>
-            {icon && <div className={styles.iconContainer}>{icon}</div>}
+        <div
+            className="title-container"
+            style={{
+                ...containerStyle,
+                fontSize: fontSize || '1.6em'
+            }}>
+            {icon && <div className="iconContainer">{icon}</div>}
             {icon && <SpaceComponent width={16} />}
-            <div style={titleStyle} className={styles.title}>
+            <div style={titleStyle} className="title">
                 {title}
             </div>
         </div>
