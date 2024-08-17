@@ -1,5 +1,7 @@
 import React from 'react';
-import styles from './InputComponent.module.css';
+import './InputComponent.scss';
+import SpaceComponent from './SpaceComponent';
+import TextComponent from './TextComponent';
 interface InputComponentProps {
     label?: string;
     type?: 'email' | 'password' | 'text';
@@ -13,10 +15,11 @@ function InputComponent(props: InputComponentProps) {
     const { label, type, placeholder, value, onChange, propStyles } = props;
 
     return (
-        <div className={styles['container']} style={propStyles}>
-            <label className={styles['label']}>{label}</label>
+        <div className="input-container" style={propStyles}>
+            <TextComponent text={label ?? ''} />
+            <SpaceComponent height={4} />
             <input
-                className={styles['input']}
+                className="input"
                 type={type}
                 placeholder={placeholder}
                 value={value}

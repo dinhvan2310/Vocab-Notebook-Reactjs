@@ -18,13 +18,13 @@ function HorizontalRuleComponent(props: HorizontalRuleComponentProps) {
                 style={{
                     flex: 1,
                     height: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                    backgroundColor: 'var(--border-color)'
                 }}
             />
             <div
                 style={{
                     margin: '0 8px',
-                    color: 'rgba(0, 0, 0, 0.5)',
+                    color: 'var(--secondary-text-color)',
                     fontSize: 16,
                     fontWeight: 600
                 }}>
@@ -34,7 +34,7 @@ function HorizontalRuleComponent(props: HorizontalRuleComponentProps) {
                 style={{
                     flex: 1,
                     height: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                    backgroundColor: 'var(--border-color)'
                 }}
             />
         </div>

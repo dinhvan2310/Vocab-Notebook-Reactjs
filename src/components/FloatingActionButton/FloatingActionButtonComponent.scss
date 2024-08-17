@@ -5,7 +5,6 @@
     .button-container {
         color: rgb(255, 255, 255);
         border-radius: 8px;
-        position: relative;
         cursor: pointer;
     }
 
@@ -16,5 +15,26 @@
         justify-content: center;
         align-items: center;
         object-fit: contain;
+    }
+
+    .menu-item-container.left {
+        position: absolute;
+        z-index: 1000;
+        transform: translateY(12px);
+        right: 0;
+    }
+
+    .menu-item-container.right {
+        position: absolute;
+        z-index: 1000;
+        transform: translateY(12px);
+        left: 0;
+    }
+
+    .menu-item-container.center {
+        position: absolute;
+        z-index: 1000;
+        left: 50%;
+        transform: translate(-50%, 12px), ;
     }
 }

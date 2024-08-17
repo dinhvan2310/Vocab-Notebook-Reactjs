@@ -1,6 +1,6 @@
 import React from 'react';
 
-function HomePage() {
+function HomeLayout() {
     return (
         <div style={{}}>
             <div
@@ -15,4 +15,4 @@ function HomePage() {
     );
 }
 
-export default HomePage;
+export default HomeLayout;

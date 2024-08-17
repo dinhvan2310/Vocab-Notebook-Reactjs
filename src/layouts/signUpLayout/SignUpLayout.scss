@@ -1,0 +1,47 @@
+.sign-up-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+
+    .wallpaperContainer {
+        display: flex;
+        flex: 1;
+
+        .wallpaper {
+            width: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .contentContainer {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        align-items: flex-start;
+
+        .container {
+            width: 100%;
+            padding-left: 32px;
+            padding-right: 32px;
+            padding-top: 72px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .sub-container {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: center;
+                max-width: 600px;
+                width: 80%;
+
+                .tab-link-container {
+                    display: flex;
+                    flex-direction: row;
+                    width: 100%;
+                }
+            }
+        }
+    }
+}

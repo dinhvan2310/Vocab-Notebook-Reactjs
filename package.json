@@ -19,7 +19,8 @@
     "react-dom": "^18.3.1",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^6.25.1",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

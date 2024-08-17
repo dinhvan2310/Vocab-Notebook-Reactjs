@@ -4,13 +4,21 @@ import WebFont from 'webfontloader';
 import { AuthLayout } from './features/authentication/AuthLayout';
 import ProtectedRoute from './features/authentication/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
-import HomePage from './pages/HomePage';
-import LoginSignupPage from './pages/LoginSignupPage';
+import HomeLayout from './layouts/homeLayout/HomeLayout';
+import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
+import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
+import ExamsLayout from './layouts/examsLayout/ExamsLayout';
 
 function App() {
     useEffect(() => {
-        //  Set the default theme to light
-        document.body.dataset.theme = 'light';
+        //  Set the theme
+        const theme = localStorage.getItem('theme');
+        if (theme) {
+            document.body.dataset.theme = theme;
+        } else {
+            localStorage.setItem('theme', 'light');
+            document.body.dataset.theme = 'light';
+        }
         //  Load the Google fonts
         WebFont.load({
             google: {
@@ -34,7 +42,15 @@ function App() {
                             children: [
                                 {
                                     path: '/',
-                                    element: <HomePage />
+                                    element: <HomeLayout />
+                                },
+                                {
+                                    path: 'user/:username/folders',
+                                    element: <FoldersLayout />
+                                },
+                                {
+                                    path: 'exams',
+                                    element: <ExamsLayout />
                                 }
                             ]
                         }
@@ -42,7 +58,7 @@ function App() {
                 },
                 {
                     path: '/login',
-                    element: <LoginSignupPage />
+                    element: <SignUpLayout />
                 }
             ]
         }

@@ -50,7 +50,6 @@ function ButtonComponent(props: ButtonComponentProps) {
                 borderWidth: borderColor ? '2px' : '0',
                 borderStyle: borderColor ? 'solid' : 'none',
 
-                color: textColor || 'var(--text-color)',
                 backgroundColor: isActive
                     ? backgroundActiveColor
                     : isHover

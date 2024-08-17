@@ -8,16 +8,18 @@ interface TitleComponentProps {
     containerStyle?: React.CSSProperties;
     titleStyle?: React.CSSProperties;
     fontSize?: string;
+    color?: string;
 }
 function TitleComponent(props: TitleComponentProps) {
-    const { title, icon, containerStyle, titleStyle, fontSize } = props;
+    const { title, icon, containerStyle, titleStyle, fontSize, color } = props;
 
     return (
         <div
             className="title-container"
             style={{
                 ...containerStyle,
-                fontSize: fontSize || '1.6em'
+                fontSize: fontSize || '1.6em',
+                color: color || 'var(--text-color)'
             }}>
             {icon && <div className="iconContainer">{icon}</div>}
             {icon && <SpaceComponent width={16} />}
