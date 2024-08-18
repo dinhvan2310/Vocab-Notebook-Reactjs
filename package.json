@@ -17,6 +17,7 @@
     "iconsax-react": "^0.0.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-lottie": "^1.2.4",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^6.25.1",
     "webfontloader": "^1.6.28",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/react-lottie": "^1.2.10",
     "@types/webfontloader": "^1.6.38",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",

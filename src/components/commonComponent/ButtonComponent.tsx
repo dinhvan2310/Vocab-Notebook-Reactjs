@@ -2,6 +2,8 @@ import React, { ReactNode } from 'react';
 import SpaceComponent from './SpaceComponent';
 import './ButtonComponent.scss';
 import TextComponent from './TextComponent';
+import LoadingAnimation from '../../assets/animation/loadingAnimation.json';
+import Lottie from 'react-lottie';
 interface ButtonComponentProps {
     text: string;
     textColor?: string;
@@ -13,6 +15,9 @@ interface ButtonComponentProps {
     onClick: () => void;
     style?: React.CSSProperties;
     fontSize?: string;
+    isLoading?: boolean;
+    isBorder?: boolean;
+    buttonWidth?: number;
 }
 function ButtonComponent(props: ButtonComponentProps) {
     const {
@@ -20,12 +25,15 @@ function ButtonComponent(props: ButtonComponentProps) {
         onClick,
         icon,
         style,
-        backgroundActiveColor,
-        backgroundColor,
-        backgroundHoverColor,
-        borderColor,
-        textColor,
-        fontSize
+        backgroundActiveColor = 'var(--primary-active-color)',
+        backgroundColor = 'var(--primary-color)',
+        backgroundHoverColor = 'var(--primary-hover-color)',
+        borderColor = 'var(--border-color)',
+        isBorder = true,
+        textColor = 'var(--text-color)',
+        fontSize = '1.4em',
+        isLoading = false,
+        buttonWidth = 200
     } = props;
 
     const [isHover, setIsHover] = React.useState(false);
@@ -46,19 +54,53 @@ function ButtonComponent(props: ButtonComponentProps) {
             onMouseUp={() => setIsActive(false)}
             style={{
                 ...style,
-                borderColor: borderColor || 'transparent',
-                borderWidth: borderColor ? '2px' : '0',
-                borderStyle: borderColor ? 'solid' : 'none',
-
-                backgroundColor: isActive
-                    ? backgroundActiveColor
-                    : isHover
+                backgroundColor: isHover
                     ? backgroundHoverColor
-                    : backgroundColor
+                    : isActive
+                    ? backgroundActiveColor
+                    : backgroundColor,
+                border: isBorder ? '1px solid' : 'none',
+                borderColor: borderColor,
+                cursor: 'pointer',
+                minWidth: buttonWidth,
+                pointerEvents: isLoading ? 'none' : 'auto'
             }}>
-            {icon && icon}
+            {icon && (
+                <div
+                    style={{
+                        visibility: isLoading ? 'hidden' : 'visible'
+                    }}>
+                    {icon}
+                </div>
+            )}
             {icon && <SpaceComponent width={8} />}
-            <TextComponent text={text} fontSize={fontSize} textColor={textColor} />
+            <div
+                style={{
+                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%'
+                }}>
+                <TextComponent
+                    text={text}
+                    textColor={textColor}
+                    fontSize={fontSize}
+                    isVisible={!isLoading}
+                />
+                <Lottie
+                    style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        display: isLoading ? 'block' : 'none'
+                    }}
+                    options={{ loop: true, autoplay: true, animationData: LoadingAnimation }}
+                    height={80}
+                    width={80}
+                />
+            </div>
         </div>
     );
 }

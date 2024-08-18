@@ -1,12 +1,13 @@
-export interface Word {
+export interface WordType {
     meanings: Meaning[];
     contexts: Context[];
     name: string;
+    createAt?: number;
 }
 
 export interface Context {
+    point: number;
     context: string;
-    point: string;
     translation: string;
 }
 

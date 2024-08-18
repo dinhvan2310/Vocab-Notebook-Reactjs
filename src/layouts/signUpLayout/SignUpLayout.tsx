@@ -2,26 +2,30 @@ import { useState } from 'react';
 import FacebookSVG from '../../assets/icons/icons8-facebook.svg';
 import GoogleSVG from '../../assets/icons/icons8-google.svg';
 import imageWallpaper from '../../assets/wallpapers/loginsignupWallpaper.png';
-import { useResponsive } from '../../hooks/useResponsive';
-import { useAuth } from '../../hooks/useAuth';
-import SpaceComponent from '../../components/commonComponent/SpaceComponent';
 import ButtonComponent from '../../components/commonComponent/ButtonComponent';
+import ErrorTextComponent from '../../components/commonComponent/ErrorTextComponent';
 import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRuleComponent';
 import InputComponent from '../../components/commonComponent/InputComponent';
-import ErrorTextComponent from '../../components/commonComponent/ErrorTextComponent';
-import './SignUpLayout.scss';
+import SpaceComponent from '../../components/commonComponent/SpaceComponent';
 import TabsComponent from '../../components/commonComponent/TabsComponent';
 import TitleComponent from '../../components/commonComponent/TitleComponent';
+import { useAuth } from '../../hooks/useAuth';
+import { useResponsive } from '../../hooks/useResponsive';
+import './SignUpLayout.scss';
 
 function SignUpLayout() {
     const { isDesktopOrLaptop } = useResponsive();
     const [activeKey, setActiveKey] = useState<'login' | 'signup'>('login');
     const { signInWithGoogle, signInWithFacebook } = useAuth();
 
+    const [signInWithGoogleLoading, setSignInWithGoogleLoading] = useState(false);
+    const [signInWithFacebookLoading, setSignInWithFacebookLoading] = useState(false);
+
     const LoginForm = () => {
         const [email, setEmail] = useState('');
         const [password, setPassword] = useState('');
         const [error, setError] = useState('');
+
         return (
             <>
                 <InputComponent
@@ -53,6 +57,10 @@ function SignUpLayout() {
                 <SpaceComponent height={8} />
 
                 <ButtonComponent
+                    fontSize="1.4em"
+                    style={{
+                        width: '100%'
+                    }}
                     backgroundColor="var(--primary-color)"
                     backgroundHoverColor="var(--primary-hover-color)"
                     backgroundActiveColor="var(--primary-active-color)"
@@ -96,7 +104,12 @@ function SignUpLayout() {
                             />
                             <SpaceComponent height={32} />
                             <ButtonComponent
+                                style={{
+                                    width: '100%'
+                                }}
+                                fontSize="1.4em"
                                 borderColor="var(--border-color)"
+                                backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--border-color)"
                                 icon={
@@ -109,10 +122,20 @@ function SignUpLayout() {
                                     />
                                 }
                                 text="Đăng nhập bằng Google"
-                                onClick={signInWithGoogle}
+                                onClick={async () => {
+                                    setSignInWithGoogleLoading(true);
+                                    await signInWithGoogle();
+                                    setSignInWithGoogleLoading(false);
+                                }}
+                                isLoading={signInWithGoogleLoading}
                             />
                             <SpaceComponent height={16} />
                             <ButtonComponent
+                                style={{
+                                    width: '100%'
+                                }}
+                                fontSize="1.4em"
+                                backgroundColor="var(--bg-color)"
                                 borderColor="var(--border-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--border-color)"
@@ -126,7 +149,12 @@ function SignUpLayout() {
                                     />
                                 }
                                 text="Đăng nhập bằng Facebook"
-                                onClick={signInWithFacebook}
+                                onClick={async () => {
+                                    setSignInWithFacebookLoading(true);
+                                    await signInWithFacebook();
+                                    setSignInWithFacebookLoading(false);
+                                }}
+                                isLoading={signInWithFacebookLoading}
                             />
                             <SpaceComponent height={32} />
                             <HorizontalRuleComponent text="or email" />

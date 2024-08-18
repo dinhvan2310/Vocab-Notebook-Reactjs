@@ -2,8 +2,11 @@ import { Minus } from 'iconsax-react';
 import CardComponent from '../../components/CardComponent/CardComponent';
 import RowComponent from '../../components/commonComponent/RowComponent';
 import { MenuItemInterface } from '../../types/MenuItemType';
+import ButtonComponent from '../../components/commonComponent/ButtonComponent';
+import { useState } from 'react';
 
 function FoldersLayout() {
+    const [loading, setLoading] = useState(false);
     const menuItems: MenuItemInterface[] = [
         {
             key: 'remove',
