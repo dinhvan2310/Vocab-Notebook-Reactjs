@@ -1,0 +1,104 @@
+import { CloseSquare } from 'iconsax-react';
+import ButtonComponent from '../commonComponent/ButtonComponent';
+import RowComponent from '../commonComponent/RowComponent';
+import SpaceComponent from '../commonComponent/SpaceComponent';
+import TitleComponent from '../commonComponent/TitleComponent';
+import './ModalComponent.scss';
+
+interface ModalComponentProps {
+    title?: string;
+    children: React.ReactNode;
+    onCancel: () => void;
+    onConfirm: () => void;
+    open: boolean;
+    style?: React.CSSProperties;
+    closeOnOverlayClick?: boolean;
+    width?: string;
+    isCloseIcon?: boolean;
+    isFooter?: boolean;
+    animationType?: 'slideIn' | 'fadeIn' | 'zoomIn' | 'none';
+}
+
+function ModalComponent(props: ModalComponentProps) {
+    const {
+        title,
+        children,
+        onCancel,
+        onConfirm,
+        open,
+        style,
+        closeOnOverlayClick,
+        width,
+        isCloseIcon,
+        isFooter,
+        animationType = 'none'
+    } = props;
+    return (
+        <div
+            className="modal-component"
+            style={{
+                display: open ? 'flex' : 'none'
+            }}
+            onClick={() => {
+                if (closeOnOverlayClick) {
+                    onCancel();
+                }
+                // if (closeOnOverlayClick) {
+                //     switch (animationType) {
+                //         case 'fadeIn': {
+                //             onCancel();
+                //             modalRef.current?.classList.remove('fadeIn');
+                //             modalRef.current?.classList.add('fadeOut');
+                //             break;
+                //         }
+                //     }
+                // }
+            }}>
+            <div
+                className={`modal-content ${animationType === 'none' ? '' : animationType}`}
+                onClick={(event) => event.stopPropagation()}
+                style={{ ...style, width: width || 'auto' }}>
+                {isCloseIcon && (
+                    <CloseSquare
+                        className="close-icon"
+                        style={{
+                            position: 'absolute',
+                            top: 16,
+                            right: 16
+                        }}
+                        size={24}
+                        onClick={onCancel}
+                    />
+                )}
+                {title && <SpaceComponent height={24} />}
+                {title && <TitleComponent title={title} fontSize="2.8em" fontWeight={700} />}
+                {title && <SpaceComponent height={24} />}
+                <div className="modal-body">{children}</div>
+                {isFooter && (
+                    <RowComponent className="modal-footer">
+                        <ButtonComponent
+                            text="Cancel"
+                            onClick={onCancel}
+                            style={{
+                                padding: '12px 24px'
+                            }}
+                            backgroundColor="var(--red-color)"
+                            backgroundHoverColor="var(--red-hover-color)"
+                            backgroundActiveColor="var(--red-active-color)"
+                        />
+                        <SpaceComponent width={8} />
+                        <ButtonComponent
+                            text="Confirm"
+                            onClick={onConfirm}
+                            style={{
+                                padding: '12px 24px'
+                            }}
+                        />
+                    </RowComponent>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default ModalComponent;

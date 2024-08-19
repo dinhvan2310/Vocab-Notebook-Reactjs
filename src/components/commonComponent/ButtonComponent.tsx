@@ -11,41 +11,53 @@ interface ButtonComponentProps {
     backgroundColor?: string;
     backgroundHoverColor?: string;
     backgroundActiveColor?: string;
+    disabled?: boolean;
     borderColor?: string;
-    onClick: () => void;
+    onClick?: () => void;
     style?: React.CSSProperties;
     fontSize?: string;
     isLoading?: boolean;
     isBorder?: boolean;
-    buttonWidth?: number;
+    type?: 'submit' | 'button' | 'reset';
+    buttonWidth?: number | 'auto' | '100%';
 }
 function ButtonComponent(props: ButtonComponentProps) {
     const {
         text,
-        onClick,
+        onClick = () => {},
+        type = 'button',
         icon,
         style,
         backgroundActiveColor = 'var(--primary-active-color)',
         backgroundColor = 'var(--primary-color)',
         backgroundHoverColor = 'var(--primary-hover-color)',
         borderColor = 'var(--border-color)',
-        isBorder = true,
-        textColor = 'var(--text-color)',
-        fontSize = '1.4em',
+        isBorder = false,
+        textColor = 'var(--white-color)',
+        fontSize = '1.2em',
         isLoading = false,
-        buttonWidth = 200
+        buttonWidth = 'auto',
+        disabled = false
     } = props;
 
     const [isHover, setIsHover] = React.useState(false);
     const [isActive, setIsActive] = React.useState(false);
 
+    let backGroundColor = isActive
+        ? backgroundActiveColor
+        : isHover
+        ? backgroundHoverColor
+        : backgroundColor;
+
+    backGroundColor = isLoading || disabled ? 'var(--disabled-color)' : backGroundColor;
+
     return (
-        <div
+        <button
+            type={type}
             onClick={onClick}
             className={`button`}
-            onMouseEnter={() => {
-                setIsHover(true);
-            }}
+            disabled={disabled || isLoading}
+            onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => {
                 setIsHover(false);
                 setIsActive(false);
@@ -54,16 +66,11 @@ function ButtonComponent(props: ButtonComponentProps) {
             onMouseUp={() => setIsActive(false)}
             style={{
                 ...style,
-                backgroundColor: isHover
-                    ? backgroundHoverColor
-                    : isActive
-                    ? backgroundActiveColor
-                    : backgroundColor,
+                backgroundColor: backGroundColor,
                 border: isBorder ? '1px solid' : 'none',
                 borderColor: borderColor,
-                cursor: 'pointer',
-                minWidth: buttonWidth,
-                pointerEvents: isLoading ? 'none' : 'auto'
+                pointerEvents: isLoading || disabled ? 'none' : 'auto',
+                width: buttonWidth
             }}>
             {icon && (
                 <div
@@ -101,7 +108,7 @@ function ButtonComponent(props: ButtonComponentProps) {
                     width={80}
                 />
             </div>
-        </div>
+        </button>
     );
 }
 

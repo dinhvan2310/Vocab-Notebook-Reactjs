@@ -30,7 +30,8 @@ function SignUpLayout() {
             <>
                 <InputComponent
                     label="Email"
-                    propStyles={{
+                    fontSize={'1.6em'}
+                    style={{
                         marginBottom: 24
                     }}
                     type="email"
@@ -42,8 +43,9 @@ function SignUpLayout() {
                 />
                 <InputComponent
                     label="Password"
+                    fontSize={'1.6em'}
                     type="password"
-                    propStyles={{
+                    style={{
                         marginBottom: 24
                     }}
                     placeholder="Nhập mật khẩu của bạn"
@@ -58,9 +60,7 @@ function SignUpLayout() {
 
                 <ButtonComponent
                     fontSize="1.4em"
-                    style={{
-                        width: '100%'
-                    }}
+                    buttonWidth={'100%'}
                     backgroundColor="var(--primary-color)"
                     backgroundHoverColor="var(--primary-hover-color)"
                     backgroundActiveColor="var(--primary-active-color)"
@@ -104,11 +104,14 @@ function SignUpLayout() {
                             />
                             <SpaceComponent height={32} />
                             <ButtonComponent
+                                buttonWidth={'100%'}
                                 style={{
                                     width: '100%'
                                 }}
+                                isBorder={true}
                                 fontSize="1.4em"
                                 borderColor="var(--border-color)"
+                                textColor="var(--text-color)"
                                 backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--border-color)"
@@ -131,12 +134,12 @@ function SignUpLayout() {
                             />
                             <SpaceComponent height={16} />
                             <ButtonComponent
-                                style={{
-                                    width: '100%'
-                                }}
+                                buttonWidth={'100%'}
+                                textColor="var(--text-color)"
                                 fontSize="1.4em"
-                                backgroundColor="var(--bg-color)"
+                                isBorder={true}
                                 borderColor="var(--border-color)"
+                                backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--border-color)"
                                 icon={

@@ -2,6 +2,9 @@ import React from 'react';
 import MenuItemsComponent from '../MenuItems/MenuItemsComponent';
 import './FloatingActionButtonComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
+import RowComponent from '../commonComponent/RowComponent';
+import TextComponent from '../commonComponent/TextComponent';
+import SpaceComponent from '../commonComponent/SpaceComponent';
 interface FloatingActionButtonProps {
     headerComponent?: React.ReactNode;
     menuItems: MenuItemInterface[];
@@ -11,6 +14,8 @@ interface FloatingActionButtonProps {
     backgroundHoverColor?: string;
     backgroundActiveColor?: string;
     icon?: React.ReactNode;
+    text?: string;
+    color?: string;
     menuItemsPosition?: 'left' | 'right' | 'center';
     menuItemsBackgroundColor?: string;
 }
@@ -18,6 +23,9 @@ interface FloatingActionButtonProps {
 function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
     const {
         headerComponent,
+        color = 'var(--text-color)',
+        text,
+        menuItemsBackgroundColor,
         menuItems,
         menuItemWidth,
         icon,
@@ -40,6 +48,14 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
         setOpen(!open);
     };
 
+    menuItems.forEach((item) => {
+        const func = item.onClick ?? (() => {});
+        item.onClick = () => {
+            func();
+            setOpen(false);
+        };
+    });
+
     return (
         <div className="floating-action-button">
             <div
@@ -59,9 +75,11 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
                         ? backgroundHoverColor
                         : backgroundColor
                 }}>
-                <div className="floatingButton" onClick={handleClick}>
-                    {icon}
-                </div>
+                <RowComponent justifyContent="center" alignItems="center" onClick={handleClick}>
+                    <div className="floatingButton">{icon}</div>
+                    {text && <SpaceComponent width={8} />}
+                    {text && <TextComponent textColor={color} text={text ?? ''} />}
+                </RowComponent>
             </div>
             {open && (
                 <div className={menuItemContainerClass}>
@@ -71,7 +89,7 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
                         menuItems={menuItems}
                         width={menuItemWidth}
                         containerStyle={{
-                            backgroundColor: props.menuItemsBackgroundColor ?? 'var(--bg-color)'
+                            backgroundColor: menuItemsBackgroundColor ?? 'var(--bg-color)'
                         }}
                     />
                 </div>

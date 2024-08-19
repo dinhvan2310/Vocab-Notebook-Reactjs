@@ -22,7 +22,12 @@ function App() {
         //  Load the Google fonts
         WebFont.load({
             google: {
-                families: ['Droid Sans', 'Roboto', 'Poppins']
+                families: [
+                    'Droid Sans',
+                    'Roboto',
+                    'Poppins:400,500,600,700,800',
+                    'Montserrat:400,500,600,700,800'
+                ]
             }
         });
     }, []);

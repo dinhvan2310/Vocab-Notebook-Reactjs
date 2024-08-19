@@ -1,6 +1,7 @@
 .main-layout {
     display: flex;
     flex-direction: column;
+    height: 100vh;
 
     .headerContainer {
         display: flex;
@@ -12,9 +13,8 @@
         z-index: 1000;
         top: 0;
         background-color: var(--bg-color);
-        
+
         .iconMenuContainer {
-            
             .iconMenu {
                 padding: 8px;
                 cursor: pointer;
@@ -25,7 +25,6 @@
                 }
             }
         }
-
     }
 
     .contentContainer {
@@ -41,15 +40,27 @@
             padding-left: 16px;
             padding-right: 24px;
         }
-        
+
         .rightContainer {
             flex: 1;
             display: flex;
             flex-direction: column;
             padding: 48px;
-            background-color: var(--bg-hover-color);
-            overflow: hidden;
+            // background-color: var(--bg-hover-color);
+            overflow-y: scroll;
+            overflow-x: hidden;
+
+            &::-webkit-scrollbar {
+                width: 10px;
+                
+            }
+            &::-webkit-scrollbar-track {
+                background-color: var(--bg-active-color);
+            }
+            &::-webkit-scrollbar-thumb{
+                border-radius: 50px;
+                background-color: var(--secondary-text-color);
+              }
         }
-        
     }
 }

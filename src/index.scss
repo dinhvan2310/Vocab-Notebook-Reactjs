@@ -17,7 +17,7 @@ body {
 
 
         --bg-color: #2c2c2c;
-        --bg-hover-color: #1d1d1d;
+        --bg-hover-color: #4a4a4a;
         --bg-active-color: #1e1e1e;
 
         --text-color: #f6f7fb;
@@ -25,9 +25,14 @@ body {
         // --text-color-light: rgb(217, 221, 232);
 
         --border-color: #586380;
+        --disabled-color: #586380;
+
         
         --white-color: #fff;
         --black-color:  #282e3e;
+        --red-color: #F5004F;
+        --red-hover-color: #FF6969;
+        --red-active-color: #FF0000;
     }
 
     &[data-theme='light'] {
@@ -50,9 +55,14 @@ body {
         // --text-color-light: rgb(217, 221, 232);
 
         --border-color: #d9dde8;
+
+        --disabled-color: #d9dde8;
         
         --white-color: #fff;
         --black-color:  #282e3e;
+        --red-color: #F5004F;
+        --red-hover-color: #FF6969;
+        --red-active-color: #FF0000;
     }
 }
 

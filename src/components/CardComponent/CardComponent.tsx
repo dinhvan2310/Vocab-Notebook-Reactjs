@@ -22,6 +22,10 @@ interface CardComponentProps {
 
     haveFloatingButton?: boolean;
     menuItems?: MenuItemInterface[];
+    className?: string;
+
+    createAt?: string;
+    visibliity?: 'public' | 'private' | undefined;
 }
 
 function CardComponent(props: CardComponentProps) {
@@ -33,9 +37,12 @@ function CardComponent(props: CardComponentProps) {
         children,
         backGroundColor,
         title,
+        className,
         subTitle,
         menuItems,
-        haveFloatingButton
+        visibliity = undefined,
+        haveFloatingButton,
+        createAt
     } = props;
     const cardContainerClass = hoverable ? 'card-container hoverable' : 'card-container';
 
@@ -44,7 +51,7 @@ function CardComponent(props: CardComponentProps) {
     return (
         <div
             ref={cardRef}
-            className={cardContainerClass}
+            className={`${cardContainerClass} ${className}`}
             style={{
                 ...style,
                 backgroundColor: backGroundColor ? backGroundColor : 'var(--bg-color)'
@@ -72,26 +79,47 @@ function CardComponent(props: CardComponentProps) {
                     children
                 ) : (
                     <RowComponent justifyContent="space-between">
-                        <ColumnComponent>
-                            <TitleComponent title={title ?? ''} fontSize="1.4em" />
+                        <ColumnComponent alignItems="flex-start">
+                            <RowComponent alignItems="center" justifyContent="flex-start">
+                                <TitleComponent
+                                    title={title ?? ''}
+                                    fontSize="2em"
+                                    fontWeight={600}
+                                />
+                                <SpaceComponent width={12} />
+                                {visibliity && (
+                                    <TextComponent
+                                        text={visibliity === 'public' ? 'Public' : 'Private'}
+                                        fontSize="1em"
+                                        style={{
+                                            borderRadius: '12px',
+                                            padding: '2px 6px',
+                                            border: '1px solid var(--secondary-text-color)'
+                                        }}
+                                    />
+                                )}
+                            </RowComponent>
                             <SpaceComponent height={4} />
                             <TextComponent text={subTitle ?? ''} fontSize="1.2em" />
                         </ColumnComponent>
-                        {haveFloatingButton && (
-                            <FloatingActionButtonComponent
-                                menuItems={menuItems ?? []}
-                                icon={<More fontSize={20} color="var(--text-color)" />}
-                                backgroundColor="var(--bg-color)"
-                                backgroundHoverColor="var(--bg-hover-color)"
-                                backgroundActiveColor="var(--bg-active-color)"
-                                containerStyle={{
-                                    width: '40px',
-                                    height: '40px',
-                                    borderRadius: '50%'
-                                }}
-                                menuItemsPosition="center"
-                            />
-                        )}
+                        <ColumnComponent alignItems="flex-end">
+                            {haveFloatingButton && (
+                                <FloatingActionButtonComponent
+                                    menuItems={menuItems ?? []}
+                                    icon={<More fontSize={20} color="var(--text-color)" />}
+                                    backgroundColor="var(--bg-color)"
+                                    backgroundHoverColor="var(--bg-hover-color)"
+                                    backgroundActiveColor="var(--bg-active-color)"
+                                    containerStyle={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%'
+                                    }}
+                                    menuItemsPosition="center"
+                                />
+                            )}
+                            <TextComponent text={createAt ?? ''} fontSize="1.2em" />
+                        </ColumnComponent>
                     </RowComponent>
                 )}
             </div>

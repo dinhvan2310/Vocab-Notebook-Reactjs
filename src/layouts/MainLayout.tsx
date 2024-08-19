@@ -12,7 +12,7 @@ import {
     NotificationStatus,
     Setting
 } from 'iconsax-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import RowComponent from '../components/commonComponent/RowComponent';
 import SpaceComponent from '../components/commonComponent/SpaceComponent';
@@ -27,17 +27,31 @@ import TitleComponent from '../components/commonComponent/TitleComponent';
 import TextComponent from '../components/commonComponent/TextComponent';
 import { MenuItemInterface } from '../types/MenuItemType';
 import useTheme from '../hooks/useTheme';
+import ModalComponent from '../components/ModalComponent/ModalComponent';
+import FormItemType from '../types/FormItemType';
+import FormComponent from '../components/FormComponent/FormComponent';
+import { addFolder } from '../firebase/folderAPI';
+import FolderType from '../types/FolderType';
+import { Timestamp } from 'firebase/firestore';
 
 function MainLayout() {
+    //  state declaration ---------------------------------------------------------------
+    // navigation
     const navigate = useNavigate();
+    // theme
     const { theme, setTheme } = useTheme();
+    // auth
     const { user, signOut } = useAuth();
-
+    // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
-
     // keep track of the active page in the sidebar menu
     const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams'>('home');
 
+    // open modal to add new folder
+    const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
+    // new folder name relate add add new folder modal
+    const [createFolder_name, setCreateFolder_name] = useState<string>('');
+    // function declaration ---------------------------------------------------------------
     const handleNavigatePage = (key: 'home' | 'folders' | 'exams') => {
         setActivePage(key);
         switch (key) {
@@ -45,7 +59,14 @@ function MainLayout() {
                 navigate('/');
                 break;
             case 'folders':
-                navigate(`/user/${user?.displayName}/folders`);
+                navigate(`/user/${user?.displayName}/folders`, {
+                    state: {
+                        uid: user?.uid,
+                        displayName: user?.displayName,
+                        photoURL: user?.photoURL,
+                        email: user?.email
+                    }
+                });
                 break;
             case 'exams':
                 navigate('/exams');
@@ -53,10 +74,35 @@ function MainLayout() {
         }
     };
 
-    const handleChangeTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
+    //  data declaration ---------------------------------------------------------------
+    // ADD MENU ITEMS - floating action button
+    // function to add a new folder
+    const formItems: FormItemType[] = [
+        {
+            label: 'Folder Name',
+            type: 'text',
+            placeholder: 'Enter folder name',
+            value: createFolder_name,
+            onChange: (value) => {
+                setCreateFolder_name(value);
+            }
+        }
+    ];
+    const handleAddFolder = () => {
+        setOpenModalAddNewFolder(true);
     };
-
+    const handleAddFolderFinish = async () => {
+        const folder: FolderType = {
+            name: createFolder_name,
+            id_user: user?.uid || '',
+            createAt: Timestamp.now(),
+            nums_word_sets: 0,
+            modifiedAt: Timestamp.now()
+        };
+        await addFolder(folder);
+        setOpenModalAddNewFolder(false);
+        setCreateFolder_name('');
+    };
     const menuItemsAdd: MenuItemInterface[] = [
         {
             text: 'Học phần',
@@ -68,10 +114,15 @@ function MainLayout() {
             text: 'Thư mục',
             icon: <FolderAdd size="20" />,
             key: 'folder',
-            onClick: () => console.log('Thư mục')
+            onClick: handleAddFolder
         }
     ];
 
+    // SETTING MENU ITEMS
+    // function to change the theme of the app
+    const handleChangeTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
     const menuItemsSetting: MenuItemInterface[] = [
         {
             key: 'achievement',
@@ -115,6 +166,7 @@ function MainLayout() {
         }
     ];
 
+    // SIDEBAR MENU ITEMS
     const menuItemsSideBar: MenuItemInterface[] = [
         {
             key: 'home',
@@ -124,7 +176,8 @@ function MainLayout() {
         {
             key: 'folders',
             text: 'Thư mục của bạn',
-            icon: <Folder size={20} />
+            icon: <Folder size={20} />,
+            onClick: () => handleNavigatePage('folders')
         },
         {
             key: 'exams',
@@ -133,6 +186,8 @@ function MainLayout() {
         }
     ];
 
+    // render --------------------------------------------------------------------------------------------
+    // setting header for the setting button
     const menuItemsSettingHeader = (
         <RowComponent alignItems="center">
             <img
@@ -156,14 +211,35 @@ function MainLayout() {
 
     return (
         <div className="main-layout">
+            {/* Modal Add Folder */}
+            <ModalComponent
+                animationType="zoomIn"
+                isCloseIcon={true}
+                width="800px"
+                closeOnOverlayClick={true}
+                open={openModalAddNewFolder}
+                isFooter={false}
+                onCancel={() => {
+                    setOpenModalAddNewFolder(false);
+                    setCreateFolder_name('');
+                }}
+                onConfirm={() => {}}
+                title="Create new folder">
+                <FormComponent
+                    onFinished={handleAddFolderFinish}
+                    formItems={formItems}
+                    haveSubmitButton={true}
+                    submitButtonText="Create"
+                />
+            </ModalComponent>
             {/* Header ------------------------------------------------------------------------------ */}
             <header className="headerContainer">
                 <div className="iconMenuContainer">
                     <HambergerMenu className="iconMenu" color="#586380" size="42" />
                 </div>
                 <SearchBoxComponent value={searchValue} onChange={setSearchValue} />
-
-                <RowComponent alignItems="center" style={{}}>
+                <SpaceComponent width={32} />
+                <RowComponent alignItems="center" justifyContent="space-around" style={{}}>
                     <FloatingActionButtonComponent
                         backgroundColor="var(--primary-color)"
                         backgroundHoverColor="var(--primary-hover-color)"
@@ -174,11 +250,11 @@ function MainLayout() {
                     <SpaceComponent width={32} />
                     <ButtonComponent
                         text="Nâng cấp lên Plus"
-                        onClick={() => console.log('Thêm')}
                         backgroundColor="var(--secondary-color)"
                         backgroundHoverColor="var(--secondary-hover-color)"
                         backgroundActiveColor="var(--secondary-active-color)"
                         textColor="var(--black-color)"
+                        fontSize="1.1em"
                         style={{
                             height: '40px'
                         }}
@@ -193,8 +269,9 @@ function MainLayout() {
                                 alt="avatar"
                                 style={{
                                     objectFit: 'cover',
-                                    width: '100%',
-                                    borderRadius: '50%'
+                                    borderRadius: '50%',
+                                    width: '40px',
+                                    height: '40px'
                                 }}
                             />
                         }

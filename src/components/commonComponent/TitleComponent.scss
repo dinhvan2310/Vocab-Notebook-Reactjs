@@ -1,4 +1,4 @@
-.title-container {
+.title-component {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -12,8 +12,6 @@
     }
 
     .title {
-        font-weight: 600;
-        line-height: 20px;
         text-align: start;
         /* Color & Background */
     }

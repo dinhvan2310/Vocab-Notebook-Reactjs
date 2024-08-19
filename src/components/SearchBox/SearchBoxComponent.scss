@@ -1,24 +1,29 @@
 .search-box {
 	font-weight: 600;
-	background-color: var(--bg-active-color);
 	height: 40px;
-	width: 600px;
-	border: 2px solid var(--bg-active-color);
-	padding: 16px;
 	max-height: none;
 	min-height: 32px;
 	border-radius: 8px;
     display: flex;
     flex-direction: row;
     align-items: center;
+	overflow: hidden;
+	
 
-	&:focus-within{
-		border: 2px solid var(--border-color);
-	}
+	.search-icon-container {
+		display: flex;
+		justify-self: center;
+		align-items: center;
+		flex: 1;
+		height: 40px;
+		padding: 16px;
 
-	.searchIcon {
-		height: 20px;
-		color: var(--text-color);
+
+		.searchIcon {
+			height: 20px;
+			color: var(--text-color);
+	
+		}
 	}
 
 	.input {

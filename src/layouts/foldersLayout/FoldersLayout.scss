@@ -1,0 +1,30 @@
+.folder-layout-container {
+    display: flex;
+    flex-direction: column;
+
+    .top-bar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-bottom: 8;
+
+        .command-bar {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+
+            border-bottom: 2px solid var(--border-color);
+        }
+    }
+
+    .folders-container {
+        margin-top: 48px;
+
+        .folder-card:not(:last-child) {
+            margin-bottom: 16px;
+        }
+    }
+}

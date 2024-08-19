@@ -35,6 +35,7 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
             {headerComponent && <div className="menu-items-header">{headerComponent}</div>}
             {menuItems.map((item, index) => (
                 <div
+                    key={index}
                     style={{
                         borderBottom:
                             item.borderType === 'bottom' || item.borderType === 'top-bottom'
