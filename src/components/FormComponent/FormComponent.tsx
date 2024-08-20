@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import FormItemType from '../../types/FormItemType';
-import ButtonComponent from '../commonComponent/ButtonComponent';
-import InputComponent from '../commonComponent/InputComponent';
-import RowComponent from '../commonComponent/RowComponent';
-import SpaceComponent from '../commonComponent/SpaceComponent';
 import './FormComponent.scss';
+import InputComponent from '../commonComponent/Input/InputComponent';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
+import RowComponent from '../commonComponent/Row/RowComponent';
+import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 
 interface FormComponentProps {
     onFinished: () => Promise<void>;

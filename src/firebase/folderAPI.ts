@@ -1,4 +1,4 @@
-import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, or, orderBy, query, startAt, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, updateDoc, where } from "firebase/firestore";
 import FolderType from "../types/FolderType";
 import { auth, db } from "./firebase-config";
 
@@ -33,10 +33,12 @@ export const removeFolder = async (id_folder: string) => {
     const user = auth.currentUser;
     if (!user) throw new Error("User is not logged in");
      
-    const folderRef = await getDoc(doc(db, "folders", id_folder));
-    if (folderRef.exists()){
+    
+    const folderRef = doc(db, "folders", id_folder);
+    const folderDoc = await getDoc(folderRef);
+    if (folderDoc.exists()){
         // Check permission to delete the folder (only the owner can delete the folder)
-        if (folderRef.data().id_user === user?.uid) {
+        if (folderDoc.data().id_user === user?.uid) {
             await deleteDoc(doc(db, "folders", id_folder));
             const userRef = doc(db, "users", user.uid);
             // Remove the folder from the user's folders array 
@@ -85,42 +87,48 @@ export const getFolders = async (
     id_user: string,
     stringSearch: string = '',
 
+    sortByName: 'asc' | 'desc' | 'none' = 'none',
+    sortByDate: 'asc' | 'desc' | 'none' = 'none',
+
+    _startAt: number = 0,
     _limit: number = 5,
-    _startAt: number = 0
 ) => {
+    const __startAt = _startAt < 0 ? 0 : _startAt;
+    const __limit = _limit < 0 ? 0 : _limit;
+    
     const collectionRef = collection(db, "folders");
 
+    
+    const _stringSearch = stringSearch.trim().toLowerCase();
     // query
-    const q = stringSearch ? 
+    let q = 
         query(
             collectionRef, 
             where("id_user", "==", id_user),
-            where("name_lowercase", ">=", stringSearch.toLowerCase()),
-            where("name_lowercase", "<=", stringSearch.toLowerCase() + "\uf8ff"),
-            
-            orderBy("name_lowercase"),
-            limit(_limit),
-            startAt(_startAt),
-        ) : 
-        query(
-            collectionRef, 
-            where("id_user", "==", id_user),
+            where("name_lowercase", ">=", _stringSearch),
+            where("name_lowercase", "<=", _stringSearch + "\uf8ff"),
+        ) 
+    if (sortByName !== 'none') {
+        q = query(q, orderBy("name_lowercase", sortByName));
+    }
+    if (sortByDate !== 'none') {
+        q = query(q, orderBy("createAt", sortByDate));
+    }
 
-            orderBy("name_lowercase"),
-            limit(_limit),
-            startAt(_startAt),
-        );
+    
 
     // get data from query
     const querySnapshot = await getDocs(q);
     const folders: FolderType[] = [];
-    querySnapshot.forEach((doc) => {
+    querySnapshot.docs.slice(__startAt, __startAt + __limit).forEach((doc) => {
         const folder = doc.data() as FolderType;
         folder.id_folder = doc.id;
         folders.push(folder);
     });
 
-    console.log(folders.length);
-    // return data
-    return folders;
+    
+    const userRef = doc(db, "users", id_user);
+    const numOfTotalFolders = (await getDoc(userRef)).data()?.folders.length;
+    console.log(folders)
+    return { folders , numOfTotalFolders };
 }

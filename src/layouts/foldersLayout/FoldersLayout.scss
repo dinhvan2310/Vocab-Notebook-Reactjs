@@ -1,6 +1,8 @@
 .folder-layout-container {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    height: 100%;
 
     .top-bar {
         display: flex;
@@ -22,6 +24,9 @@
 
     .folders-container {
         margin-top: 48px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 100%;
 
         .folder-card:not(:last-child) {
             margin-bottom: 16px;

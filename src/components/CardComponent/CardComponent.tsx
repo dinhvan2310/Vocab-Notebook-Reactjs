@@ -1,13 +1,13 @@
 import { ReactNode, useRef } from 'react';
 import './CardComponent.scss';
-import TitleComponent from '../commonComponent/TitleComponent';
-import TextComponent from '../commonComponent/TextComponent';
-import SpaceComponent from '../commonComponent/SpaceComponent';
 import { MenuItemInterface } from '../../types/MenuItemType';
-import RowComponent from '../commonComponent/RowComponent';
-import ColumnComponent from '../commonComponent/ColumnComponent';
 import FloatingActionButtonComponent from '../FloatingActionButton/FloatingActionButtonComponent';
 import { More } from 'iconsax-react';
+import RowComponent from '../commonComponent/Row/RowComponent';
+import ColumnComponent from '../commonComponent/Column/ColumnComponent';
+import TitleComponent from '../commonComponent/Title/TitleComponent';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
+import TextComponent from '../commonComponent/Text/TextComponent';
 
 interface CardComponentProps {
     hoverable?: boolean;
@@ -116,7 +116,7 @@ function CardComponent(props: CardComponentProps) {
                                         height: '40px',
                                         borderRadius: '50%'
                                     }}
-                                    menuItemsPosition="center"
+                                    menuItemsPosition="left"
                                 />
                             )}
                             <TextComponent text={createAt ?? ''} fontSize="1.2em" />

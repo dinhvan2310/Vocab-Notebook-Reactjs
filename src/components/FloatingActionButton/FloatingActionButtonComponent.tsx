@@ -2,9 +2,9 @@ import React from 'react';
 import MenuItemsComponent from '../MenuItems/MenuItemsComponent';
 import './FloatingActionButtonComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
-import RowComponent from '../commonComponent/RowComponent';
-import TextComponent from '../commonComponent/TextComponent';
-import SpaceComponent from '../commonComponent/SpaceComponent';
+import RowComponent from '../commonComponent/Row/RowComponent';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
+import TextComponent from '../commonComponent/Text/TextComponent';
 interface FloatingActionButtonProps {
     headerComponent?: React.ReactNode;
     menuItems: MenuItemInterface[];

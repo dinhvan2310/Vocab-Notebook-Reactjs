@@ -1,6 +1,6 @@
 import React from 'react';
-import SpaceComponent from './SpaceComponent';
 import './TitleComponent.scss';
+import SpaceComponent from '../Space/SpaceComponent';
 
 interface TitleComponentProps {
     title: string;

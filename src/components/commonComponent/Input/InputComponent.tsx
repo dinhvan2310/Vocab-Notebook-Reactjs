@@ -1,9 +1,9 @@
 import { Eye, EyeSlash } from 'iconsax-react';
 import React, { forwardRef } from 'react';
 import './InputComponent.scss';
-import RowComponent from './RowComponent';
-import SpaceComponent from './SpaceComponent';
-import TextComponent from './TextComponent';
+import RowComponent from '../Row/RowComponent';
+import SpaceComponent from '../Space/SpaceComponent';
+import TextComponent from '../Text/TextComponent';
 interface InputComponentProps {
     label?: string;
     type?: 'email' | 'password' | 'text' | 'switch' | 'textarea';

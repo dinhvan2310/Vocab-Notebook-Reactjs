@@ -2,16 +2,16 @@ import { useState } from 'react';
 import FacebookSVG from '../../assets/icons/icons8-facebook.svg';
 import GoogleSVG from '../../assets/icons/icons8-google.svg';
 import imageWallpaper from '../../assets/wallpapers/loginsignupWallpaper.png';
-import ButtonComponent from '../../components/commonComponent/ButtonComponent';
-import ErrorTextComponent from '../../components/commonComponent/ErrorTextComponent';
-import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRuleComponent';
-import InputComponent from '../../components/commonComponent/InputComponent';
-import SpaceComponent from '../../components/commonComponent/SpaceComponent';
-import TabsComponent from '../../components/commonComponent/TabsComponent';
-import TitleComponent from '../../components/commonComponent/TitleComponent';
 import { useAuth } from '../../hooks/useAuth';
 import { useResponsive } from '../../hooks/useResponsive';
 import './SignUpLayout.scss';
+import InputComponent from '../../components/commonComponent/Input/InputComponent';
+import ErrorTextComponent from '../../components/commonComponent/ErrorText/ErrorTextComponent';
+import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
+import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
+import TabsComponent from '../../components/commonComponent/Tabs/TabsComponent';
+import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
+import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 
 function SignUpLayout() {
     const { isDesktopOrLaptop } = useResponsive();
@@ -36,8 +36,8 @@ function SignUpLayout() {
                     }}
                     type="email"
                     placeholder="Nhập địa chỉ email"
-                    onChange={(e) => {
-                        setEmail(e.target.value);
+                    onChange={(value) => {
+                        setEmail(value);
                     }}
                     value={email}
                 />
@@ -49,8 +49,8 @@ function SignUpLayout() {
                         marginBottom: 24
                     }}
                     placeholder="Nhập mật khẩu của bạn"
-                    onChange={(e) => {
-                        setPassword(e.target.value);
+                    onChange={(value) => {
+                        setPassword(value);
                     }}
                     value={password}
                 />

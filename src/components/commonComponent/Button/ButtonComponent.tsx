@@ -1,9 +1,9 @@
 import React, { ReactNode } from 'react';
-import SpaceComponent from './SpaceComponent';
 import './ButtonComponent.scss';
-import TextComponent from './TextComponent';
-import LoadingAnimation from '../../assets/animation/loadingAnimation.json';
 import Lottie from 'react-lottie';
+import SpaceComponent from '../Space/SpaceComponent';
+import LoadingAnimation from '../../../assets/animation/loadingAnimation.json';
+import TextComponent from '../Text/TextComponent';
 interface ButtonComponentProps {
     text: string;
     textColor?: string;

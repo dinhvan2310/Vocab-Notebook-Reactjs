@@ -74,22 +74,22 @@ function App() {
             ]
         }
     ]);
-    // return <RouterProvider router={router} />;
+    return <RouterProvider router={router} />;
 
-    const [currPage, setCurrPage] = useState(1);
+    // const [currPage, setCurrPage] = useState(1);
 
-    return (
-        <PaginationComponent
-            currentPage={currPage}
-            total={40}
-            numsButton={2}
-            align="left"
-            pageSize={5}
-            onPageChange={(page: number, pageSize: number) => {
-                setCurrPage(page);
-            }}
-        />
-    );
+    // return (
+    //     <PaginationComponent
+    //         currentPage={currPage}
+    //         total={40}
+    //         numsButton={5}
+    //         align="left"
+    //         pageSize={5}
+    //         onPageChange={(page: number, pageSize: number) => {
+    //             setCurrPage(page);
+    //         }}
+    //     />
+    // );
 }
 
 export default App;

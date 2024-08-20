@@ -1,6 +1,7 @@
 import { ArrowLeft2, ArrowRight2 } from 'iconsax-react';
 import './Pagination.scss';
-import TextComponent from './TextComponent';
+import TextComponent from '../Text/TextComponent';
+import { to } from '@react-spring/web';
 
 interface PaginationProps {
     total: number;
@@ -25,20 +26,21 @@ function PaginationComponent(props: PaginationProps) {
         align = 'left',
         onPageChange = () => {}
     } = props;
-
     // state
-
     const totalPages = Math.ceil(total / pageSize);
-    console.log(totalPages);
     const pages = [];
 
-    // chỉ hiện thị 5 nút ở giữa khi tổng số trang lớn hơn 5 trang
-    const firstPage = 1;
+    const firstPage = totalPages > 0 ? 1 : 0;
     const lastPage = totalPages;
 
     if (totalPages > numsButton) {
-        const start = Math.max(1, currentPage - Math.floor(numsButton / 2));
-        const end = Math.min(totalPages, start + numsButton - 1);
+        let start = Math.max(1, currentPage - Math.floor(numsButton / 2));
+        // eslint-disable-next-line prefer-const
+        let end = Math.min(totalPages, start + numsButton - 1);
+
+        if (end - start < numsButton - 1) {
+            start = Math.max(1, end - numsButton + 1);
+        }
 
         for (let i = start; i <= end; i++) {
             pages.push(i);
@@ -68,13 +70,13 @@ function PaginationComponent(props: PaginationProps) {
                 <div
                     className="pagination__prev"
                     onClick={() => {
-                        if (currentPage === 1) return;
+                        if (currentPage === 1 || firstPage === 0) return;
                         onPageChange(currentPage - 1, pageSize);
                     }}
                     style={{
-                        color: currentPage === 1 ? color : activeColor,
+                        color: currentPage === 1 || firstPage === 0 ? color : activeColor,
                         // chặn hành vi bấm
-                        pointerEvents: currentPage === 1 ? 'none' : 'auto'
+                        pointerEvents: currentPage === 1 || firstPage === 0 ? 'none' : 'auto'
                     }}>
                     <ArrowLeft2 fontSize={20} />
                 </div>
@@ -121,7 +123,7 @@ function PaginationComponent(props: PaginationProps) {
                         !pages.find((page) => {
                             return page === lastPage;
                         }) &&
-                        currentPage < totalPages - Math.ceil(numsButton / 2) && (
+                        currentPage < totalPages - Math.floor(numsButton / 2) && (
                             <>
                                 <div className="pagination__page">
                                     <TextComponent text="..." fontSize="1.4em" textColor={color} />
@@ -142,13 +144,13 @@ function PaginationComponent(props: PaginationProps) {
                 <div
                     className="pagination__next"
                     onClick={() => {
-                        if (currentPage === lastPage) return;
+                        if (currentPage === lastPage || lastPage === 0) return;
                         onPageChange(currentPage + 1, pageSize);
                     }}
                     style={{
-                        color: currentPage === lastPage ? color : activeColor,
+                        color: currentPage === lastPage || lastPage === 0 ? color : activeColor,
                         // chặn hành vi bấm
-                        pointerEvents: currentPage === lastPage ? 'none' : 'auto'
+                        pointerEvents: currentPage === lastPage || lastPage == 0 ? 'none' : 'auto'
                     }}>
                     <ArrowRight2 fontSize={20} />
                 </div>

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
-import SpaceComponent from '../commonComponent/SpaceComponent';
 import './MenuItemsComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
 
 interface MenuItemsComponentProps {
     headerComponent?: ReactNode;

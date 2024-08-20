@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore';
 import {
     Add,
     Additem,
@@ -14,25 +15,24 @@ import {
 } from 'iconsax-react';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import RowComponent from '../components/commonComponent/RowComponent';
-import SpaceComponent from '../components/commonComponent/SpaceComponent';
-import ButtonComponent from '../components/commonComponent/ButtonComponent';
-import { useAuth } from '../hooks/useAuth';
-import './MainLayout.scss';
 import FloatingActionButtonComponent from '../components/FloatingActionButton/FloatingActionButtonComponent';
-import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
-import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
-import ColumnComponent from '../components/commonComponent/ColumnComponent';
-import TitleComponent from '../components/commonComponent/TitleComponent';
-import TextComponent from '../components/commonComponent/TextComponent';
-import { MenuItemInterface } from '../types/MenuItemType';
-import useTheme from '../hooks/useTheme';
-import ModalComponent from '../components/ModalComponent/ModalComponent';
-import FormItemType from '../types/FormItemType';
 import FormComponent from '../components/FormComponent/FormComponent';
+import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
+import ModalComponent from '../components/ModalComponent/ModalComponent';
+import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
 import { addFolder } from '../firebase/folderAPI';
+import { useAuth } from '../hooks/useAuth';
+import useTheme from '../hooks/useTheme';
 import FolderType from '../types/FolderType';
-import { Timestamp } from 'firebase/firestore';
+import FormItemType from '../types/FormItemType';
+import { MenuItemInterface } from '../types/MenuItemType';
+import './MainLayout.scss';
+import RowComponent from '../components/commonComponent/Row/RowComponent';
+import SpaceComponent from '../components/commonComponent/Space/SpaceComponent';
+import ColumnComponent from '../components/commonComponent/Column/ColumnComponent';
+import TitleComponent from '../components/commonComponent/Title/TitleComponent';
+import TextComponent from '../components/commonComponent/Text/TextComponent';
+import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------

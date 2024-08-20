@@ -1,7 +1,7 @@
-import TabItemType from '../../types/TabItemType';
-import RowComponent from './RowComponent';
+import TabItemType from '../../../types/TabItemType';
+import RowComponent from '../Row/RowComponent';
+import TitleComponent from '../Title/TitleComponent';
 import './TabsComponent.scss';
-import TitleComponent from './TitleComponent';
 
 interface TabsComponentProps {
     items: TabItemType[];

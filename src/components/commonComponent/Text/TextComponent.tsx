@@ -6,12 +6,14 @@ interface TextComponentProps {
     isVisible?: boolean;
     textColor?: string;
     style?: React.CSSProperties;
+    className?: string;
 }
 
 function TextComponent(props: TextComponentProps) {
-    const { text, style, fontSize, textColor, isVisible = 'false' } = props;
+    const { text, style, fontSize, textColor, isVisible = 'false', className } = props;
     return (
         <div
+            className={className}
             style={{
                 visibility: isVisible ? 'visible' : 'hidden',
                 fontSize: fontSize || '1.4em',

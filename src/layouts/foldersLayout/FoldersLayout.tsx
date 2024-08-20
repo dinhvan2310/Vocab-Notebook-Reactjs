@@ -1,22 +1,28 @@
-import { ArrowDown2, ArrowUp2, Sort } from 'iconsax-react';
+import { Unsubscribe } from 'firebase/auth/web-extension';
+import { ArrowCircleDown, ArrowCircleUp, CloseCircle, Sort } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CardComponent from '../../components/CardComponent/CardComponent';
-import ColumnComponent from '../../components/commonComponent/ColumnComponent';
-import RowComponent from '../../components/commonComponent/RowComponent';
-import SpaceComponent from '../../components/commonComponent/SpaceComponent';
-import TextComponent from '../../components/commonComponent/TextComponent';
-import TitleComponent from '../../components/commonComponent/TitleComponent';
+import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
+import PaginationComponent from '../../components/commonComponent/Pagination/PaginationComponent';
+import RowComponent from '../../components/commonComponent/Row/RowComponent';
+import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
+import TextComponent from '../../components/commonComponent/Text/TextComponent';
+import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
+import EmptyComponent from '../../components/Empty/EmptyComponent';
 import FloatingActionButtonComponent from '../../components/FloatingActionButton/FloatingActionButtonComponent';
 import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
 import { getFolders, onSnapshotFolders, removeFolder } from '../../firebase/folderAPI';
+import useDebounce from '../../hooks/useDebounce';
 import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
-import { Firestore, onSnapshot } from 'firebase/firestore';
-import useDebounce from '../../hooks/useDebounce';
-import { ActionCodeURL, Unsubscribe } from 'firebase/auth/web-extension';
+
+interface Data {
+    folders: FolderType[];
+    numOfTotalFolders: number;
+}
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -26,50 +32,83 @@ function FoldersLayout() {
     const { isTabletOrMobile } = useResponsive();
 
     // Data
-    const [folders, setFolders] = useState<FolderType[]>([]);
+    const [data, setData] = useState<Data>({ folders: [], numOfTotalFolders: 0 });
     // command state
     const [search, setSearch] = useState('');
     const deBoundSearch = useDebounce<string>(search, 500);
+    // sort by name and date, but can chossen two options
+    const [sortByName, setSortByName] = useState<'asc' | 'desc' | 'none'>('none');
+    const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
+    const [startAt, setStartAt] = useState(0);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
+    // Get folders from data object and setFolders
+    const fetchFolders = async () => {
+        const data = await getFolders(
+            location.state.uid,
+            deBoundSearch,
+            sortByName,
+            sortByDate,
+            startAt,
+            limit
+        );
+        setData(data);
+    };
+    //
     useEffect(() => {
         let unsubscribe: Promise<Unsubscribe>;
-        const fetchFolders = async () => {
-            const folders: FolderType[] = (await getFolders(
-                location.state.uid,
-                deBoundSearch
-            )) as FolderType[];
-            setFolders(folders);
-        };
         if (username) {
             fetchFolders();
-
-            unsubscribe = onSnapshotFolders((folders) => {
-                setFolders(folders);
+            unsubscribe = onSnapshotFolders(() => {
+                // setFolders(folders);
+                fetchFolders();
             });
         }
-
         return () => {
             // cleanup
             unsubscribe && unsubscribe.then((f) => f());
         };
-    }, [username, deBoundSearch]);
+    }, [username]);
+    //
+    useEffect(() => {
+        fetchFolders();
+    }, [deBoundSearch, sortByName, sortByDate, startAt, limit]);
 
     const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
         {
-            text: 'Name',
+            text: `Name`,
             onClick: () => {
-                // sort_by === 'name' ? setSortBy('name_desc') : setSortBy('name');
+                setSortByName(
+                    sortByName === 'asc' ? 'desc' : sortByName === 'desc' ? 'none' : 'asc'
+                );
             },
             key: 'sort_by_name',
-            icon: <ArrowDown2 size="20" />
+            icon:
+                sortByName === 'asc' ? (
+                    <ArrowCircleDown size="20" />
+                ) : sortByName === 'desc' ? (
+                    <ArrowCircleUp size="20" />
+                ) : (
+                    <CloseCircle size="20" />
+                )
         },
         {
             text: 'Date',
             onClick: () => {
-                // sort_by === 'createAt' ? setSortBy('createAt_desc') : setSortBy('createAt');
+                setSortByDate(
+                    sortByDate === 'asc' ? 'desc' : sortByDate === 'desc' ? 'none' : 'asc'
+                );
             },
             key: 'sort_by_date',
-            icon: <ArrowDown2 size="20" />
+            icon:
+                sortByDate === 'asc' ? (
+                    <ArrowCircleDown size="20" />
+                ) : sortByName === 'desc' ? (
+                    <ArrowCircleUp size="20" />
+                ) : (
+                    <CloseCircle size="20" />
+                )
         }
     ];
 
@@ -139,7 +178,8 @@ function FoldersLayout() {
                     style={{
                         marginLeft: -8
                     }}>
-                    {folders.map((folder, index) => {
+                    {data.folders.length === 0 && <EmptyComponent text="No folders found" />}
+                    {data.folders.map((folder, index) => {
                         return (
                             <CardComponent
                                 className="folder-card"
@@ -153,7 +193,10 @@ function FoldersLayout() {
                                     handleNavigateToWordSets(folder.id_folder || '');
                                 }}
                                 style={{
-                                    width: isTabletOrMobile ? '100%' : 'calc(50% - 16px)',
+                                    width:
+                                        isTabletOrMobile || data.folders.length === 1
+                                            ? '100%'
+                                            : 'calc(50% - 16px)',
                                     margin: 8
                                 }}
                                 menuItems={[
@@ -175,6 +218,18 @@ function FoldersLayout() {
                     })}
                 </RowComponent>
             </div>
+            <SpaceComponent height={64} />
+            <PaginationComponent
+                align="right"
+                pageSize={limit}
+                currentPage={currentPage}
+                numsButton={5}
+                total={data.numOfTotalFolders}
+                onPageChange={(page) => {
+                    setCurrentPage(page);
+                    setStartAt((page - 1) * limit);
+                }}
+            />
         </div>
     );
 }

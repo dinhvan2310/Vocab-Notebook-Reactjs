@@ -1,9 +1,9 @@
 import { CloseSquare } from 'iconsax-react';
-import ButtonComponent from '../commonComponent/ButtonComponent';
-import RowComponent from '../commonComponent/RowComponent';
-import SpaceComponent from '../commonComponent/SpaceComponent';
-import TitleComponent from '../commonComponent/TitleComponent';
 import './ModalComponent.scss';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
+import TitleComponent from '../commonComponent/Title/TitleComponent';
+import RowComponent from '../commonComponent/Row/RowComponent';
+import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 
 interface ModalComponentProps {
     title?: string;
