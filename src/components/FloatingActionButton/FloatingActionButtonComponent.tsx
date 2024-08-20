@@ -59,6 +59,10 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
     return (
         <div className="floating-action-button">
             <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleClick();
+                }}
                 className="button-container"
                 onMouseEnter={() => setIsHover(true)}
                 onMouseLeave={() => {
@@ -75,7 +79,7 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
                         ? backgroundHoverColor
                         : backgroundColor
                 }}>
-                <RowComponent justifyContent="center" alignItems="center" onClick={handleClick}>
+                <RowComponent justifyContent="center" alignItems="center">
                     <div className="floatingButton">{icon}</div>
                     {text && <SpaceComponent width={8} />}
                     {text && <TextComponent textColor={color} text={text ?? ''} />}

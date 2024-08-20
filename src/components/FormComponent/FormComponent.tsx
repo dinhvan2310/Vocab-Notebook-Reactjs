@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import FormItemType from '../../types/FormItemType';
 import ButtonComponent from '../commonComponent/ButtonComponent';
 import InputComponent from '../commonComponent/InputComponent';
@@ -16,8 +16,18 @@ interface FormComponentProps {
 function FormComponent(props: FormComponentProps) {
     const { onFinished, formItems, haveSubmitButton, submitButtonText } = props;
     const [isButtonSubmitLoading, setIsButtonSubmitLoading] = useState(false);
+
     return (
         <form
+            // Submit form when user press Enter
+            onKeyDown={async (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    setIsButtonSubmitLoading(true);
+                    await onFinished();
+                    setIsButtonSubmitLoading(false);
+                }
+            }}
             className="form-component"
             onSubmit={(event) => {
                 event.preventDefault();

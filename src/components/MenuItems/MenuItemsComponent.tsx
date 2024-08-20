@@ -50,7 +50,8 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
                     <div
                         key={index}
                         className={`menu-item ${selectedKey === item.key ? 'active' : ''}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             onSelectedKeyChange?.(item.key);
                             item.onClick?.();
                         }}>

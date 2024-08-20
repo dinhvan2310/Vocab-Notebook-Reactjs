@@ -12,8 +12,8 @@ import {
     NotificationStatus,
     Setting
 } from 'iconsax-react';
-import React, { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import RowComponent from '../components/commonComponent/RowComponent';
 import SpaceComponent from '../components/commonComponent/SpaceComponent';
 import ButtonComponent from '../components/commonComponent/ButtonComponent';
@@ -38,6 +38,7 @@ function MainLayout() {
     //  state declaration ---------------------------------------------------------------
     // navigation
     const navigate = useNavigate();
+    const location = useLocation();
     // theme
     const { theme, setTheme } = useTheme();
     // auth
@@ -45,15 +46,27 @@ function MainLayout() {
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
     // keep track of the active page in the sidebar menu
-    const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams'>('home');
-
+    const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams' | 'none'>(
+        'home'
+    );
+    // keep track of the active page in the sidebar menu
+    useEffect(() => {
+        if (location.pathname === '/') {
+            setActivePage('home');
+        } else if (RegExp('/user/.*/folders$').test(location.pathname)) {
+            setActivePage('folders');
+        } else if (location.pathname === '/exams') {
+            setActivePage('exams');
+        } else {
+            setActivePage('none');
+        }
+    }, [location]);
     // open modal to add new folder
     const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
     // new folder name relate add add new folder modal
     const [createFolder_name, setCreateFolder_name] = useState<string>('');
     // function declaration ---------------------------------------------------------------
     const handleNavigatePage = (key: 'home' | 'folders' | 'exams') => {
-        setActivePage(key);
         switch (key) {
             case 'home':
                 navigate('/');
@@ -92,14 +105,25 @@ function MainLayout() {
         setOpenModalAddNewFolder(true);
     };
     const handleAddFolderFinish = async () => {
+        if (user === null) throw new Error('User is not logged in');
+
         const folder: FolderType = {
-            name: createFolder_name,
             id_user: user?.uid || '',
+
+            name: createFolder_name,
+            name_lowercase: createFolder_name.toLowerCase(),
             createAt: Timestamp.now(),
-            nums_word_sets: 0,
-            modifiedAt: Timestamp.now()
+            modifiedAt: Timestamp.now(),
+
+            word_sets: []
         };
-        await addFolder(folder);
+
+        try {
+            await addFolder(folder);
+        } catch (exception) {
+            console.log(exception);
+        }
+
         setOpenModalAddNewFolder(false);
         setCreateFolder_name('');
     };

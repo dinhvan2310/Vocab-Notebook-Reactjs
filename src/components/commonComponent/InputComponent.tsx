@@ -1,5 +1,5 @@
 import { Eye, EyeSlash } from 'iconsax-react';
-import React from 'react';
+import React, { forwardRef } from 'react';
 import './InputComponent.scss';
 import RowComponent from './RowComponent';
 import SpaceComponent from './SpaceComponent';
@@ -19,7 +19,7 @@ interface InputComponentProps {
     onSwitchChange?: (checked: boolean) => void;
 }
 
-function InputComponent(props: InputComponentProps) {
+const InputComponent = forwardRef<HTMLInputElement, InputComponentProps>((props, ref) => {
     const {
         label,
         type,
@@ -59,6 +59,7 @@ function InputComponent(props: InputComponentProps) {
                                         onSwitchChange(e.target.checked);
                                     }
                                 }}
+                                ref={ref}
                             />
                             <span className="slider"></span>
                         </label>
@@ -123,6 +124,6 @@ function InputComponent(props: InputComponentProps) {
             )}
         </div>
     );
-}
+});
 
 export default InputComponent;

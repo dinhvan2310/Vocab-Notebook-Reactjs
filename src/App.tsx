@@ -8,6 +8,8 @@ import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
 import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
 import ExamsLayout from './layouts/examsLayout/ExamsLayout';
+import WordSetsLayout from './layouts/foldersLayout/wordSetsLayout/WordSetsLayout';
+import PaginationComponent from './components/commonComponent/PaginationComponent';
 
 function App() {
     useEffect(() => {
@@ -54,6 +56,10 @@ function App() {
                                     element: <FoldersLayout />
                                 },
                                 {
+                                    path: '/user/:username/folders/:id_folder',
+                                    element: <WordSetsLayout />
+                                },
+                                {
                                     path: 'exams',
                                     element: <ExamsLayout />
                                 }
@@ -68,7 +74,16 @@ function App() {
             ]
         }
     ]);
-    return <RouterProvider router={router} />;
+    // return <RouterProvider router={router} />;
+
+    return (
+        <PaginationComponent
+            currentPage={1}
+            total={10}
+            pageSize={5}
+            onPageChange={(page: number, pageSize: number) => console.log(page, pageSize)}
+        />
+    );
 }
 
 export default App;

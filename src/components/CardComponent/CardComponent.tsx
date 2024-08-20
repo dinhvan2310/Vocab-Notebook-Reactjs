@@ -52,11 +52,12 @@ function CardComponent(props: CardComponentProps) {
         <div
             ref={cardRef}
             className={`${cardContainerClass} ${className}`}
+            onClick={onClick}
             style={{
                 ...style,
-                backgroundColor: backGroundColor ? backGroundColor : 'var(--bg-color)'
-            }}
-            onClick={onClick}>
+                backgroundColor: backGroundColor ? backGroundColor : 'var(--bg-color)',
+                cursor: onClick ? 'pointer' : 'default'
+            }}>
             {imageSrc && (
                 <img
                     style={{

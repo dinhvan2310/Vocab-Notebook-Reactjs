@@ -1,45 +1,64 @@
+import { ArrowDown2, ArrowUp2, Sort } from 'iconsax-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
-import FloatingActionButtonComponent from '../../components/FloatingActionButton/FloatingActionButtonComponent';
-import { getFolders, removeFolder } from '../../firebase/folderAPI';
-import FolderType from '../../types/FolderType';
-import { ArrowDown2, ArrowUp2, Grid2, HambergerMenu, Sort, TextalignRight } from 'iconsax-react';
-import './FoldersLayout.scss';
-import { MenuItemInterface } from '../../types/MenuItemType';
-import SpaceComponent from '../../components/commonComponent/SpaceComponent';
-import TitleComponent from '../../components/commonComponent/TitleComponent';
-import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
-import ColumnComponent from '../../components/commonComponent/ColumnComponent';
-import TextComponent from '../../components/commonComponent/TextComponent';
-import RowComponent from '../../components/commonComponent/RowComponent';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CardComponent from '../../components/CardComponent/CardComponent';
+import ColumnComponent from '../../components/commonComponent/ColumnComponent';
+import RowComponent from '../../components/commonComponent/RowComponent';
+import SpaceComponent from '../../components/commonComponent/SpaceComponent';
+import TextComponent from '../../components/commonComponent/TextComponent';
+import TitleComponent from '../../components/commonComponent/TitleComponent';
+import FloatingActionButtonComponent from '../../components/FloatingActionButton/FloatingActionButtonComponent';
+import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
+import { getFolders, onSnapshotFolders, removeFolder } from '../../firebase/folderAPI';
+import { useResponsive } from '../../hooks/useResponsive';
+import FolderType from '../../types/FolderType';
+import { MenuItemInterface } from '../../types/MenuItemType';
+import './FoldersLayout.scss';
+import { Firestore, onSnapshot } from 'firebase/firestore';
+import useDebounce from '../../hooks/useDebounce';
+import { ActionCodeURL, Unsubscribe } from 'firebase/auth/web-extension';
 
 function FoldersLayout() {
+    // State management -------------------------------------------------------------
     const { username } = useParams();
     const location = useLocation();
-
+    const navigate = useNavigate();
     const { isTabletOrMobile } = useResponsive();
 
-    const [viewMode, setViewMode] = useState<'list' | 'smallList'>('list');
-
+    // Data
     const [folders, setFolders] = useState<FolderType[]>([]);
+    // command state
+    const [search, setSearch] = useState('');
+    const deBoundSearch = useDebounce<string>(search, 500);
+
     useEffect(() => {
+        let unsubscribe: Promise<Unsubscribe>;
         const fetchFolders = async () => {
-            const folders: FolderType[] = (await getFolders(location.state.uid)) as FolderType[];
-            console.log(folders);
+            const folders: FolderType[] = (await getFolders(
+                location.state.uid,
+                deBoundSearch
+            )) as FolderType[];
             setFolders(folders);
         };
         if (username) {
             fetchFolders();
+
+            unsubscribe = onSnapshotFolders((folders) => {
+                setFolders(folders);
+            });
         }
-    }, [username]);
+
+        return () => {
+            // cleanup
+            unsubscribe && unsubscribe.then((f) => f());
+        };
+    }, [username, deBoundSearch]);
 
     const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
         {
             text: 'Name',
             onClick: () => {
-                console.log('Sort by Name');
+                // sort_by === 'name' ? setSortBy('name_desc') : setSortBy('name');
             },
             key: 'sort_by_name',
             icon: <ArrowDown2 size="20" />
@@ -47,31 +66,16 @@ function FoldersLayout() {
         {
             text: 'Date',
             onClick: () => {
-                console.log('Sort by Date');
+                // sort_by === 'createAt' ? setSortBy('createAt_desc') : setSortBy('createAt');
             },
             key: 'sort_by_date',
-            icon: <ArrowUp2 size="20" />
+            icon: <ArrowDown2 size="20" />
         }
     ];
 
-    const topBar_commandBar_menuItems_view: MenuItemInterface[] = [
-        {
-            onClick: () => {
-                setViewMode('list');
-            },
-            icon: <HambergerMenu size="20" />,
-            key: 'view_as_list',
-            text: 'List'
-        },
-        {
-            text: 'Small List',
-            onClick: () => {
-                setViewMode('smallList');
-            },
-            key: 'view_as_small_list',
-            icon: <Grid2 size="20" />
-        }
-    ];
+    const handleNavigateToWordSets = (id_folder: string) => {
+        navigate(`/user/${username}/folders/${id_folder}`);
+    };
 
     return (
         <div className="folder-layout-container">
@@ -111,21 +115,17 @@ function FoldersLayout() {
                         backGroundColor="var(--bg-color)"
                         borderType="none"
                         borderRadius={0}
+                        borderColor="var(--border-color)"
+                        value={search}
+                        onChange={(value) => {
+                            setSearch(value);
+                        }}
                     />
                     <SpaceComponent width={8} />
                     <FloatingActionButtonComponent
                         icon={<Sort size="20" />}
                         menuItems={topBar_commandBar_menuItems_sort}
                         text="Sort"
-                        menuItemsPosition="left"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                    />
-                    <SpaceComponent width={8} />
-                    <FloatingActionButtonComponent
-                        icon={<TextalignRight size="20" />}
-                        menuItems={topBar_commandBar_menuItems_view}
-                        text="View"
                         menuItemsPosition="left"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
@@ -144,29 +144,28 @@ function FoldersLayout() {
                             <CardComponent
                                 className="folder-card"
                                 haveFloatingButton={true}
-                                createAt={folder.createAt.toDate().toDateString()}
+                                createAt={folder.createAt.toDate().toUTCString()}
                                 key={index}
                                 title={folder.name}
                                 hoverable={true}
-                                subTitle={folder.nums_word_sets + ' word sets'}
-                                // onClick={() => {
-                                //     console.log('Folder clicked');
-                                // }}
+                                subTitle={folder.word_sets.length + ' word sets'}
+                                onClick={() => {
+                                    handleNavigateToWordSets(folder.id_folder || '');
+                                }}
                                 style={{
-                                    width: viewMode === 'list' ? 'calc(100%)' : 'calc(50% - 16px)',
-                                    margin: '8px'
+                                    width: isTabletOrMobile ? '100%' : 'calc(50% - 16px)',
+                                    margin: 8
                                 }}
                                 menuItems={[
                                     {
                                         text: 'Delete',
                                         onClick: async () => {
-                                            console.log(folder.id_folder);
                                             await removeFolder(folder.id_folder || '');
-                                            setFolders(
-                                                folders.filter(
-                                                    (f) => f.id_folder !== folder.id_folder
-                                                )
-                                            );
+                                            // setFolders(
+                                            //     folders.filter(
+                                            //         (f) => f.id_folder !== folder.id_folder
+                                            //     )
+                                            // );
                                         },
                                         key: 'delete'
                                     }
