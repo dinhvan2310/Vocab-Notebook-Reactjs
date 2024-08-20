@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
 import { AuthLayout } from './features/authentication/AuthLayout';
@@ -76,12 +76,18 @@ function App() {
     ]);
     // return <RouterProvider router={router} />;
 
+    const [currPage, setCurrPage] = useState(1);
+
     return (
         <PaginationComponent
-            currentPage={1}
-            total={10}
+            currentPage={currPage}
+            total={40}
+            numsButton={2}
+            align="left"
             pageSize={5}
-            onPageChange={(page: number, pageSize: number) => console.log(page, pageSize)}
+            onPageChange={(page: number, pageSize: number) => {
+                setCurrPage(page);
+            }}
         />
     );
 }
