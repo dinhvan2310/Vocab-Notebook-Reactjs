@@ -1,7 +1,6 @@
 import { ArrowLeft2, ArrowRight2 } from 'iconsax-react';
+import TextComponent from '../commonComponent/Text/TextComponent';
 import './Pagination.scss';
-import TextComponent from '../Text/TextComponent';
-import { to } from '@react-spring/web';
 
 interface PaginationProps {
     total: number;

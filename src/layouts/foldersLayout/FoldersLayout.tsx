@@ -2,15 +2,15 @@ import { Unsubscribe } from 'firebase/auth/web-extension';
 import { ArrowCircleDown, ArrowCircleUp, CloseCircle, Sort } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import CardComponent from '../../components/CardComponent/CardComponent';
+import CardComponent from '../../components/Card/CardComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
-import PaginationComponent from '../../components/commonComponent/Pagination/PaginationComponent';
+import PaginationComponent from '../../components/Pagination/PaginationComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
 import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import EmptyComponent from '../../components/Empty/EmptyComponent';
-import FloatingActionButtonComponent from '../../components/FloatingActionButton/FloatingActionButtonComponent';
+import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
 import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
 import { getFolders, onSnapshotFolders, removeFolder } from '../../firebase/folderAPI';
 import useDebounce from '../../hooks/useDebounce';
@@ -86,9 +86,9 @@ function FoldersLayout() {
             key: 'sort_by_name',
             icon:
                 sortByName === 'asc' ? (
-                    <ArrowCircleDown size="20" />
-                ) : sortByName === 'desc' ? (
                     <ArrowCircleUp size="20" />
+                ) : sortByName === 'desc' ? (
+                    <ArrowCircleDown size="20" />
                 ) : (
                     <CloseCircle size="20" />
                 )
@@ -103,9 +103,9 @@ function FoldersLayout() {
             key: 'sort_by_date',
             icon:
                 sortByDate === 'asc' ? (
-                    <ArrowCircleDown size="20" />
-                ) : sortByName === 'desc' ? (
                     <ArrowCircleUp size="20" />
+                ) : sortByDate === 'desc' ? (
+                    <ArrowCircleDown size="20" />
                 ) : (
                     <CloseCircle size="20" />
                 )

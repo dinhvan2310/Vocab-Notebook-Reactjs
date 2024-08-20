@@ -1,7 +1,7 @@
 import { ReactNode, useRef } from 'react';
 import './CardComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
-import FloatingActionButtonComponent from '../FloatingActionButton/FloatingActionButtonComponent';
+import FloatingActionButtonComponent from '../FloatButton/FloatingActionButtonComponent';
 import { More } from 'iconsax-react';
 import RowComponent from '../commonComponent/Row/RowComponent';
 import ColumnComponent from '../commonComponent/Column/ColumnComponent';

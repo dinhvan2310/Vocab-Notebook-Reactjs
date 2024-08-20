@@ -9,9 +9,9 @@ import InputComponent from '../../components/commonComponent/Input/InputComponen
 import ErrorTextComponent from '../../components/commonComponent/ErrorText/ErrorTextComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
-import TabsComponent from '../../components/commonComponent/Tabs/TabsComponent';
 import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
+import TabsComponent from '../../components/Tabs/TabsComponent';
 
 function SignUpLayout() {
     const { isDesktopOrLaptop } = useResponsive();

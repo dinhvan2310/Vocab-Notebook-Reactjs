@@ -15,10 +15,10 @@ import {
 } from 'iconsax-react';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import FloatingActionButtonComponent from '../components/FloatingActionButton/FloatingActionButtonComponent';
-import FormComponent from '../components/FormComponent/FormComponent';
+import FloatingActionButtonComponent from '../components/FloatButton/FloatingActionButtonComponent';
+import FormComponent from '../components/Form/FormComponent';
 import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
-import ModalComponent from '../components/ModalComponent/ModalComponent';
+import ModalComponent from '../components/Modal/ModalComponent';
 import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
 import { addFolder } from '../firebase/folderAPI';
 import { useAuth } from '../hooks/useAuth';
