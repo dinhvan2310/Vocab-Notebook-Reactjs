@@ -1,4 +1,4 @@
-import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import FolderType from "../types/FolderType";
 import { auth, db } from "./firebase-config";
 
@@ -7,11 +7,10 @@ export const addFolder = async (folder: FolderType) => {
     const user = auth.currentUser;
     if (!user) throw new Error("User is not logged in");
 
-    const userRef = doc(db, "users", user.uid);
     const collectionRef = collection(db, "folders");
 
     // add folder
-    const folderRef = await addDoc(collectionRef, {
+    await addDoc(collectionRef, {
         id_user: folder.id_user,
         
         name: folder.name,
@@ -23,9 +22,9 @@ export const addFolder = async (folder: FolderType) => {
     });
 
     // 
-    await updateDoc(userRef, {
-        folders: arrayUnion(folderRef)
-    });
+    // await updateDoc(userRef, {
+    //     folders: arrayUnion(folderRef)
+    // });
 }
 
 /// Remove a folder from the database and update the user's folders array in the user document
@@ -40,11 +39,11 @@ export const removeFolder = async (id_folder: string) => {
         // Check permission to delete the folder (only the owner can delete the folder)
         if (folderDoc.data().id_user === user?.uid) {
             await deleteDoc(doc(db, "folders", id_folder));
-            const userRef = doc(db, "users", user.uid);
+            // const userRef = doc(db, "users", user.uid);
             // Remove the folder from the user's folders array 
-            await updateDoc(userRef, {
-                folders: arrayRemove(folderRef)
-            });
+            // await updateDoc(userRef, {
+            //     folders: arrayRemove(folderRef)
+            // });
         }
     }
 }
@@ -66,21 +65,28 @@ export const onSnapshotFolders = async (callback: (folders: FolderType[]) => voi
     });
 }
 
-// export const getFolders = async (id_user: string, ) => {
+// export const getFolders = async (
+//     id_user: string, 
+//     stringSearch: string = '',
+//     sortByName: 'asc' | 'desc' | 'none' = 'none',
+//     sortByDate: 'asc' | 'desc' | 'none' = 'none',
+//     _startAt: number = 0,
+//     _limit: number = 5,
+// ) => {
+//     const __startAt = _startAt < 0 ? 0 : _startAt;
+//     const __limit = _limit < 0 ? 0 : _limit;
+//     const __stringSearch = stringSearch.trim().toLowerCase();
 
-//     // Get all folders that belong to the user
-//     const q = query(collection(db, "folders"), where("id_user", "==", id_user));
-//     const querySnapshot = await getDocs(q);
+//     const userRef = doc(db, "users", id_user);
+//     const userDoc = await getDoc(userRef);
+//     if (!userDoc.exists()) {
+//         throw new Error("User not found");
+//     }
 
-//     // Convert to FolderType[]
-//     const folders: FolderType[] = [];
-//     querySnapshot.forEach((doc) => {
-//         const folder = doc.data() as FolderType;
-//         folder.id_folder = doc.id;
-//         folders.push(folder);
-//     });
+//     const foldersRef = userDoc.data()?.folders as DocumentReference[];
 
-//     return folders;
+//     const folders = getDocs(query(collection(db, "folders"), where("id_user", "==", id_user)));
+
 // }
 
 export const getFolders = async (
@@ -119,6 +125,7 @@ export const getFolders = async (
 
     // get data from query
     const querySnapshot = await getDocs(q);
+    const numOfTotalFolders = querySnapshot.size;
     const folders: FolderType[] = [];
     querySnapshot.docs.slice(__startAt, __startAt + __limit).forEach((doc) => {
         const folder = doc.data() as FolderType;
@@ -126,9 +133,5 @@ export const getFolders = async (
         folders.push(folder);
     });
 
-    
-    const userRef = doc(db, "users", id_user);
-    const numOfTotalFolders = (await getDoc(userRef)).data()?.folders.length;
-    console.log(folders)
     return { folders , numOfTotalFolders };
 }

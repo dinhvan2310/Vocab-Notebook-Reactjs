@@ -7,10 +7,11 @@ interface TextComponentProps {
     textColor?: string;
     style?: React.CSSProperties;
     className?: string;
+    children?: React.ReactNode;
 }
 
 function TextComponent(props: TextComponentProps) {
-    const { text, style, fontSize, textColor, isVisible = 'false', className } = props;
+    const { text, style, fontSize, textColor, isVisible = 'false', className, children } = props;
     return (
         <div
             className={className}
@@ -21,7 +22,7 @@ function TextComponent(props: TextComponentProps) {
                 color: textColor || 'var(--secondary-text-color)',
                 ...style
             }}>
-            {text}
+            {text || children}
         </div>
     );
 }

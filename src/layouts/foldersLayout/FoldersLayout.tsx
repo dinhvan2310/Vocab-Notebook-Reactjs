@@ -18,6 +18,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
+import SelectComponent from '../../components/Select/SelectComponent';
 
 interface Data {
     folders: FolderType[];
@@ -75,6 +76,21 @@ function FoldersLayout() {
         fetchFolders();
     }, [deBoundSearch, sortByName, sortByDate, startAt, limit]);
 
+    const limitPerPageOptions = [
+        {
+            label: '10',
+            value: '10'
+        },
+        {
+            label: '20',
+            value: '20'
+        },
+        {
+            label: '50',
+            value: '50'
+        }
+    ];
+
     const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
         {
             text: `Name`,
@@ -86,11 +102,11 @@ function FoldersLayout() {
             key: 'sort_by_name',
             icon:
                 sortByName === 'asc' ? (
-                    <ArrowCircleUp size="20" />
+                    <ArrowCircleUp size="20" color="var(--primary-color)" />
                 ) : sortByName === 'desc' ? (
-                    <ArrowCircleDown size="20" />
+                    <ArrowCircleDown size="20" color="var(--primary-color)" />
                 ) : (
-                    <CloseCircle size="20" />
+                    <CloseCircle size="20" color="var(--red-color)" />
                 )
         },
         {
@@ -103,11 +119,11 @@ function FoldersLayout() {
             key: 'sort_by_date',
             icon:
                 sortByDate === 'asc' ? (
-                    <ArrowCircleUp size="20" />
+                    <ArrowCircleUp size="20" color="var(--primary-color)" />
                 ) : sortByDate === 'desc' ? (
-                    <ArrowCircleDown size="20" />
+                    <ArrowCircleDown size="20" color="var(--primary-color)" />
                 ) : (
-                    <CloseCircle size="20" />
+                    <CloseCircle size="20" color="var(--red-color)" />
                 )
         }
     ];
@@ -184,7 +200,9 @@ function FoldersLayout() {
                             <CardComponent
                                 className="folder-card"
                                 haveFloatingButton={true}
-                                createAt={folder.createAt.toDate().toUTCString()}
+                                createAt={folder.createAt
+                                    .toDate()
+                                    .toLocaleDateString(location.state?.language || 'en-US')}
                                 key={index}
                                 title={folder.name}
                                 hoverable={true}
@@ -219,17 +237,31 @@ function FoldersLayout() {
                 </RowComponent>
             </div>
             <SpaceComponent height={64} />
-            <PaginationComponent
-                align="right"
-                pageSize={limit}
-                currentPage={currentPage}
-                numsButton={5}
-                total={data.numOfTotalFolders}
-                onPageChange={(page) => {
-                    setCurrentPage(page);
-                    setStartAt((page - 1) * limit);
-                }}
-            />
+            <RowComponent alignItems="center" justifyContent="flex-end">
+                <PaginationComponent
+                    align="right"
+                    pageSize={limit}
+                    currentPage={currentPage}
+                    numsButton={5}
+                    total={data.numOfTotalFolders}
+                    onPageChange={(page) => {
+                        setCurrentPage(page);
+                        setStartAt((page - 1) * limit);
+                    }}
+                />
+                <SpaceComponent width={16} />
+                <SelectComponent
+                    defaultValue={limit.toString()}
+                    positionPopup="top"
+                    options={limitPerPageOptions}
+                    onChange={(value) => {
+                        setLimit(parseInt(value));
+                    }}
+                    width="100px"
+                    color="var(--secondary-text-color)"
+                    hoverColor="var(--primary-color)"
+                />
+            </RowComponent>
         </div>
     );
 }

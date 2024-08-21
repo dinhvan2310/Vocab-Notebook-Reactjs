@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
 import { AuthLayout } from './features/authentication/AuthLayout';
 import ProtectedRoute from './features/authentication/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
+import ExamsLayout from './layouts/examsLayout/ExamsLayout';
+import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
+import WordSetsLayout from './layouts/foldersLayout/wordSetsLayout/WordSetsLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
-import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
-import ExamsLayout from './layouts/examsLayout/ExamsLayout';
-import WordSetsLayout from './layouts/foldersLayout/wordSetsLayout/WordSetsLayout';
-import PaginationComponent from './components/commonComponent/PaginationComponent';
+import SelectComponent from './components/Select/SelectComponent';
 
 function App() {
     useEffect(() => {
@@ -75,21 +75,35 @@ function App() {
         }
     ]);
     return <RouterProvider router={router} />;
-
-    // const [currPage, setCurrPage] = useState(1);
-
-    // return (
-    //     <PaginationComponent
-    //         currentPage={currPage}
-    //         total={40}
-    //         numsButton={5}
-    //         align="left"
-    //         pageSize={5}
-    //         onPageChange={(page: number, pageSize: number) => {
-    //             setCurrPage(page);
-    //         }}
-    //     />
-    // );
+    return (
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh'
+            }}>
+            <SelectComponent
+                positionPopup="bottom"
+                onChange={(value) => console.log(value)}
+                defaultValue="5"
+                options={[
+                    {
+                        label: 'Option 1',
+                        value: '1'
+                    },
+                    {
+                        label: 'Option 2',
+                        value: '2'
+                    },
+                    {
+                        label: 'Option 3',
+                        value: '3'
+                    }
+                ]}
+            />
+        </div>
+    );
 }
 
 export default App;
