@@ -29,9 +29,9 @@
     - createdAt: timestamp
     - modifiedAt: timestamp
 
-    - word_sets: [
+    <!-- - word_sets: [
       ref(WordSets)
-    ]
+    ] -->
 
 
 4. WordSets: 

@@ -28,7 +28,7 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease-in-out;
         padding: 4px;
-        animation: showDropdown 0.3s ease-in-out;
+        
 
         &.top {
             
@@ -36,12 +36,16 @@
             margin-bottom: 6px;
             left: 0;
             right: 0;
+
+            animation: showDropdownUp 0.3s ease-in-out;
         }
         &.bottom {
             top: 100%;
             margin-top: 6px;
             left: 0;
             right: 0;
+
+            animation: showDropdownDown 0.3s ease-in-out;
         }
 
         .option {
@@ -62,10 +66,21 @@
 }
 
 
-@keyframes showDropdown {
+@keyframes showDropdownDown {
     from {
         opacity: 0;
         transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes showDropdownUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
     to {
         opacity: 1;

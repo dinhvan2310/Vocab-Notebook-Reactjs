@@ -22,7 +22,7 @@ function TextComponent(props: TextComponentProps) {
                 color: textColor || 'var(--secondary-text-color)',
                 ...style
             }}>
-            {text || children}
+            <p>{text || children}</p>
         </div>
     );
 }

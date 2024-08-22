@@ -33,9 +33,11 @@ import ColumnComponent from '../components/commonComponent/Column/ColumnComponen
 import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import TextComponent from '../components/commonComponent/Text/TextComponent';
 import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
+import { useResponsive } from '../hooks/useResponsive';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------
+    const { isTabletOrMobile } = useResponsive();
     // navigation
     const navigate = useNavigate();
     const location = useLocation();

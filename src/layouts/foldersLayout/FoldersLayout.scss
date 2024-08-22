@@ -4,6 +4,7 @@
     overflow: hidden;
     height: 100%;
 
+
     .top-bar {
         display: flex;
         flex-direction: row;
@@ -28,8 +29,18 @@
         overflow-x: hidden;
         height: 100%;
 
+        padding-left: 32px;
+        padding-right: 32px;
+
         .folder-card:not(:last-child) {
             margin-bottom: 16px;
         }
+
+        
     }
+    .footer-container {
+        margin-bottom: 32px;
+    }
+
+   
 }

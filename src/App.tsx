@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
@@ -9,8 +10,6 @@ import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
 import WordSetsLayout from './layouts/foldersLayout/wordSetsLayout/WordSetsLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
-import SelectComponent from './components/Select/SelectComponent';
-
 function App() {
     useEffect(() => {
         //  Set the theme
@@ -74,35 +73,13 @@ function App() {
             ]
         }
     ]);
-    return <RouterProvider router={router} />;
+
+    const queryClient = new QueryClient();
+
     return (
-        <div
-            style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-            <SelectComponent
-                positionPopup="bottom"
-                onChange={(value) => console.log(value)}
-                defaultValue="5"
-                options={[
-                    {
-                        label: 'Option 1',
-                        value: '1'
-                    },
-                    {
-                        label: 'Option 2',
-                        value: '2'
-                    },
-                    {
-                        label: 'Option 3',
-                        value: '3'
-                    }
-                ]}
-            />
-        </div>
+        <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />;
+        </QueryClientProvider>
     );
 }
 

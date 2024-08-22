@@ -17,8 +17,7 @@ export const addFolder = async (folder: FolderType) => {
         name_lowercase: folder.name_lowercase,
         createAt: folder.createAt,
         modifiedAt: folder.modifiedAt,
-
-        word_sets: folder.word_sets
+        word_sets: folder.word_sets,
     });
 
     // 

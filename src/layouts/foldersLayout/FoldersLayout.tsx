@@ -19,11 +19,9 @@ import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
 import SelectComponent from '../../components/Select/SelectComponent';
-
-interface Data {
-    folders: FolderType[];
-    numOfTotalFolders: number;
-}
+import { useQuery } from '@tanstack/react-query';
+import ListLoadingAnimation from '../../assets/animation/listLoading.json';
+import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -33,49 +31,11 @@ function FoldersLayout() {
     const { isTabletOrMobile } = useResponsive();
 
     // Data
-    const [data, setData] = useState<Data>({ folders: [], numOfTotalFolders: 0 });
     // command state
-    const [search, setSearch] = useState('');
-    const deBoundSearch = useDebounce<string>(search, 500);
-    // sort by name and date, but can chossen two options
-    const [sortByName, setSortByName] = useState<'asc' | 'desc' | 'none'>('none');
-    const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
+
     const [startAt, setStartAt] = useState(0);
     const [limit, setLimit] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Get folders from data object and setFolders
-    const fetchFolders = async () => {
-        const data = await getFolders(
-            location.state.uid,
-            deBoundSearch,
-            sortByName,
-            sortByDate,
-            startAt,
-            limit
-        );
-        setData(data);
-    };
-    //
-    useEffect(() => {
-        let unsubscribe: Promise<Unsubscribe>;
-        if (username) {
-            fetchFolders();
-            unsubscribe = onSnapshotFolders(() => {
-                // setFolders(folders);
-                fetchFolders();
-            });
-        }
-        return () => {
-            // cleanup
-            unsubscribe && unsubscribe.then((f) => f());
-        };
-    }, [username]);
-    //
-    useEffect(() => {
-        fetchFolders();
-    }, [deBoundSearch, sortByName, sortByDate, startAt, limit]);
-
     const limitPerPageOptions = [
         {
             label: '10',
@@ -90,6 +50,54 @@ function FoldersLayout() {
             value: '50'
         }
     ];
+
+    const [search, setSearch] = useState('');
+    const deBoundSearch = useDebounce<string>(search, 500);
+    // sort by name and date, but can chossen two options
+    const [sortByName, setSortByName] = useState<'asc' | 'desc' | 'none'>('none');
+    const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
+    // Get folders from data object and setFolders
+    const fetchFolders = async () => {
+        const data = await getFolders(
+            location.state.uid,
+            deBoundSearch,
+            sortByName,
+            sortByDate,
+            startAt,
+            limit
+        );
+        return data;
+    };
+    // Query
+    const query = useQuery({
+        queryKey: [
+            'folders',
+            location.state.uid,
+            deBoundSearch,
+            sortByName,
+            sortByDate,
+            startAt,
+            limit
+        ],
+        queryFn: fetchFolders,
+        staleTime: 1000
+        // refetchOnWindowFocus: false
+    });
+
+    //
+    useEffect(() => {
+        let unsubscribe: Promise<Unsubscribe>;
+        if (username) {
+            unsubscribe = onSnapshotFolders(() => {
+                query.refetch();
+            });
+        }
+        return () => {
+            // cleanup
+            unsubscribe && unsubscribe.then((f) => f());
+        };
+    }, [username]);
+    //
 
     const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
         {
@@ -128,8 +136,13 @@ function FoldersLayout() {
         }
     ];
 
-    const handleNavigateToWordSets = (id_folder: string) => {
-        navigate(`/user/${username}/folders/${id_folder}`);
+    const handleNavigateToWordSets = (folder: FolderType) => {
+        navigate(`/user/${username}/folders/${folder.id_folder}`, {
+            state: {
+                ...location.state,
+                folder
+            }
+        });
     };
 
     return (
@@ -188,62 +201,81 @@ function FoldersLayout() {
                 </div>
             </div>
             <div className="folders-container">
-                <RowComponent
-                    justifyContent="flex-start"
-                    flexWrap="wrap"
-                    style={{
-                        marginLeft: -8
-                    }}>
-                    {data.folders.length === 0 && <EmptyComponent text="No folders found" />}
-                    {data.folders.map((folder, index) => {
-                        return (
-                            <CardComponent
-                                className="folder-card"
-                                haveFloatingButton={true}
-                                createAt={folder.createAt
-                                    .toDate()
-                                    .toLocaleDateString(location.state?.language || 'en-US')}
-                                key={index}
-                                title={folder.name}
-                                hoverable={true}
-                                subTitle={folder.word_sets.length + ' word sets'}
-                                onClick={() => {
-                                    handleNavigateToWordSets(folder.id_folder || '');
-                                }}
-                                style={{
-                                    width:
-                                        isTabletOrMobile || data.folders.length === 1
-                                            ? '100%'
-                                            : 'calc(50% - 16px)',
-                                    margin: 8
-                                }}
-                                menuItems={[
-                                    {
-                                        text: 'Delete',
-                                        onClick: async () => {
-                                            await removeFolder(folder.id_folder || '');
-                                            // setFolders(
-                                            //     folders.filter(
-                                            //         (f) => f.id_folder !== folder.id_folder
-                                            //     )
-                                            // );
-                                        },
-                                        key: 'delete'
-                                    }
-                                ]}
-                            />
-                        );
-                    })}
-                </RowComponent>
+                {query.isLoading ? (
+                    <SpinComponent
+                        indicator={ListLoadingAnimation}
+                        spinning={true}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                    />
+                ) : (
+                    <RowComponent
+                        justifyContent="flex-start"
+                        flexWrap="wrap"
+                        style={{
+                            marginLeft: -8
+                        }}>
+                        {query.data?.folders.length === 0 && (
+                            <EmptyComponent text="No folders found" />
+                        )}
+                        {query.data?.folders.map((folder, index) => {
+                            return (
+                                <CardComponent
+                                    className="folder-card"
+                                    haveFloatingButton={true}
+                                    createAt={folder.createAt
+                                        .toDate()
+                                        .toLocaleDateString(location.state?.language || 'en-US')}
+                                    key={index}
+                                    title={folder.name}
+                                    hoverable={true}
+                                    subTitle={folder.word_sets.length + ' word sets'}
+                                    onClick={() => {
+                                        handleNavigateToWordSets(folder);
+                                    }}
+                                    style={{
+                                        width:
+                                            isTabletOrMobile || query.data?.folders.length === 1
+                                                ? '100%'
+                                                : 'calc(50% - 16px)',
+                                        margin: 8
+                                    }}
+                                    menuItems={[
+                                        {
+                                            text: 'Delete',
+                                            onClick: async () => {
+                                                await removeFolder(folder.id_folder || '');
+                                                // setFolders(
+                                                //     folders.filter(
+                                                //         (f) => f.id_folder !== folder.id_folder
+                                                //     )
+                                                // );
+                                            },
+                                            key: 'delete'
+                                        }
+                                    ]}
+                                />
+                            );
+                        })}
+                    </RowComponent>
+                )}
             </div>
             <SpaceComponent height={64} />
-            <RowComponent alignItems="center" justifyContent="flex-end">
+            <RowComponent
+                className="footer-container"
+                alignItems="center"
+                justifyContent="flex-end">
                 <PaginationComponent
                     align="right"
                     pageSize={limit}
                     currentPage={currentPage}
                     numsButton={5}
-                    total={data.numOfTotalFolders}
+                    total={query.data?.numOfTotalFolders as number}
                     onPageChange={(page) => {
                         setCurrentPage(page);
                         setStartAt((page - 1) * limit);

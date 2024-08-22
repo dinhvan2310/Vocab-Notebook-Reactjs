@@ -24,8 +24,8 @@ function RowComponent(props: RowComponentProps) {
             style={{
                 display: 'flex',
                 flexDirection: 'row',
-                justifyContent: justifyContent || 'flex-start',
-                alignItems: alignItems || 'flex-start',
+                justifyContent: justifyContent || 'center',
+                alignItems: alignItems || 'center',
                 flexWrap: flexWrap || 'nowrap',
                 ...style
             }}>

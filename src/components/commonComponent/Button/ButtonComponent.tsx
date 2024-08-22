@@ -65,12 +65,11 @@ function ButtonComponent(props: ButtonComponentProps) {
             onMouseDown={() => setIsActive(true)}
             onMouseUp={() => setIsActive(false)}
             style={{
-                ...style,
                 backgroundColor: backGroundColor,
-                border: isBorder ? '1px solid' : 'none',
-                borderColor: borderColor,
+                border: isBorder ? `2px solid ${borderColor}` : 'none',
                 pointerEvents: isLoading || disabled ? 'none' : 'auto',
-                width: buttonWidth
+                width: buttonWidth,
+                ...style
             }}>
             {icon && (
                 <div
