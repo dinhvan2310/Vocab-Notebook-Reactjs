@@ -25,7 +25,7 @@ function WordSetsLayout() {
     const { username } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const { isTabletOrMobile } = useResponsive();
+    const { isTabletOrMobile, isMobile } = useResponsive();
 
     const [search, setSearch] = useState('');
     const deBoundSearch = useDebounce<string>(search, 500);
@@ -75,22 +75,15 @@ function WordSetsLayout() {
         }
     ];
     return (
-        <div className="wordset-layout-container">
-            <ColumnComponent className="top-bar" alignItems="flex-start">
+        <div
+            className="wordset-layout-container"
+            style={{
+                padding: isMobile ? '0px' : '0px 48px'
+            }}>
+            <ColumnComponent className="top-bar">
                 <RowComponent className="top-bar-header" justifyContent="space-between">
-                    <ColumnComponent className="top-bar-header-title" alignItems="flex-start">
-                        <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
-                        <RowComponent>
-                            <Refresh2 size={18} color="var(--secondary-text-color)" />
-                            <SpaceComponent width={12} />
-                            <TextComponent
-                                text={`Last updated:\u00A0 \u00A0 ${location.state.folder.modifiedAt
-                                    .toDate()
-                                    .toLocaleDateString(location.state?.language || 'en-US')}`}
-                            />
-                        </RowComponent>
-                    </ColumnComponent>
-                    <RowComponent className="top-bar-header-action" justifyContent="flex-end">
+                    <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
+                    <RowComponent className="top-bar-header-command">
                         <ButtonComponent
                             style={{
                                 height: '40px',
@@ -134,32 +127,111 @@ function WordSetsLayout() {
                     </RowComponent>
                 </RowComponent>
                 <SpaceComponent height={16} />
-                <RowComponent className="top-bar-query" justifyContent="flex-end">
-                    <SearchBoxComponent
-                        searchWidth={'400px'}
-                        placeholder="Search folders"
-                        backGroundColor="var(--bg-active-color)"
-                        borderType="none"
-                        borderRadius={8}
-                        borderColor="var(--border-color)"
-                        value={search}
-                        onChange={(value) => {
-                            setSearch(value);
-                        }}
-                    />
-                    <SpaceComponent width={8} />
-                    <FloatingActionButtonComponent
-                        icon={<Sort size="20" />}
-                        menuItems={topBar_commandBar_menuItems_sort}
-                        text="Sort"
-                        menuItemsPosition="left"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                    />
+                <RowComponent className="top-bar-query" justifyContent="space-between">
+                    <RowComponent
+                        style={{
+                            display: isMobile ? 'none' : 'flex'
+                        }}>
+                        <Refresh2 size={18} color="var(--secondary-text-color)" />
+                        <SpaceComponent width={12} />
+                        <TextComponent
+                            style={{
+                                textWrap: 'nowrap'
+                            }}
+                            text={`Last updated:\u00A0 \u00A0 ${location.state.folder.modifiedAt
+                                .toDate()
+                                .toLocaleDateString(location.state?.language || 'en-US')}`}
+                        />
+                    </RowComponent>
+                    <RowComponent
+                        justifyContent="flex-end"
+                        style={{
+                            width: '100%'
+                        }}>
+                        <SearchBoxComponent
+                            searchWidth={isMobile ? '100%' : '350px'}
+                            placeholder="Search folders"
+                            backGroundColor="var(--bg-active-color)"
+                            borderType="none"
+                            borderRadius={8}
+                            borderColor="var(--border-color)"
+                            value={search}
+                            onChange={(value) => {
+                                setSearch(value);
+                            }}
+                        />
+                        <SpaceComponent width={8} />
+                        <FloatingActionButtonComponent
+                            icon={<Sort size="20" />}
+                            menuItems={topBar_commandBar_menuItems_sort}
+                            text="Sort"
+                            menuItemsPosition="left"
+                            backgroundHoverColor="var(--bg-hover-color)"
+                            backgroundActiveColor="var(--bg-active-color)"
+                        />
+                    </RowComponent>
                 </RowComponent>
             </ColumnComponent>
         </div>
     );
+    // return (
+    //     <div className="wordset-layout-container">
+    //         <ColumnComponent className="top-bar" alignItems="flex-start">
+    //             <RowComponent className="top-bar-header" justifyContent="space-between">
+    //                 <ColumnComponent
+    //                     className="top-bar-header-title"
+    //                     alignItems="flex-start"
+    //                     style={{
+    //                         display: isMobile ? 'none' : 'flex'
+    //                     }}>
+    //                     <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
+    //                     <RowComponent>
+    //                         <Refresh2 size={18} color="var(--secondary-text-color)" />
+    //                         <SpaceComponent width={12} />
+    //                         <TextComponent
+    //                             text={`Last updated:\u00A0 \u00A0 ${location.state.folder.modifiedAt
+    //                                 .toDate()
+    //                                 .toLocaleDateString(location.state?.language || 'en-US')}`}
+    //                         />
+    //                     </RowComponent>
+    //                 </ColumnComponent>
+    //                 <ColumnComponent
+    //                     alignItems="flex-end"
+    //                     style={{
+    //                         width: '100%'
+    //                     }}>
+    //                     <RowComponent className="top-bar-header-action" justifyContent="flex-end">
+    //
+    //                     </RowComponent>
+    //                     <SpaceComponent height={16} />
+    //                     <RowComponent className="top-bar-query" justifyContent="flex-end">
+    //                         <SearchBoxComponent
+    //                             searchWidth={isMobile ? '100%' : '400px'}
+    //                             placeholder="Search folders"
+    //                             backGroundColor="var(--bg-active-color)"
+    //                             borderType="none"
+    //                             borderRadius={8}
+    //                             borderColor="var(--border-color)"
+    //                             value={search}
+    //                             onChange={(value) => {
+    //                                 setSearch(value);
+    //                             }}
+    //                         />
+    //                         <SpaceComponent width={8} />
+    //                         <FloatingActionButtonComponent
+    //                             icon={<Sort size="20" />}
+    //                             menuItems={topBar_commandBar_menuItems_sort}
+    //                             text="Sort"
+    //                             menuItemsPosition="left"
+    //                             backgroundHoverColor="var(--bg-hover-color)"
+    //                             backgroundActiveColor="var(--bg-active-color)"
+    //                         />
+    //                     </RowComponent>
+    //                 </ColumnComponent>
+    //             </RowComponent>
+    //         </ColumnComponent>
+    //     </div>
+    // );
 }
 
 export default WordSetsLayout;

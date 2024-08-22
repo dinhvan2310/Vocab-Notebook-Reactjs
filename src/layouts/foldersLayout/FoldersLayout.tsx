@@ -200,7 +200,12 @@ function FoldersLayout() {
                     />
                 </div>
             </div>
-            <div className="folders-container">
+            <div
+                className="folders-container"
+                style={{
+                    paddingLeft: isTabletOrMobile ? 8 : 32,
+                    paddingRight: isTabletOrMobile ? 8 : 32
+                }}>
                 {query.isLoading ? (
                     <SpinComponent
                         indicator={ListLoadingAnimation}

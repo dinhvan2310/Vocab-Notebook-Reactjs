@@ -65,3 +65,4 @@
       - translation: string
       - point: number
     ]
+

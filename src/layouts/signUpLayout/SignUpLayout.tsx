@@ -111,7 +111,7 @@ function SignUpLayout() {
                                 isBorder={true}
                                 fontSize="1.4em"
                                 borderColor="var(--border-color)"
-                                textColor="var(--text-color)"
+                                textColor="var(--secondary-text-color)"
                                 backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--border-color)"
@@ -135,7 +135,7 @@ function SignUpLayout() {
                             <SpaceComponent height={16} />
                             <ButtonComponent
                                 buttonWidth={'100%'}
-                                textColor="var(--text-color)"
+                                textColor="var(--secondary-text-color)"
                                 fontSize="1.4em"
                                 isBorder={true}
                                 borderColor="var(--border-color)"

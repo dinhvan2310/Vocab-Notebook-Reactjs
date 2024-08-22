@@ -51,7 +51,11 @@ function MainLayout() {
     const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams' | 'none'>(
         'home'
     );
+    const [inlineCollapsed, setInlineCollapsed] = useState<
+        undefined | 'inline-collapsed' | 'popup-menu'
+    >(() => (isTabletOrMobile ? 'inline-collapsed' : undefined));
     // keep track of the active page in the sidebar menu
+
     useEffect(() => {
         if (location.pathname === '/') {
             setActivePage('home');
@@ -63,6 +67,13 @@ function MainLayout() {
             setActivePage('none');
         }
     }, [location]);
+    useEffect(() => {
+        if (isTabletOrMobile) {
+            setInlineCollapsed('inline-collapsed');
+        } else {
+            setInlineCollapsed(undefined);
+        }
+    }, [isTabletOrMobile]);
     // open modal to add new folder
     const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
     // new folder name relate add add new folder modal
@@ -260,7 +271,21 @@ function MainLayout() {
             </ModalComponent>
             {/* Header ------------------------------------------------------------------------------ */}
             <header className="headerContainer">
-                <div className="iconMenuContainer">
+                <div
+                    className="iconMenuContainer"
+                    onClick={() => {
+                        if (isTabletOrMobile) {
+                            setInlineCollapsed(
+                                inlineCollapsed === 'popup-menu' ? 'inline-collapsed' : 'popup-menu'
+                            );
+                        } else {
+                            setInlineCollapsed(
+                                inlineCollapsed === 'inline-collapsed'
+                                    ? undefined
+                                    : 'inline-collapsed'
+                            );
+                        }
+                    }}>
                     <HambergerMenu className="iconMenu" color="#586380" size="42" />
                 </div>
                 <SearchBoxComponent value={searchValue} onChange={setSearchValue} />
@@ -311,13 +336,13 @@ function MainLayout() {
                 {/* Left container - left menu -------------------------------------------------------------- */}
                 <div className="leftContainer">
                     <MenuItemsComponent
+                        backGroundColor="transparent"
+                        inlineCollapsed={inlineCollapsed}
                         containerStyle={{
                             display: 'flex',
                             flexDirection: 'column',
-                            position: 'sticky',
                             top: '96px',
-                            border: 'none',
-                            flex: 0
+                            border: 'none'
                         }}
                         onSelectedKeyChange={(key) =>
                             handleNavigatePage(key as 'home' | 'folders' | 'exams')
@@ -328,7 +353,12 @@ function MainLayout() {
                     />
                 </div>
                 {/* Right container - main content --------------------------------------------------------- */}
-                <main className="rightContainer">
+                <main
+                    className="rightContainer"
+                    style={{
+                        paddingLeft: isTabletOrMobile ? '0px' : '48px',
+                        paddingRight: isTabletOrMobile ? '0px' : '48px'
+                    }}>
                     <Outlet />
                 </main>
             </section>

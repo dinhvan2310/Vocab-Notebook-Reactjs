@@ -1,22 +1,10 @@
-import React from 'react';
-
 interface SpaceComponentProps {
-    height?: number;
-    width?: number;
-    fullWidth?: boolean;
+    height?: number | string;
+    width?: number | string;
 }
 
 function SpaceComponent(props: SpaceComponentProps) {
-    const { height = 0, width = 0, fullWidth } = props;
-    if (fullWidth) {
-        return (
-            <div
-                style={{
-                    width: '100%'
-                }}
-            />
-        );
-    }
+    const { height = 0, width = 0 } = props;
     return (
         <div
             style={{

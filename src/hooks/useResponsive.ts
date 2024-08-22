@@ -7,9 +7,13 @@ export function useResponsive() {
     const isTabletOrMobile = useMediaQuery({
         maxWidth: 1224,
     });
+    const isMobile = useMediaQuery({
+        maxWidth: 768,
+    });
 
     return {
         isDesktopOrLaptop,
         isTabletOrMobile,
+        isMobile
     };
 }

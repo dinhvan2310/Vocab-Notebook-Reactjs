@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import './MenuItemsComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import SpaceComponent from '../commonComponent/Space/SpaceComponent';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface MenuItemsComponentProps {
     headerComponent?: ReactNode;
@@ -11,6 +12,9 @@ interface MenuItemsComponentProps {
     width?: number;
     containerStyle?: React.CSSProperties;
     onSelectedKeyChange?: (key: string) => void;
+    backGroundColor?: string;
+
+    inlineCollapsed?: undefined | 'inline-collapsed' | 'popup-menu';
 }
 
 function MenuItemsComponent(props: MenuItemsComponentProps) {
@@ -21,17 +25,20 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
         selectedKey,
         headerComponent,
         width,
-        onSelectedKeyChange
+        backGroundColor = 'var(--bg-color)',
+        onSelectedKeyChange,
+        inlineCollapsed = undefined
     } = props;
 
     return (
         <div
-            className={`menu-items`}
             style={{
-                ...containerStyle,
                 border: border ? '1px solid var(--border-color)' : 'none',
-                width: width ? `${width}px` : '200px'
-            }}>
+                width: width ? `${width}px` : '200px',
+                backgroundColor: backGroundColor,
+                ...containerStyle
+            }}
+            className={`menu-items ${inlineCollapsed}`}>
             {headerComponent && <div className="menu-items-header">{headerComponent}</div>}
             {menuItems.map((item, index) => (
                 <div
@@ -55,9 +62,14 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
                             onSelectedKeyChange?.(item.key);
                             item.onClick?.();
                         }}>
-                        {item.icon}
-                        {item.icon && <SpaceComponent width={16} />}
-                        <div className={'menu-item-text'}>{item.text}</div>
+                        <div className="menu-item-icon">{item.icon}</div>
+                        <div
+                            style={{
+                                marginLeft: item.icon ? '16px' : '0'
+                            }}
+                            className={'menu-item-text'}>
+                            {item.text}
+                        </div>
                     </div>
                 </div>
             ))}
