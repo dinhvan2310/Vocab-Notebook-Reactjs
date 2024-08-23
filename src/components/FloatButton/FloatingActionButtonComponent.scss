@@ -18,7 +18,12 @@
         object-fit: contain;
     }
 
+    .menu-item-container {
+
+    }
+
     .menu-item-container.left {
+        z-index: 1000;
         position: absolute;
         right: 0;
         animation: fadeInLeft 0.5s forwards;

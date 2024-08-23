@@ -5,7 +5,7 @@ import SpaceComponent from '../Space/SpaceComponent';
 import LoadingAnimation from '../../../assets/animation/loadingAnimation.json';
 import TextComponent from '../Text/TextComponent';
 interface ButtonComponentProps {
-    text: string;
+    text?: string;
     textColor?: string;
     icon?: ReactNode;
     backgroundColor?: string;
@@ -74,12 +74,15 @@ function ButtonComponent(props: ButtonComponentProps) {
             {icon && (
                 <div
                     style={{
-                        visibility: isLoading ? 'hidden' : 'visible'
+                        visibility: isLoading ? 'hidden' : 'visible',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
                     }}>
                     {icon}
                 </div>
             )}
-            {icon && <SpaceComponent width={8} />}
+            {icon && text && <SpaceComponent width={8} />}
             <div
                 style={{
                     position: 'relative',
@@ -89,7 +92,7 @@ function ButtonComponent(props: ButtonComponentProps) {
                     height: '100%'
                 }}>
                 <TextComponent
-                    text={text}
+                    text={text ?? ''}
                     textColor={textColor}
                     fontSize={fontSize}
                     isVisible={!isLoading}

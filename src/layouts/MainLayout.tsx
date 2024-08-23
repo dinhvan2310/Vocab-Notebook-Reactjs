@@ -356,8 +356,8 @@ function MainLayout() {
                 <main
                     className="rightContainer"
                     style={{
-                        paddingLeft: isTabletOrMobile ? '0px' : '48px',
-                        paddingRight: isTabletOrMobile ? '0px' : '48px'
+                        paddingLeft: isTabletOrMobile ? '16px' : '96px',
+                        paddingRight: isTabletOrMobile ? '16px' : '96px'
                     }}>
                     <Outlet />
                 </main>

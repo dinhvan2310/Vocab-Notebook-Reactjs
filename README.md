@@ -66,3 +66,8 @@
       - point: number
     ]
 
+
+
+git commit
+
+2. create ui for page word set detail 

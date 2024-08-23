@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MenuItemsComponent from '../MenuItems/MenuItemsComponent';
 import './FloatingActionButtonComponent.scss';
 import { MenuItemInterface } from '../../types/MenuItemType';
@@ -55,6 +55,21 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
             setOpen(false);
         };
     });
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (e.target instanceof Element) {
+                if (!document.querySelector('.menu-item-container')?.contains(e.target)) {
+                    setOpen(false);
+                }
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="floating-action-button">

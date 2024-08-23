@@ -7,9 +7,10 @@ import ProtectedRoute from './features/authentication/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import ExamsLayout from './layouts/examsLayout/ExamsLayout';
 import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
-import WordSetsLayout from './layouts/foldersLayout/wordSetsLayout/WordSetsLayout';
+import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
+import WordLayout from './layouts/wordLayout/WordLayout';
 function App() {
     useEffect(() => {
         //  Set the theme
@@ -57,6 +58,10 @@ function App() {
                                 {
                                     path: '/user/:username/folders/:id_folder',
                                     element: <WordSetsLayout />
+                                },
+                                {
+                                    path: '/create-wordset',
+                                    element: <WordLayout />
                                 },
                                 {
                                     path: 'exams',

@@ -1,0 +1,20 @@
+.word-layout-container {
+    
+
+    .top-bar {
+        
+    }
+
+    .word-content {
+        margin-top: 64px;
+
+        .word-card:not(:last-child) {
+            margin-bottom: 48px;
+        }
+    }
+
+    .footer-container {
+        margin-top: 48px;
+        margin-bottom: 48px;
+    }
+}

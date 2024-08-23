@@ -3,23 +3,28 @@ import {
     ArrowCircleDown,
     ArrowCircleUp,
     CloseCircle,
+    Edit2,
+    FolderAdd,
+    FolderCross,
     More,
     Refresh2,
     Sort
 } from 'iconsax-react';
 import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import ColumnComponent from '../../../components/commonComponent/Column/ColumnComponent';
-import RowComponent from '../../../components/commonComponent/Row/RowComponent';
-import SpaceComponent from '../../../components/commonComponent/Space/SpaceComponent';
-import TextComponent from '../../../components/commonComponent/Text/TextComponent';
-import TitleComponent from '../../../components/commonComponent/Title/TitleComponent';
-import FloatingActionButtonComponent from '../../../components/FloatButton/FloatingActionButtonComponent';
-import useDebounce from '../../../hooks/useDebounce';
-import { useResponsive } from '../../../hooks/useResponsive';
+import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
+import RowComponent from '../../components/commonComponent/Row/RowComponent';
+import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
+import TextComponent from '../../components/commonComponent/Text/TextComponent';
+import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
+import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
+import useDebounce from '../../hooks/useDebounce';
+import { useResponsive } from '../../hooks/useResponsive';
 import './WordSetsLayout.scss';
-import ButtonComponent from '../../../components/commonComponent/Button/ButtonComponent';
-import SearchBoxComponent from '../../../components/SearchBox/SearchBoxComponent';
+import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
+import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
+import { MenuItemInterface } from '../../types/MenuItemType';
+import { Timestamp } from 'firebase/firestore';
 
 function WordSetsLayout() {
     const { username } = useParams();
@@ -38,7 +43,39 @@ function WordSetsLayout() {
 
     console.log(location.state);
 
-    const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
+    const topBar_command_1: MenuItemInterface[] = [
+        {
+            key: 'create_wordset',
+            text: 'Create Word Set',
+            icon: <FolderAdd size="20" />,
+            onClick: () => {
+                navigate(`/create-wordset?$inFolder=${location.state.folder.id_folder}`, {
+                    state: {
+                        folder: location.state.folder
+                    }
+                });
+            }
+        }
+    ];
+    const topBar_command_2: MenuItemInterface[] = [
+        {
+            key: 'delete_folder',
+            text: 'Delete Folder',
+            onClick: () => {
+                console.log('delete folder');
+            },
+            icon: <FolderCross size="20" />
+        },
+        {
+            key: 'edit_folder',
+            text: 'Edit Folder',
+            onClick: () => {
+                console.log('edit folder');
+            },
+            icon: <Edit2 size="20" />
+        }
+    ];
+    const topBar_query_menuItems_sort: MenuItemInterface[] = [
         {
             text: `Name`,
             onClick: () => {
@@ -49,11 +86,11 @@ function WordSetsLayout() {
             key: 'sort_by_name',
             icon:
                 sortByName === 'asc' ? (
-                    <ArrowCircleUp size="20" color="var(--primary-color)" />
+                    <ArrowCircleUp size="20" />
                 ) : sortByName === 'desc' ? (
-                    <ArrowCircleDown size="20" color="var(--primary-color)" />
+                    <ArrowCircleDown size="20" />
                 ) : (
-                    <CloseCircle size="20" color="var(--red-color)" />
+                    <CloseCircle size="20" />
                 )
         },
         {
@@ -66,20 +103,16 @@ function WordSetsLayout() {
             key: 'sort_by_date',
             icon:
                 sortByDate === 'asc' ? (
-                    <ArrowCircleUp size="20" color="var(--primary-color)" />
+                    <ArrowCircleUp size="20" />
                 ) : sortByDate === 'desc' ? (
-                    <ArrowCircleDown size="20" color="var(--primary-color)" />
+                    <ArrowCircleDown size="20" />
                 ) : (
-                    <CloseCircle size="20" color="var(--red-color)" />
+                    <CloseCircle size="20" />
                 )
         }
     ];
     return (
-        <div
-            className="wordset-layout-container"
-            style={{
-                padding: isMobile ? '0px' : '0px 48px'
-            }}>
+        <div className="wordset-layout-container" style={{}}>
             <ColumnComponent className="top-bar">
                 <RowComponent className="top-bar-header" justifyContent="space-between">
                     <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
@@ -109,7 +142,7 @@ function WordSetsLayout() {
                             backgroundHoverColor="var(--bg-hover-color)"
                             backgroundActiveColor="var(--bg-active-color)"
                             icon={<Add size={26} />}
-                            menuItems={[]}
+                            menuItems={topBar_command_1}
                         />
                         <SpaceComponent width={8} />
                         <FloatingActionButtonComponent
@@ -122,7 +155,7 @@ function WordSetsLayout() {
                             backgroundHoverColor="var(--bg-hover-color)"
                             backgroundActiveColor="var(--bg-active-color)"
                             icon={<More size={26} />}
-                            menuItems={[]}
+                            menuItems={topBar_command_2}
                         />
                     </RowComponent>
                 </RowComponent>
@@ -138,9 +171,9 @@ function WordSetsLayout() {
                             style={{
                                 textWrap: 'nowrap'
                             }}
-                            text={`Last updated:\u00A0 \u00A0 ${location.state.folder.modifiedAt
-                                .toDate()
-                                .toLocaleDateString(location.state?.language || 'en-US')}`}
+                            text={`Last updated:\u00A0 \u00A0 ${new Date(
+                                location.state.folder.modifiedAt?.seconds * 1000
+                            ).toDateString()}`}
                         />
                     </RowComponent>
                     <RowComponent
@@ -163,7 +196,7 @@ function WordSetsLayout() {
                         <SpaceComponent width={8} />
                         <FloatingActionButtonComponent
                             icon={<Sort size="20" />}
-                            menuItems={topBar_commandBar_menuItems_sort}
+                            menuItems={topBar_query_menuItems_sort}
                             text="Sort"
                             menuItemsPosition="left"
                             backgroundHoverColor="var(--bg-hover-color)"
@@ -174,64 +207,6 @@ function WordSetsLayout() {
             </ColumnComponent>
         </div>
     );
-    // return (
-    //     <div className="wordset-layout-container">
-    //         <ColumnComponent className="top-bar" alignItems="flex-start">
-    //             <RowComponent className="top-bar-header" justifyContent="space-between">
-    //                 <ColumnComponent
-    //                     className="top-bar-header-title"
-    //                     alignItems="flex-start"
-    //                     style={{
-    //                         display: isMobile ? 'none' : 'flex'
-    //                     }}>
-    //                     <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
-    //                     <RowComponent>
-    //                         <Refresh2 size={18} color="var(--secondary-text-color)" />
-    //                         <SpaceComponent width={12} />
-    //                         <TextComponent
-    //                             text={`Last updated:\u00A0 \u00A0 ${location.state.folder.modifiedAt
-    //                                 .toDate()
-    //                                 .toLocaleDateString(location.state?.language || 'en-US')}`}
-    //                         />
-    //                     </RowComponent>
-    //                 </ColumnComponent>
-    //                 <ColumnComponent
-    //                     alignItems="flex-end"
-    //                     style={{
-    //                         width: '100%'
-    //                     }}>
-    //                     <RowComponent className="top-bar-header-action" justifyContent="flex-end">
-    //
-    //                     </RowComponent>
-    //                     <SpaceComponent height={16} />
-    //                     <RowComponent className="top-bar-query" justifyContent="flex-end">
-    //                         <SearchBoxComponent
-    //                             searchWidth={isMobile ? '100%' : '400px'}
-    //                             placeholder="Search folders"
-    //                             backGroundColor="var(--bg-active-color)"
-    //                             borderType="none"
-    //                             borderRadius={8}
-    //                             borderColor="var(--border-color)"
-    //                             value={search}
-    //                             onChange={(value) => {
-    //                                 setSearch(value);
-    //                             }}
-    //                         />
-    //                         <SpaceComponent width={8} />
-    //                         <FloatingActionButtonComponent
-    //                             icon={<Sort size="20" />}
-    //                             menuItems={topBar_commandBar_menuItems_sort}
-    //                             text="Sort"
-    //                             menuItemsPosition="left"
-    //                             backgroundHoverColor="var(--bg-hover-color)"
-    //                             backgroundActiveColor="var(--bg-active-color)"
-    //                         />
-    //                     </RowComponent>
-    //                 </ColumnComponent>
-    //             </RowComponent>
-    //         </ColumnComponent>
-    //     </div>
-    // );
 }
 
 export default WordSetsLayout;

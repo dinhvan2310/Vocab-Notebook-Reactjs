@@ -110,11 +110,11 @@ function FoldersLayout() {
             key: 'sort_by_name',
             icon:
                 sortByName === 'asc' ? (
-                    <ArrowCircleUp size="20" color="var(--primary-color)" />
+                    <ArrowCircleUp size="20" />
                 ) : sortByName === 'desc' ? (
-                    <ArrowCircleDown size="20" color="var(--primary-color)" />
+                    <ArrowCircleDown size="20" />
                 ) : (
-                    <CloseCircle size="20" color="var(--red-color)" />
+                    <CloseCircle size="20" />
                 )
         },
         {
@@ -127,11 +127,11 @@ function FoldersLayout() {
             key: 'sort_by_date',
             icon:
                 sortByDate === 'asc' ? (
-                    <ArrowCircleUp size="20" color="var(--primary-color)" />
+                    <ArrowCircleUp size="20" />
                 ) : sortByDate === 'desc' ? (
-                    <ArrowCircleDown size="20" color="var(--primary-color)" />
+                    <ArrowCircleDown size="20" />
                 ) : (
-                    <CloseCircle size="20" color="var(--red-color)" />
+                    <CloseCircle size="20" />
                 )
         }
     ];
@@ -146,7 +146,11 @@ function FoldersLayout() {
     };
 
     return (
-        <div className="folder-layout-container">
+        <div
+            className="folder-layout-container"
+            style={{
+                
+            }}>
             <div className="top-bar">
                 {!isTabletOrMobile && (
                     <RowComponent alignItems="center">
@@ -200,12 +204,7 @@ function FoldersLayout() {
                     />
                 </div>
             </div>
-            <div
-                className="folders-container"
-                style={{
-                    paddingLeft: isTabletOrMobile ? 8 : 32,
-                    paddingRight: isTabletOrMobile ? 8 : 32
-                }}>
+            <div className="folders-container" style={{}}>
                 {query.isLoading ? (
                     <SpinComponent
                         indicator={ListLoadingAnimation}
@@ -233,9 +232,9 @@ function FoldersLayout() {
                                 <CardComponent
                                     className="folder-card"
                                     haveFloatingButton={true}
-                                    createAt={folder.createAt
-                                        .toDate()
-                                        .toLocaleDateString(location.state?.language || 'en-US')}
+                                    createAt={new Date(
+                                        folder.createAt?.seconds * 1000
+                                    ).toDateString()}
                                     key={index}
                                     title={folder.name}
                                     hoverable={true}

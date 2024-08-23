@@ -14,7 +14,7 @@ interface MenuItemsComponentProps {
     onSelectedKeyChange?: (key: string) => void;
     backGroundColor?: string;
 
-    inlineCollapsed?: undefined | 'inline-collapsed' | 'popup-menu';
+    inlineCollapsed?: 'none' | 'inline-collapsed' | 'popup-menu';
 }
 
 function MenuItemsComponent(props: MenuItemsComponentProps) {
@@ -27,7 +27,7 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
         width,
         backGroundColor = 'var(--bg-color)',
         onSelectedKeyChange,
-        inlineCollapsed = undefined
+        inlineCollapsed = 'none'
     } = props;
 
     return (

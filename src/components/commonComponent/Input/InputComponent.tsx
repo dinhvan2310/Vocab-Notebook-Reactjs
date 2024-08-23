@@ -1,129 +1,115 @@
-import { Eye, EyeSlash } from 'iconsax-react';
-import React, { forwardRef } from 'react';
-import './InputComponent.scss';
-import RowComponent from '../Row/RowComponent';
-import SpaceComponent from '../Space/SpaceComponent';
+import TextareaAutosize from 'react-textarea-autosize';
 import TextComponent from '../Text/TextComponent';
+import './InputComponent.scss';
+
 interface InputComponentProps {
-    label?: string;
-    type?: 'email' | 'password' | 'text' | 'switch' | 'textarea';
+    type: 'text' | 'textarea' | 'password' | 'email';
     placeholder?: string;
-    fontSize?: number | string;
-    isShowPassword?: boolean;
-    paddingHorizontal?: number;
-    paddingVertical?: number;
-    value?: string;
-    style?: React.CSSProperties;
+    value: string;
+    onChange: (value: string) => void;
     className?: string;
-    onChange?: (value: string) => void;
-    onSwitchChange?: (checked: boolean) => void;
+    style?: React.CSSProperties;
+    inputStyle?: React.CSSProperties;
+
+    borderType?: 'none' | 'bottom' | 'all';
+    label?: string;
+    width?: string;
+    fontSize?: string;
+    // effect only borderType = 'bottom'
+    animationType?: 'none' | 'slideInLeft' | 'slideCenter';
 }
 
-const InputComponent = forwardRef<HTMLInputElement, InputComponentProps>((props, ref) => {
+function InputComponent(props: InputComponentProps) {
     const {
-        label,
         type,
-        isShowPassword = true,
         placeholder,
-        fontSize = '1.4em',
         value,
         onChange,
         className,
+        inputStyle,
         style,
-        onSwitchChange,
-        paddingHorizontal = 12,
-        paddingVertical = 12
+        borderType = 'none',
+        label,
+        width = '100%',
+        fontSize = '1.6em',
+        animationType = 'none'
     } = props;
 
-    const [showPass, setShowPass] = React.useState(false);
+    // const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // useEffect(() => {
+    //     const event = textareaRef.current?.addEventListener('input', (e) => {
+    //         const target = e.target as HTMLTextAreaElement;
+    //         target.style.height = 'auto';
+    //         if (target.scrollHeight > 92) {
+    //             target.style.height = target.scrollHeight + 'px';
+    //         } else {
+    //             target.style.height = '43px';
+    //         }
+    //     });
+    // }, [textareaRef]);
 
     return (
         <div
-            className={`input-container ${className}`}
+            className={`input-container ${className ?? ''}`}
             style={{
-                ...style
+                width
             }}>
-            {type === 'switch' ? (
-                <>
-                    <RowComponent justifyContent="space-between">
-                        <RowComponent>
-                            <TextComponent text={label ?? ''} />
-                            <SpaceComponent width={4} />
-                            <TextComponent text={`:  ${value}`} textColor="var(--text-color)" />
-                        </RowComponent>
-                        <label className="switch">
-                            <input
-                                type="checkbox"
-                                onChange={(e) => {
-                                    if (onSwitchChange) {
-                                        onSwitchChange(e.target.checked);
-                                    }
-                                }}
-                                ref={ref}
-                            />
-                            <span className="slider"></span>
-                        </label>
-                    </RowComponent>
-                    <SpaceComponent height={4} />
-                </>
-            ) : (
-                <>
-                    <TextComponent style={{}} text={label ?? ''} />
-                    <SpaceComponent height={4} />
-                    <RowComponent
+            <div
+                className={`input-component ${animationType}`}
+                style={{
+                    width,
+                    ...style
+                }}>
+                {type === 'textarea' ? (
+                    <TextareaAutosize
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className={`text-area ${borderType}`}
+                        placeholder={placeholder}
                         style={{
-                            position: 'relative'
-                        }}>
-                        <input
-                            className="input"
-                            style={{
-                                padding: `${paddingVertical}px ${paddingHorizontal}px`,
-                                fontSize
-                            }}
-                            type={showPass ? 'text' : type}
-                            placeholder={placeholder}
-                            value={value}
-                            onChange={(e) => {
-                                if (onChange) {
-                                    onChange(e.target.value);
-                                }
-                            }}
-                        />
-                        {type === 'password' && isShowPassword && showPass && (
-                            <EyeSlash
-                                style={{
-                                    color: 'var(--secondary-text-color)',
-                                    cursor: 'pointer',
-                                    position: 'absolute',
-                                    right: 10,
-                                    top: '50%',
-                                    transform: 'translateY(-50%)'
-                                }}
-                                size={20}
-                                className="icon"
-                                onClick={() => setShowPass(!showPass)}
-                            />
-                        )}
-                        {type === 'password' && isShowPassword && showPass == false && (
-                            <Eye
-                                style={{
-                                    color: 'var(--secondary-text-color)',
-                                    cursor: 'pointer',
-                                    position: 'absolute',
-                                    right: 10,
-                                    top: '50%',
-                                    transform: 'translateY(-50%)'
-                                }}
-                                size={20}
-                                className="icon"
-                                onClick={() => setShowPass(!showPass)}
-                            />
-                        )}
-                    </RowComponent>
-                </>
-            )}
+                            width: width,
+                            fontSize: fontSize,
+                            resize: 'none'
+                        }}
+                    />
+                ) : (
+                    // <textarea
+                    //     ref={textareaRef}
+                    //     value={value}
+                    //     onChange={(e) => onChange(e.target.value)}
+                    //     className={`text-area ${borderType}`}
+                    //     placeholder={placeholder}
+                    //     style={{
+                    //         width: width,
+                    //         height: '43px',
+                    //         fontSize: fontSize,
+
+                    //         ...inputStyle
+                    //     }}
+                    // />
+                    <input
+                        type={type}
+                        className={`input ${borderType}`}
+                        style={{
+                            width,
+                            fontSize: fontSize,
+                            ...inputStyle
+                        }}
+                        placeholder={placeholder}
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                    />
+                )}
+                <span
+                    style={{
+                        width
+                    }}
+                    className="bar"></span>
+            </div>
+            <TextComponent text={label?.toUpperCase() ?? ''} fontSize="1.2em" className="label" />
         </div>
     );
-});
+}
 
 export default InputComponent;

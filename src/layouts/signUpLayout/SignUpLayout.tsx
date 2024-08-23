@@ -29,31 +29,36 @@ function SignUpLayout() {
         return (
             <>
                 <InputComponent
-                    label="Email"
-                    fontSize={'1.6em'}
-                    style={{
-                        marginBottom: 24
-                    }}
+                    style={{}}
                     type="email"
                     placeholder="Nhập địa chỉ email"
                     onChange={(value) => {
                         setEmail(value);
                     }}
                     value={email}
+                    width="100%"
+                    borderType="all"
+                    inputStyle={{
+                        color: 'var(--secondary-text-color)',
+                        fontSize: '1.6em'
+                    }}
                 />
+                <SpaceComponent height={32} />
                 <InputComponent
-                    label="Password"
-                    fontSize={'1.6em'}
                     type="password"
-                    style={{
-                        marginBottom: 24
+                    style={{}}
+                    inputStyle={{
+                        color: 'var(--secondary-text-color)',
+                        fontSize: '1.6em'
                     }}
                     placeholder="Nhập mật khẩu của bạn"
                     onChange={(value) => {
                         setPassword(value);
                     }}
                     value={password}
+                    borderType="all"
                 />
+                <SpaceComponent height={32} />
 
                 <ErrorTextComponent text={error} />
                 <SpaceComponent height={8} />

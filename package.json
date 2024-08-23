@@ -21,6 +21,7 @@
     "react-lottie": "^1.2.4",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^6.25.1",
+    "react-textarea-autosize": "^8.5.3",
     "webfontloader": "^1.6.28",
     "yarn": "^1.22.22"
   },
