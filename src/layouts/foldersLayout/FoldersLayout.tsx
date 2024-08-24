@@ -22,6 +22,8 @@ import SelectComponent from '../../components/Select/SelectComponent';
 import { useQuery } from '@tanstack/react-query';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
 import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
+import GridRow from '../../components/Grid/GridRow';
+import GridCol from '../../components/Grid/GridCol';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -146,11 +148,7 @@ function FoldersLayout() {
     };
 
     return (
-        <div
-            className="folder-layout-container"
-            style={{
-                
-            }}>
+        <div className="folder-layout-container" style={{}}>
             <div className="top-bar">
                 {!isTabletOrMobile && (
                     <RowComponent alignItems="center">
@@ -218,55 +216,58 @@ function FoldersLayout() {
                         }}
                     />
                 ) : (
-                    <RowComponent
-                        justifyContent="flex-start"
-                        flexWrap="wrap"
-                        style={{
-                            marginLeft: -8
-                        }}>
+                    <GridRow gutter={[24, 24]}>
                         {query.data?.folders.length === 0 && (
                             <EmptyComponent text="No folders found" />
                         )}
                         {query.data?.folders.map((folder, index) => {
                             return (
-                                <CardComponent
-                                    className="folder-card"
-                                    haveFloatingButton={true}
-                                    createAt={new Date(
-                                        folder.createAt?.seconds * 1000
-                                    ).toDateString()}
-                                    key={index}
-                                    title={folder.name}
-                                    hoverable={true}
-                                    subTitle={folder.word_sets.length + ' word sets'}
-                                    onClick={() => {
-                                        handleNavigateToWordSets(folder);
-                                    }}
-                                    style={{
-                                        width:
-                                            isTabletOrMobile || query.data?.folders.length === 1
-                                                ? '100%'
-                                                : 'calc(50% - 16px)',
-                                        margin: 8
-                                    }}
-                                    menuItems={[
-                                        {
-                                            text: 'Delete',
-                                            onClick: async () => {
-                                                await removeFolder(folder.id_folder || '');
-                                                // setFolders(
-                                                //     folders.filter(
-                                                //         (f) => f.id_folder !== folder.id_folder
-                                                //     )
-                                                // );
-                                            },
-                                            key: 'delete'
-                                        }
-                                    ]}
-                                />
+                                <GridCol
+                                    span={
+                                        isTabletOrMobile || query.data?.folders.length === 1
+                                            ? 12
+                                            : 6
+                                    }
+                                    key={index}>
+                                    <CardComponent
+                                        className="folder-card"
+                                        haveFloatingButton={true}
+                                        createAt={new Date(
+                                            folder.createAt?.seconds * 1000
+                                        ).toDateString()}
+                                        key={index}
+                                        title={folder.name}
+                                        hoverable={true}
+                                        subTitle={folder.word_sets.length + ' word sets'}
+                                        onClick={() => {
+                                            handleNavigateToWordSets(folder);
+                                        }}
+                                        // style={{
+                                        //     width:
+                                        //         isTabletOrMobile || query.data?.folders.length === 1
+                                        //             ? '100%'
+                                        //             : 'calc(50% - 16px)',
+                                        //     margin: 8
+                                        // }}
+                                        menuItems={[
+                                            {
+                                                text: 'Delete',
+                                                onClick: async () => {
+                                                    await removeFolder(folder.id_folder || '');
+                                                    // setFolders(
+                                                    //     folders.filter(
+                                                    //         (f) => f.id_folder !== folder.id_folder
+                                                    //     )
+                                                    // );
+                                                },
+                                                key: 'delete'
+                                            }
+                                        ]}
+                                    />
+                                </GridCol>
                             );
                         })}
-                    </RowComponent>
+                    </GridRow>
                 )}
             </div>
             <SpaceComponent height={64} />

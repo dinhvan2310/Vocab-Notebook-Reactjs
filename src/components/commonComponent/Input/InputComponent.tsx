@@ -53,13 +53,13 @@ function InputComponent(props: InputComponentProps) {
         <div
             className={`input-container ${className ?? ''}`}
             style={{
-                width
+                width,
+                ...style
             }}>
             <div
                 className={`input-component ${animationType}`}
                 style={{
-                    width,
-                    ...style
+                    width
                 }}>
                 {type === 'textarea' ? (
                     <TextareaAutosize

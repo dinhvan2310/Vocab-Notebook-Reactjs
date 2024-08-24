@@ -1,15 +1,36 @@
+import GridCol from '../../components/Grid/GridCol';
+import GridRow from '../../components/Grid/GridRow';
+
 function HomeLayout() {
     return (
-        <div style={{}}>
-            <div
-                style={{
-                    height: '4000px',
-                    overflow: 'auto'
-                }}>
-                <h1>Home Page</h1>
-                <p>Scroll down to see the floating action button.</p>
-            </div>
-        </div>
+        <>
+            <GridRow gutter={[32, 16]}>
+                <GridCol span={6}>
+                    <h1
+                        style={{
+                            backgroundColor: '#f0f0f0'
+                        }}>
+                        Home
+                    </h1>
+                </GridCol>
+                <GridCol span={6}>
+                    <p
+                        style={{
+                            backgroundColor: 'red'
+                        }}>
+                        Welcome to the home page!
+                    </p>
+                </GridCol>
+                <GridCol span={6}>
+                    <p
+                        style={{
+                            backgroundColor: 'red'
+                        }}>
+                        Welcome to the home page!
+                    </p>
+                </GridCol>
+            </GridRow>
+        </>
     );
 }
 

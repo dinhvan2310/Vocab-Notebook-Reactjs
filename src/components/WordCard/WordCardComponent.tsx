@@ -60,7 +60,9 @@ function WordCardComponent(props: WordCardComponentProps) {
                     width: '100%'
                 }}>
                 <InputComponent
-                    style={{}}
+                    style={{
+                        marginRight: 64
+                    }}
                     value={term}
                     onChange={(value) => onTermChange(index, value)}
                     placeholder="Enter term"
@@ -73,7 +75,6 @@ function WordCardComponent(props: WordCardComponentProps) {
                     }}
                     animationType="slideCenter"
                 />
-                <SpaceComponent width={32} />
                 <InputComponent
                     style={{}}
                     value={definition}
