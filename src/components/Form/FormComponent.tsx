@@ -36,11 +36,11 @@ function FormComponent(props: FormComponentProps) {
                 <div key={index} className="form-item">
                     <InputComponent
                         label={formItem.label}
-                        onSwitchChange={formItem.onSwitchChange}
-                        onChange={formItem.onChange}
+                        onChange={formItem.onChange ?? (() => {})}
                         type={formItem.type}
-                        value={formItem.value}
-                        paddingVertical={8}
+                        value={formItem.value ?? ''}
+                        borderType="bottom"
+                        placeholder={formItem.placeholder}
                     />
                     <SpaceComponent height={12} />
                 </div>

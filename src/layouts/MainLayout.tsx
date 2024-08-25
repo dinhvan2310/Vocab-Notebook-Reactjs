@@ -37,14 +37,17 @@ import { useResponsive } from '../hooks/useResponsive';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------
+    // theme
+    const { theme, setTheme } = useTheme();
+    // auth
+    const { user } = useAuth();
+    const { signOut } = useAuth();
+
     const { isTabletOrMobile } = useResponsive();
     // navigation
     const navigate = useNavigate();
     const location = useLocation();
-    // theme
-    const { theme, setTheme } = useTheme();
-    // auth
-    const { user, signOut } = useAuth();
+
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
     // keep track of the active page in the sidebar menu
@@ -67,6 +70,7 @@ function MainLayout() {
             setActivePage('none');
         }
     }, [location]);
+
     useEffect(() => {
         if (isTabletOrMobile) {
             setInlineCollapsed('inline-collapsed');
@@ -74,6 +78,7 @@ function MainLayout() {
             setInlineCollapsed(undefined);
         }
     }, [isTabletOrMobile]);
+
     // open modal to add new folder
     const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
     // new folder name relate add add new folder modal
@@ -85,14 +90,7 @@ function MainLayout() {
                 navigate('/');
                 break;
             case 'folders':
-                navigate(`/user/${user?.displayName}/folders`, {
-                    state: {
-                        uid: user?.uid,
-                        displayName: user?.displayName,
-                        photoURL: user?.photoURL,
-                        email: user?.email
-                    }
-                });
+                navigate(`/user/${user?.uid}/folders`);
                 break;
             case 'exams':
                 navigate('/exams');
@@ -132,7 +130,8 @@ function MainLayout() {
         };
 
         try {
-            await addFolder(folder);
+            const newFolder = await addFolder(folder);
+            navigate(`/user/${user?.uid}/folders/${newFolder.id}`);
         } catch (exception) {
             console.log(exception);
         }
@@ -183,7 +182,10 @@ function MainLayout() {
             key: 'logout',
             text: 'Đăng xuất',
             icon: <Logout size={20} />,
-            onClick: () => signOut(),
+            onClick: () => {
+                signOut();
+                document.location.href = '/login';
+            },
             borderType: 'top-bottom'
         },
         {
@@ -214,12 +216,14 @@ function MainLayout() {
             key: 'folders',
             text: 'Thư mục của bạn',
             icon: <Folder size={20} />,
-            onClick: () => handleNavigatePage('folders')
+            onClick: () => handleNavigatePage('folders'),
+            disabled: user === null
         },
         {
             key: 'exams',
             text: 'Đề thi online',
-            icon: <NotificationStatus size={20} />
+            icon: <NotificationStatus size={20} />,
+            disabled: user === null
         }
     ];
 
@@ -291,44 +295,61 @@ function MainLayout() {
                 <SearchBoxComponent value={searchValue} onChange={setSearchValue} />
                 <SpaceComponent width={32} />
                 <RowComponent alignItems="center" justifyContent="space-around" style={{}}>
-                    <FloatingActionButtonComponent
-                        backgroundColor="var(--primary-color)"
-                        backgroundHoverColor="var(--primary-hover-color)"
-                        backgroundActiveColor="var(--primary-active-color)"
-                        icon={<Add size="32" color="#fff" />}
-                        menuItems={menuItemsAdd}
-                    />
-                    <SpaceComponent width={32} />
-                    <ButtonComponent
-                        text="Nâng cấp lên Plus"
-                        backgroundColor="var(--secondary-color)"
-                        backgroundHoverColor="var(--secondary-hover-color)"
-                        backgroundActiveColor="var(--secondary-active-color)"
-                        textColor="var(--black-color)"
-                        fontSize="1.1em"
-                        style={{
-                            height: '40px'
-                        }}
-                    />
-                    <SpaceComponent width={32} />
-
-                    <FloatingActionButtonComponent
-                        headerComponent={menuItemsSettingHeader}
-                        icon={
-                            <img
-                                src={user?.photoURL || ''}
-                                alt="avatar"
+                    {user ? (
+                        <>
+                            <FloatingActionButtonComponent
+                                backgroundColor="var(--primary-color)"
+                                backgroundHoverColor="var(--primary-hover-color)"
+                                backgroundActiveColor="var(--primary-active-color)"
+                                icon={<Add size="32" color="#fff" />}
+                                menuItems={menuItemsAdd}
+                            />
+                            <SpaceComponent width={32} />
+                            <ButtonComponent
+                                text="Nâng cấp lên Plus"
+                                backgroundColor="var(--secondary-color)"
+                                backgroundHoverColor="var(--secondary-hover-color)"
+                                backgroundActiveColor="var(--secondary-active-color)"
+                                textColor="var(--black-color)"
+                                fontSize="1.1em"
                                 style={{
-                                    objectFit: 'cover',
-                                    borderRadius: '50%',
-                                    width: '40px',
                                     height: '40px'
                                 }}
                             />
-                        }
-                        menuItems={menuItemsSetting}
-                        menuItemWidth={312}
-                    />
+                            <SpaceComponent width={32} />
+
+                            <FloatingActionButtonComponent
+                                headerComponent={menuItemsSettingHeader}
+                                icon={
+                                    <img
+                                        src={user?.photoURL || ''}
+                                        alt="avatar"
+                                        style={{
+                                            objectFit: 'cover',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px'
+                                        }}
+                                    />
+                                }
+                                menuItems={menuItemsSetting}
+                                menuItemWidth={312}
+                            />
+                        </>
+                    ) : (
+                        <ButtonComponent
+                            text="Đăng nhập"
+                            backgroundColor="var(--primary-color)"
+                            backgroundHoverColor="var(--primary-hover-color)"
+                            backgroundActiveColor="var(--primary-active-color)"
+                            textColor="var(--white-color)"
+                            fontSize="1.1em"
+                            onClick={() => navigate('/login')}
+                            style={{
+                                height: '40px'
+                            }}
+                        />
+                    )}
                 </RowComponent>
             </header>
             {/* Content -------------------------------------------------------------------------------------- */}
@@ -353,13 +374,15 @@ function MainLayout() {
                     />
                 </div>
                 {/* Right container - main content --------------------------------------------------------- */}
-                <main
-                    className="rightContainer"
-                    style={{
-                        paddingLeft: isTabletOrMobile ? '16px' : '48px',
-                        paddingRight: isTabletOrMobile ? '16px' : '96px'
-                    }}>
-                    <Outlet />
+                <main className="rightContainer">
+                    <div
+                        className="rightContent"
+                        style={{
+                            paddingLeft: isTabletOrMobile ? '16px' : '48px',
+                            paddingRight: isTabletOrMobile ? '16px' : '48px'
+                        }}>
+                        <Outlet />
+                    </div>
                 </main>
             </section>
         </div>

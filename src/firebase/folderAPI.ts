@@ -10,7 +10,7 @@ export const addFolder = async (folder: FolderType) => {
     const collectionRef = collection(db, "folders");
 
     // add folder
-    await addDoc(collectionRef, {
+    return (await addDoc(collectionRef, {
         id_user: folder.id_user,
         
         name: folder.name,
@@ -18,12 +18,7 @@ export const addFolder = async (folder: FolderType) => {
         createAt: folder.createAt,
         modifiedAt: folder.modifiedAt,
         word_sets: folder.word_sets,
-    });
-
-    // 
-    // await updateDoc(userRef, {
-    //     folders: arrayUnion(folderRef)
-    // });
+    }));
 }
 
 /// Remove a folder from the database and update the user's folders array in the user document
@@ -48,11 +43,9 @@ export const removeFolder = async (id_folder: string) => {
 }
 
 
-export const onSnapshotFolders = async (callback: (folders: FolderType[]) => void) => {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User is not logged in");
+export const onSnapshotFolders = (userid: string , callback: (folders: FolderType[]) => void) => {
 
-    const q = query(collection(db, "folders"), where("id_user", "==", user.uid));
+    const q = query(collection(db, "folders"), where("id_user", "==", userid));
     return onSnapshot(q, (snapshot) => {
         const folders: FolderType[] = [];
         snapshot.forEach((doc) => {
@@ -63,30 +56,6 @@ export const onSnapshotFolders = async (callback: (folders: FolderType[]) => voi
         callback(folders);
     });
 }
-
-// export const getFolders = async (
-//     id_user: string, 
-//     stringSearch: string = '',
-//     sortByName: 'asc' | 'desc' | 'none' = 'none',
-//     sortByDate: 'asc' | 'desc' | 'none' = 'none',
-//     _startAt: number = 0,
-//     _limit: number = 5,
-// ) => {
-//     const __startAt = _startAt < 0 ? 0 : _startAt;
-//     const __limit = _limit < 0 ? 0 : _limit;
-//     const __stringSearch = stringSearch.trim().toLowerCase();
-
-//     const userRef = doc(db, "users", id_user);
-//     const userDoc = await getDoc(userRef);
-//     if (!userDoc.exists()) {
-//         throw new Error("User not found");
-//     }
-
-//     const foldersRef = userDoc.data()?.folders as DocumentReference[];
-
-//     const folders = getDocs(query(collection(db, "folders"), where("id_user", "==", id_user)));
-
-// }
 
 export const getFolders = async (
     id_user: string,
@@ -133,4 +102,14 @@ export const getFolders = async (
     });
 
     return { folders , numOfTotalFolders };
+}
+
+export const getFolder = async (id_folder: string | undefined) => {
+    if (!id_folder) throw new Error("Folder id is not provided");
+    const folderRef = doc(db, "folders", id_folder);
+    const folderDoc = await getDoc(folderRef);
+    if (folderDoc.exists()){
+        return folderDoc.data() as FolderType;
+    }
+    return null;
 }

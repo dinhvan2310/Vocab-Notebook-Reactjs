@@ -1,8 +1,8 @@
 import { ArrowDown2 } from 'iconsax-react';
+import { useState } from 'react';
+import SpaceComponent from '../commonComponent/Space/SpaceComponent';
 import TextComponent from '../commonComponent/Text/TextComponent';
 import './SelectComponent.scss';
-import SpaceComponent from '../commonComponent/Space/SpaceComponent';
-import { useEffect, useState } from 'react';
 
 interface Data<T> {
     label: string;
@@ -20,6 +20,7 @@ interface SelectComponentProps<T> {
     hoverColor?: string;
     disabled?: boolean;
     style?: React.CSSProperties;
+    optionStyle?: React.CSSProperties;
 }
 function SelectComponent(props: SelectComponentProps<string>) {
     const {
@@ -31,7 +32,8 @@ function SelectComponent(props: SelectComponentProps<string>) {
         hoverColor = 'var(--primary-color)',
         style,
         positionPopup = 'bottom',
-        disabled = false
+        disabled = false,
+        optionStyle
     } = props;
 
     const [isHover, setIsHover] = useState(false);
@@ -71,7 +73,9 @@ function SelectComponent(props: SelectComponentProps<string>) {
             </div>
 
             {isOpen && (
-                <div className={`options ${positionPopup === 'top' ? 'top' : 'bottom'}`}>
+                <div
+                    className={`options ${positionPopup === 'top' ? 'top' : 'bottom'}`}
+                    style={optionStyle}>
                     {options.map((option, index) => (
                         <div
                             key={index}

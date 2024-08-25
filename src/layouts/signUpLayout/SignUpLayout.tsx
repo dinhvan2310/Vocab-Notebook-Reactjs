@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FacebookSVG from '../../assets/icons/icons8-facebook.svg';
 import GoogleSVG from '../../assets/icons/icons8-google.svg';
 import imageWallpaper from '../../assets/wallpapers/loginsignupWallpaper.png';
@@ -12,6 +12,7 @@ import ButtonComponent from '../../components/commonComponent/Button/ButtonCompo
 import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import TabsComponent from '../../components/Tabs/TabsComponent';
+import { useNavigate } from 'react-router-dom';
 
 function SignUpLayout() {
     const { isDesktopOrLaptop } = useResponsive();
@@ -20,6 +21,15 @@ function SignUpLayout() {
 
     const [signInWithGoogleLoading, setSignInWithGoogleLoading] = useState(false);
     const [signInWithFacebookLoading, setSignInWithFacebookLoading] = useState(false);
+
+    const navigate = useNavigate();
+
+    const { user } = useAuth();
+    useEffect(() => {
+        if (user) {
+            navigate('/');
+        }
+    }, [user]);
 
     const LoginForm = () => {
         const [email, setEmail] = useState('');
@@ -40,7 +50,8 @@ function SignUpLayout() {
                     borderType="all"
                     inputStyle={{
                         color: 'var(--secondary-text-color)',
-                        fontSize: '1.6em'
+                        fontSize: '1.6em',
+                        padding: '24px 16px'
                     }}
                 />
                 <SpaceComponent height={32} />
@@ -49,7 +60,8 @@ function SignUpLayout() {
                     style={{}}
                     inputStyle={{
                         color: 'var(--secondary-text-color)',
-                        fontSize: '1.6em'
+                        fontSize: '1.6em',
+                        padding: '24px 16px'
                     }}
                     placeholder="Nhập mật khẩu của bạn"
                     onChange={(value) => {

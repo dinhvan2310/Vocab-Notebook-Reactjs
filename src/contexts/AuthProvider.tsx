@@ -1,14 +1,12 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react';
-import AuthContextType from '../types/AuthContextType';
 import { User } from 'firebase/auth';
-import { auth } from '../firebase/firebase-config';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 import {
-    signInWithGoogle,
+    authStateChange,
     signInWithFacebook,
-    signOut,
-    authStateChange
+    signInWithGoogle,
+    signOut
 } from '../firebase/userAPI';
-import { useNavigate } from 'react-router-dom';
+import AuthContextType from '../types/AuthContextType';
 
 interface AuthProviderProps {
     children: React.ReactNode;
@@ -18,18 +16,14 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider(props: AuthProviderProps) {
     const { children } = props;
+    const [user, setUser] = useState<User | null>(null);
 
-    const [user, setUser] = useState<User | null>(auth.currentUser);
-
-    const navigate = useNavigate();
     useEffect(() => {
         const unsubscribe = authStateChange((user) => {
-            setUser(user);
+            setUser(user ?? null);
             if (user) {
-                console.log('User logged in: ', user);
-                navigate('/');
+                console.log('User logged in');
             } else {
-                navigate('/login');
                 console.log('User logged out');
             }
         });
@@ -41,7 +35,7 @@ function AuthProvider(props: AuthProviderProps) {
 
     const value = useMemo(() => {
         return {
-            user: user ? user : null,
+            user,
             signInWithGoogle,
             signInWithFacebook,
             signOut

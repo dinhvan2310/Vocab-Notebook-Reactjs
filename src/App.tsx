@@ -11,6 +11,7 @@ import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
 import WordLayout from './layouts/wordLayout/WordLayout';
+import AuthProvider from './contexts/AuthProvider';
 function App() {
     useEffect(() => {
         //  Set the theme
@@ -37,45 +38,37 @@ function App() {
     const router = createBrowserRouter([
         {
             path: '/',
-            element: <AuthLayout />,
+            element: <MainLayout />,
             children: [
                 {
                     path: '/',
-                    element: <MainLayout />,
-                    children: [
-                        {
-                            path: '/',
-                            element: <ProtectedRoute />,
-                            children: [
-                                {
-                                    path: '/',
-                                    element: <HomeLayout />
-                                },
-                                {
-                                    path: 'user/:username/folders',
-                                    element: <FoldersLayout />
-                                },
-                                {
-                                    path: '/user/:username/folders/:id_folder',
-                                    element: <WordSetsLayout />
-                                },
-                                {
-                                    path: '/create-wordset',
-                                    element: <WordLayout />
-                                },
-                                {
-                                    path: 'exams',
-                                    element: <ExamsLayout />
-                                }
-                            ]
-                        }
-                    ]
+                    element: <HomeLayout />
                 },
                 {
-                    path: '/login',
-                    element: <SignUpLayout />
+                    path: 'user/:userid/folders',
+                    element: <FoldersLayout />
+                },
+                {
+                    path: '/user/:userid/folders/:folderid',
+                    element: <WordSetsLayout />
+                },
+                {
+                    path: 'exams',
+                    element: <ExamsLayout />
+                },
+                {
+                    path: '/create-wordset',
+                    element: (
+                        <ProtectedRoute>
+                            <WordLayout />
+                        </ProtectedRoute>
+                    )
                 }
             ]
+        },
+        {
+            path: '/login',
+            element: <SignUpLayout />
         }
     ]);
 
@@ -83,7 +76,9 @@ function App() {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
+            <AuthProvider>
+                <RouterProvider router={router} />
+            </AuthProvider>
         </QueryClientProvider>
     );
 }

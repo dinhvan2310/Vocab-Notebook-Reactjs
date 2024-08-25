@@ -6,8 +6,8 @@
     }
 
     .word-content {
-        margin-top: 64px;
-
+        margin-top: 48px;
+        
         .word-card:not(:last-child) {
             margin-bottom: 48px;
         }
@@ -16,5 +16,10 @@
     .footer-container {
         margin-top: 48px;
         margin-bottom: 48px;
+        width: 100%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }

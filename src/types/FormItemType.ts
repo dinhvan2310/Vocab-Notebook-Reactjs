@@ -1,5 +1,5 @@
 export default interface FormItemType {
-    type: 'text' | 'password' | 'email' | 'switch' | 'textarea';
+    type: 'text' | 'password' | 'email' | 'textarea';
     label: string;
     placeholder?: string;
     value?: string;

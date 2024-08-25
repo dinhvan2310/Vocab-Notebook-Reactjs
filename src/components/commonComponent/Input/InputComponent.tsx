@@ -17,6 +17,7 @@ interface InputComponentProps {
     fontSize?: string;
     // effect only borderType = 'bottom'
     animationType?: 'none' | 'slideInLeft' | 'slideCenter';
+    tabindex?: number;
 }
 
 function InputComponent(props: InputComponentProps) {
@@ -32,22 +33,9 @@ function InputComponent(props: InputComponentProps) {
         label,
         width = '100%',
         fontSize = '1.6em',
-        animationType = 'none'
+        animationType = 'none',
+        tabindex
     } = props;
-
-    // const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    // useEffect(() => {
-    //     const event = textareaRef.current?.addEventListener('input', (e) => {
-    //         const target = e.target as HTMLTextAreaElement;
-    //         target.style.height = 'auto';
-    //         if (target.scrollHeight > 92) {
-    //             target.style.height = target.scrollHeight + 'px';
-    //         } else {
-    //             target.style.height = '43px';
-    //         }
-    //     });
-    // }, [textareaRef]);
 
     return (
         <div
@@ -70,25 +58,13 @@ function InputComponent(props: InputComponentProps) {
                         style={{
                             width: width,
                             fontSize: fontSize,
-                            resize: 'none'
+                            resize: 'none',
+                            ...inputStyle
                         }}
                     />
                 ) : (
-                    // <textarea
-                    //     ref={textareaRef}
-                    //     value={value}
-                    //     onChange={(e) => onChange(e.target.value)}
-                    //     className={`text-area ${borderType}`}
-                    //     placeholder={placeholder}
-                    //     style={{
-                    //         width: width,
-                    //         height: '43px',
-                    //         fontSize: fontSize,
-
-                    //         ...inputStyle
-                    //     }}
-                    // />
                     <input
+                        tabIndex={tabindex}
                         type={type}
                         className={`input ${borderType}`}
                         style={{
@@ -107,7 +83,7 @@ function InputComponent(props: InputComponentProps) {
                     }}
                     className="bar"></span>
             </div>
-            <TextComponent text={label?.toUpperCase() ?? ''} fontSize="1.2em" className="label" />
+            <TextComponent text={label?.toUpperCase() ?? ''} fontSize="1.1em" className="label" />
         </div>
     );
 }

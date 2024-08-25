@@ -28,6 +28,7 @@ export const signInWithGoogle = async () => {
                     folders: [],
                 }
                 addUser(user);
+                
             }
         });
     });
@@ -52,7 +53,7 @@ export const signInWithFacebook = async () => {
 };
 export const signOut = () => {
     auth.signOut().then(() => {
-        console.log('Logged out');
+                
     });
 };
 export const authStateChange = (callback: (user: User | null) => void) => {

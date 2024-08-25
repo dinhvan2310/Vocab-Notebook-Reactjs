@@ -20,10 +20,14 @@ interface ButtonComponentProps {
     isBorder?: boolean;
     type?: 'submit' | 'button' | 'reset';
     buttonWidth?: number | 'auto' | '100%';
+    className?: string;
+    children?: ReactNode;
+    tabindex?: number;
 }
 function ButtonComponent(props: ButtonComponentProps) {
     const {
         text,
+        className,
         onClick = () => {},
         type = 'button',
         icon,
@@ -37,7 +41,9 @@ function ButtonComponent(props: ButtonComponentProps) {
         fontSize = '1.2em',
         isLoading = false,
         buttonWidth = 'auto',
-        disabled = false
+        disabled = false,
+        tabindex,
+        children
     } = props;
 
     const [isHover, setIsHover] = React.useState(false);
@@ -53,9 +59,10 @@ function ButtonComponent(props: ButtonComponentProps) {
 
     return (
         <button
+            tabIndex={tabindex ?? 0}
             type={type}
             onClick={onClick}
-            className={`button`}
+            className={`button ${className ?? ''}`}
             disabled={disabled || isLoading}
             onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => {
@@ -66,12 +73,13 @@ function ButtonComponent(props: ButtonComponentProps) {
             onMouseUp={() => setIsActive(false)}
             style={{
                 backgroundColor: backGroundColor,
-                border: isBorder ? `2px solid ${borderColor}` : 'none',
+                border: isBorder ? `1px solid ${borderColor}` : 'none',
                 pointerEvents: isLoading || disabled ? 'none' : 'auto',
                 width: buttonWidth,
                 ...style
             }}>
-            {icon && (
+            {children}
+            {icon && !children && (
                 <div
                     style={{
                         visibility: isLoading ? 'hidden' : 'visible',
@@ -82,34 +90,36 @@ function ButtonComponent(props: ButtonComponentProps) {
                     {icon}
                 </div>
             )}
-            {icon && text && <SpaceComponent width={8} />}
-            <div
-                style={{
-                    position: 'relative',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100%'
-                }}>
-                <TextComponent
-                    text={text ?? ''}
-                    textColor={textColor}
-                    fontSize={fontSize}
-                    isVisible={!isLoading}
-                />
-                <Lottie
+            {icon && text && !children && <SpaceComponent width={8} />}
+            {!children && (
+                <div
                     style={{
-                        position: 'absolute',
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        display: isLoading ? 'block' : 'none'
-                    }}
-                    options={{ loop: true, autoplay: true, animationData: LoadingAnimation }}
-                    height={80}
-                    width={80}
-                />
-            </div>
+                        position: 'relative',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%'
+                    }}>
+                    <TextComponent
+                        text={text ?? ''}
+                        textColor={textColor}
+                        fontSize={fontSize}
+                        isVisible={!isLoading}
+                    />
+                    <Lottie
+                        style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            display: isLoading ? 'block' : 'none'
+                        }}
+                        options={{ loop: true, autoplay: true, animationData: LoadingAnimation }}
+                        height={80}
+                        width={80}
+                    />
+                </div>
+            )}
         </button>
     );
 }

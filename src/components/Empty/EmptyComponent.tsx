@@ -8,7 +8,7 @@ interface EmptyProps {
 }
 
 function EmptyComponent(props: EmptyProps) {
-    const { text, className, style } = props;
+    const { text, className = '', style } = props;
     return (
         <div className={`empty-container ${className}`} style={style}>
             <img src={EmptySVG} alt="empty" />

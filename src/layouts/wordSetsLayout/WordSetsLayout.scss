@@ -1,4 +1,7 @@
 .wordset-layout-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     
     .top-bar {
 
@@ -9,5 +12,12 @@
         .top-bar-query {
             width: 100%;
         }
+    }
+
+    .word-sets-container {
+        margin-top: 48px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 }

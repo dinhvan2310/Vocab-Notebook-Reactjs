@@ -12,6 +12,11 @@ import WordCardComponent from '../../components/WordCard/WordCardComponent';
 import { useResponsive } from '../../hooks/useResponsive';
 import { WordType } from '../../types/WordType';
 import './WordLayout.scss';
+import EmptyComponent from '../../components/Empty/EmptyComponent';
+import { WordSetType } from '../../types/WordSetType';
+import { Timestamp } from 'firebase/firestore';
+import { useMutation } from '@tanstack/react-query';
+import { addWordSet } from '../../firebase/wordSetAPI';
 
 function WordLayout() {
     const location = useLocation();
@@ -19,57 +24,77 @@ function WordLayout() {
     const { isTabletOrMobile, isMobile } = useResponsive();
 
     const [title, setTitle] = useState('');
+    const [titleError, setTitleError] = useState('');
 
-    console.log(location.state);
-
-    const [term, setTerm] = useState(['', '', '', '', '']);
-    const [definition, setDefinition] = useState(['', '', '', '', '']);
+    const mutation = useMutation({
+        mutationFn: async (newWordSet: WordSetType) => {
+            console.log(newWordSet);
+            return addWordSet(newWordSet);
+        }
+    });
 
     const [data, setData] = useState<WordType[]>([
         {
             name: '',
-            meanings: [],
-            contexts: []
+            meanings: [
+                {
+                    meaning: ''
+                }
+            ],
+            contexts: [
+                {
+                    context: ''
+                }
+            ]
         },
         {
             name: '',
-            meanings: [],
-            contexts: []
-        },
-        {
-            name: '',
-            meanings: [],
-            contexts: []
-        },
-        {
-            name: '',
-            meanings: [],
-            contexts: []
-        },
-        {
-            name: '',
-            meanings: [],
-            contexts: []
+            meanings: [
+                {
+                    meaning: ''
+                }
+            ],
+            contexts: [
+                {
+                    context: ''
+                }
+            ]
         }
     ]);
 
-    console.log(term, definition);
+    const handleSave = async () => {
+        console.log(data);
 
-    useEffect(() => {
-        const newData = term.map((item, index) => {
+        if (title === '') {
+            setTitleError('Title is required');
+            return;
+        }
+
+        const words: WordType[] = data.map((item) => {
             return {
-                name: item,
-                meanings: [
-                    {
-                        meaning: definition[index]
-                    }
-                ],
-                contexts: []
+                name: item.name,
+                meanings: item.meanings,
+                contexts: item.contexts
             };
         });
 
-        setData(newData);
-    }, [term, definition]);
+        const wordSet: WordSetType = {
+            name: title,
+            id_folder: location.state.folder.id_folder,
+            modifiedAt: Timestamp.now(),
+            createAt: Timestamp.now(),
+            visibility: 'public',
+            words: words
+        };
+
+        mutation.mutate(wordSet);
+    };
+
+    const checkCanSave = () => {
+        return data.every((item) => {
+            return item.name !== '' && item.meanings[0].meaning !== '';
+        });
+    };
 
     return (
         <div className="word-layout-container">
@@ -82,8 +107,8 @@ function WordLayout() {
                         }}>
                         <TitleComponent
                             title="Create a new word set"
-                            fontSize="2.2em"
-                            fontWeight={800}
+                            fontSize="2.4em"
+                            fontWeight={700}
                         />
                     </RowComponent>
                     <SpaceComponent height={12} />
@@ -97,11 +122,10 @@ function WordLayout() {
                             type="text"
                             style={{
                                 borderRadius: '0px',
-                                color: 'var(--text-color)',
                                 maxWidth: '600px'
                             }}
                             borderType="bottom"
-                            label="TITLE"
+                            label={titleError !== '' ? titleError : 'Title'}
                             value={title}
                             onChange={(value) => setTitle(value)}
                             animationType="slideInLeft"
@@ -111,9 +135,10 @@ function WordLayout() {
                                 marginLeft: '12px'
                             }}>
                             <ButtonComponent
+                                tabindex={-1}
                                 icon={<Add size={20} />}
                                 text="Import"
-                                onClick={() => navigate('/')}
+                                onClick={() => {}}
                                 backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--bg-active-color)"
@@ -127,15 +152,18 @@ function WordLayout() {
                             />
                             <SpaceComponent width={12} />
                             <ButtonComponent
+                                tabindex={-1}
                                 text="Create"
-                                onClick={() => navigate('/')}
-                                backgroundColor="var(--bg-color)"
-                                backgroundHoverColor="var(--bg-hover-color)"
-                                backgroundActiveColor="var(--bg-active-color)"
-                                isBorder={true}
+                                onClick={() => {
+                                    handleSave();
+                                }}
+                                backgroundColor="var(--primary-color)"
+                                backgroundHoverColor="var(--primary-hover-color)"
+                                backgroundActiveColor="var(--primary-active-color)"
+                                isBorder={false}
                                 borderColor="var(--border-color)"
-                                disabled={true}
-                                textColor="var(--secondary-text-color)"
+                                disabled={!checkCanSave()}
+                                textColor="var(--white-color)"
                                 style={{
                                     height: '40px',
                                     padding: '0 12px'
@@ -151,32 +179,39 @@ function WordLayout() {
                 </ColumnComponent>
             </header>
             <main className="word-content">
+                {data.length === 0 && <EmptyComponent />}
                 {data.map((item, index) => {
                     return (
                         <WordCardComponent
                             onDelete={(i) => {
-                                const newTerm = [...term];
-                                const newDefinition = [...definition];
-
-                                newTerm.splice(i, 1);
-                                newDefinition.splice(i, 1);
-
-                                setTerm(newTerm);
-                                setDefinition(newDefinition);
+                                const newData = [...data];
+                                newData.splice(i, 1);
+                                setData(newData);
                             }}
                             className="word-card"
                             index={index}
-                            term={term[index]}
-                            definition={definition[index]}
+                            term={data[index].name}
+                            definition={data[index].meanings[0]?.meaning}
+                            context={data[index].contexts.map((item) => item.context)}
                             onDefinitionChange={(i, value) => {
-                                const newDefinition = [...definition];
-                                newDefinition[i] = value;
-                                setDefinition(newDefinition);
+                                const newData = [...data];
+                                newData[index].meanings[0].meaning = value;
+                                setData(newData);
                             }}
                             onTermChange={(i, value) => {
-                                const newTerm = [...term];
-                                newTerm[i] = value;
-                                setTerm(newTerm);
+                                const newData = [...data];
+                                newData[index].name = value;
+                                setData(newData);
+                            }}
+                            onContextChange={(i, values) => {
+                                console.log(values);
+                                const newData = [...data];
+                                newData[index].contexts = values.map((item) => {
+                                    return {
+                                        context: item
+                                    };
+                                });
+                                setData(newData);
                             }}
                         />
                     );
@@ -184,24 +219,27 @@ function WordLayout() {
             </main>
             <footer className="footer-container">
                 <ButtonComponent
-                    text="Add new word"
-                    icon={<Add size={20} color="var(--primary-color)" />}
+                    text="Add"
+                    icon={<Add size={24} color="var(--text-color)" />}
                     onClick={() => {
-                        const newTerm = [...term, ''];
-                        const newDefinition = [...definition, ''];
-                        setTerm(newTerm);
-                        setDefinition(newDefinition);
+                        setData([
+                            ...data,
+                            {
+                                name: '',
+                                meanings: [],
+                                contexts: []
+                            }
+                        ]);
                     }}
-                    backgroundColor="var(--bg-color)"
-                    backgroundHoverColor="var(--bg-hover-color)"
+                    backgroundColor="var(--bg-hover-color)"
+                    backgroundHoverColor="var(--bg-active-color)"
                     backgroundActiveColor="var(--bg-active-color)"
-                    isBorder={true}
-                    borderColor="var(--primary-color)"
-                    textColor="var(--primary-color)"
+                    isBorder={false}
+                    borderColor="var(--secondary-text-color)"
+                    textColor="var(--text-color)"
                     style={{
-                        height: '86px',
-                        padding: '0 12px',
-                        width: '100%'
+                        height: '48px',
+                        padding: '12px 48px'
                     }}
                 />
             </footer>

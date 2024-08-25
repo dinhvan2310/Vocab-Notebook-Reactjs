@@ -1,16 +1,17 @@
-import { useNavigate, useOutlet } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-export const ProtectedRoute = () => {
-    const outlet = useOutlet();
-    const navigate = useNavigate();
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+}
+
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const { user } = useAuth();
 
-    if (!user) {
-        navigate('/login');
+    if (user === null) {
+        document.location.href = '/login';
     }
 
-    return outlet;
+    return children;
 };
 
 export default ProtectedRoute;

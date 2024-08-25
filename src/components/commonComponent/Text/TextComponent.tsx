@@ -12,9 +12,10 @@ interface TextComponentProps {
 
 function TextComponent(props: TextComponentProps) {
     const { text, style, fontSize, textColor, isVisible = 'false', className, children } = props;
+
     return (
         <div
-            className={className}
+            className={className ?? ''}
             style={{
                 visibility: isVisible ? 'visible' : 'hidden',
                 fontSize: fontSize || '1.4em',
@@ -22,7 +23,7 @@ function TextComponent(props: TextComponentProps) {
                 color: textColor || 'var(--secondary-text-color)',
                 ...style
             }}>
-            <p>{text || children}</p>
+            {text || children}
         </div>
     );
 }

@@ -5,7 +5,13 @@ interface GridRowProps {
     children: React.ReactNode;
 
     wrap?: boolean;
-    justify?: 'start' | 'end' | 'center' | 'between' | 'around';
+    justify?:
+        | 'flex-start'
+        | 'flex-end'
+        | 'center'
+        | 'space-between'
+        | 'space-around'
+        | 'space-evenly';
     align?: 'top' | 'middle' | 'bottom';
     gutter?: number | number[];
 
@@ -33,7 +39,7 @@ function GridRow(props: GridRowProps) {
             style={{
                 display: 'flex',
                 flexWrap: wrap ? 'wrap' : 'nowrap',
-                justifyContent: justify ? `flex-${justify}` : 'flex-start',
+                justifyContent: justify ? `${justify}` : 'flex-start',
                 alignItems: align ? `flex-${align}` : 'stretch',
                 marginLeft: gutterX ? `${gutterX / -2}px` : 0,
                 marginRight: gutterX ? `${gutterX / -2}px` : 0,

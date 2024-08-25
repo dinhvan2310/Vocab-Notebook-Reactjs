@@ -52,7 +52,8 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
                             item.borderType === 'top' || item.borderType === 'top-bottom'
                                 ? '1px solid var(--border-color)'
                                 : 'none',
-                        display: item.disabled ? 'none' : 'block'
+                        pointerEvents: item.disabled ? 'none' : 'auto', //  Disable pointer events if the item is disabled
+                        opacity: item.disabled ? 0.5 : 1 //  Reduce the opacity if the item is disabled
                     }}>
                     <div
                         key={index}

@@ -1,34 +1,35 @@
+import { useQuery } from '@tanstack/react-query';
 import { Unsubscribe } from 'firebase/auth/web-extension';
 import { ArrowCircleDown, ArrowCircleUp, CloseCircle, Sort } from 'iconsax-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import ListLoadingAnimation from '../../assets/animation/listLoading.json';
 import CardComponent from '../../components/Card/CardComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
-import PaginationComponent from '../../components/Pagination/PaginationComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
+import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
 import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import EmptyComponent from '../../components/Empty/EmptyComponent';
 import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
+import GridCol from '../../components/Grid/GridCol';
+import GridRow from '../../components/Grid/GridRow';
+import PaginationComponent from '../../components/Pagination/PaginationComponent';
 import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
+import SelectComponent from '../../components/Select/SelectComponent';
 import { getFolders, onSnapshotFolders, removeFolder } from '../../firebase/folderAPI';
+import { getUser } from '../../firebase/userAPI';
 import useDebounce from '../../hooks/useDebounce';
 import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
-import SelectComponent from '../../components/Select/SelectComponent';
-import { useQuery } from '@tanstack/react-query';
-import ListLoadingAnimation from '../../assets/animation/listLoading.json';
-import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
-import GridRow from '../../components/Grid/GridRow';
-import GridCol from '../../components/Grid/GridCol';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
-    const { username } = useParams();
-    const location = useLocation();
+    const { userid } = useParams();
+
     const navigate = useNavigate();
     const { isTabletOrMobile } = useResponsive();
 
@@ -60,8 +61,9 @@ function FoldersLayout() {
     const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
     // Get folders from data object and setFolders
     const fetchFolders = async () => {
+        if (!userid) return null;
         const data = await getFolders(
-            location.state.uid,
+            userid,
             deBoundSearch,
             sortByName,
             sortByDate,
@@ -72,33 +74,32 @@ function FoldersLayout() {
     };
     // Query
     const query = useQuery({
-        queryKey: [
-            'folders',
-            location.state.uid,
-            deBoundSearch,
-            sortByName,
-            sortByDate,
-            startAt,
-            limit
-        ],
-        queryFn: fetchFolders,
-        staleTime: 1000
-        // refetchOnWindowFocus: false
+        queryKey: ['folders', deBoundSearch, sortByName, sortByDate, startAt, limit, userid],
+        queryFn: fetchFolders
     });
 
-    //
+    const userQuery = useQuery({
+        queryKey: ['user', userid],
+        queryFn: async () => {
+            if (!userid) return null;
+            const data = await getUser(userid);
+            return data;
+        }
+    });
+
+    // snap shot folders when add or remove folder from database
     useEffect(() => {
-        let unsubscribe: Promise<Unsubscribe>;
-        if (username) {
-            unsubscribe = onSnapshotFolders(() => {
+        let unsubscribe: Unsubscribe;
+        if (userid) {
+            unsubscribe = onSnapshotFolders(userid, () => {
                 query.refetch();
             });
         }
         return () => {
             // cleanup
-            unsubscribe && unsubscribe.then((f) => f());
+            unsubscribe();
         };
-    }, [username]);
+    }, [userid]);
     //
 
     const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
@@ -139,12 +140,7 @@ function FoldersLayout() {
     ];
 
     const handleNavigateToWordSets = (folder: FolderType) => {
-        navigate(`/user/${username}/folders/${folder.id_folder}`, {
-            state: {
-                ...location.state,
-                folder
-            }
-        });
+        navigate(`/user/${userid}/folders/${folder.id_folder}`);
     };
 
     return (
@@ -153,7 +149,7 @@ function FoldersLayout() {
                 {!isTabletOrMobile && (
                     <RowComponent alignItems="center">
                         <img
-                            src={location.state?.photoURL || ''}
+                            src={userQuery.data?.photoURL || ''}
                             alt="avatar"
                             style={{
                                 objectFit: 'cover',
@@ -164,12 +160,9 @@ function FoldersLayout() {
                         />
                         <SpaceComponent width={16} />
                         <ColumnComponent alignItems="flex-start">
-                            <TitleComponent
-                                title={location.state?.displayName || ''}
-                                fontSize="1.5em"
-                            />
+                            <TitleComponent title={userQuery.data?.name || ''} fontSize="1.5em" />
                             <SpaceComponent height={4} />
-                            <TextComponent text={location.state?.email || ''} fontSize="1.3em" />
+                            <TextComponent text={userQuery.data?.email || ''} fontSize="1.3em" />
                         </ColumnComponent>
                     </RowComponent>
                 )}
@@ -182,16 +175,18 @@ function FoldersLayout() {
                     <SearchBoxComponent
                         searchWidth={'100%'}
                         placeholder="Search folders"
-                        backGroundColor="var(--bg-color)"
+                        backGroundColor="transparent"
                         borderType="none"
-                        borderRadius={0}
+                        borderRadius={8}
+                        style={{
+                            backgroundColor: 'var(--bg-color)'
+                        }}
                         borderColor="var(--border-color)"
                         value={search}
                         onChange={(value) => {
                             setSearch(value);
                         }}
                     />
-                    <SpaceComponent width={8} />
                     <FloatingActionButtonComponent
                         icon={<Sort size="20" />}
                         menuItems={topBar_commandBar_menuItems_sort}
@@ -199,6 +194,10 @@ function FoldersLayout() {
                         menuItemsPosition="left"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
+                        containerStyle={{
+                            height: '40px',
+                            padding: '0 8px'
+                        }}
                     />
                 </div>
             </div>
@@ -216,7 +215,11 @@ function FoldersLayout() {
                         }}
                     />
                 ) : (
-                    <GridRow gutter={[24, 24]}>
+                    <GridRow
+                        gutter={[24, 24]}
+                        style={{
+                            height: '100%'
+                        }}>
                         {query.data?.folders.length === 0 && (
                             <EmptyComponent text="No folders found" />
                         )}
@@ -278,6 +281,7 @@ function FoldersLayout() {
                 <PaginationComponent
                     align="right"
                     pageSize={limit}
+                    color="var(--secondary-text-color)"
                     currentPage={currentPage}
                     numsButton={5}
                     total={query.data?.numOfTotalFolders as number}
@@ -296,6 +300,13 @@ function FoldersLayout() {
                     }}
                     width="100px"
                     color="var(--secondary-text-color)"
+                    style={{
+                        backgroundColor: 'var(--bg-color)',
+                        borderColor: 'var(--border-color)'
+                    }}
+                    optionStyle={{
+                        backgroundColor: 'var(--bg-color)'
+                    }}
                     hoverColor="var(--primary-color)"
                 />
             </RowComponent>

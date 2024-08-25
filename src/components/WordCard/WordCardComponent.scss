@@ -4,22 +4,26 @@
     align-items: center;
     justify-content: center;
 
-    border: 1px solid var(--border-color);
+    // border: 2px solid var(--border-color);
     background-color: var(--bg-color);
     border-radius: 8px;
-    box-shadow: 0 0 8px 0 var(--border-color);
+
+    &:focus-within  {
+    }
 
     .word-card-header {
+        transition: background-color 0.3s;
         padding: 8px 16px;
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
-        border-bottom: 1px solid var(--border-color);
-        background-color: var(--bg-active-color);
+        border-bottom: 4px solid var(--bg-hover-color);
+        // background-color: var(--bg-hover-color);
 
         .word-card-header-index {
+
         }
 
-        .word-card-header-icon-command {
+        .word-card-header-icon-command-delete {
 
             &:hover {
                 color: var(--red-color)
@@ -28,6 +32,17 @@
     }
 
     .word-card-content {
-        padding: 16px 16px;
+        width: 100%;
+        padding: 16px 24px;
+    }
+
+    .word-card-footer {
+
+        .word-card-footer-delete {
+            color: var(--secondary-text-color);
+            &:hover {
+                color: var(--red-color)
+            }
+        }
     }
 }

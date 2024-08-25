@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { Unsubscribe } from 'firebase/firestore';
 import {
     Add,
     ArrowCircleDown,
@@ -10,38 +12,67 @@ import {
     Refresh2,
     Sort
 } from 'iconsax-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import ListLoadingAnimation from '../../assets/animation/listLoading.json';
+import CardComponent from '../../components/Card/CardComponent';
+import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
+import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
 import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
+import EmptyComponent from '../../components/Empty/EmptyComponent';
 import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
-import useDebounce from '../../hooks/useDebounce';
-import { useResponsive } from '../../hooks/useResponsive';
-import './WordSetsLayout.scss';
-import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
+import GridCol from '../../components/Grid/GridCol';
+import GridRow from '../../components/Grid/GridRow';
 import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
+import { getWordSets, onSnapshotWordSets } from '../../firebase/wordSetAPI';
+import { useResponsive } from '../../hooks/useResponsive';
 import { MenuItemInterface } from '../../types/MenuItemType';
-import { Timestamp } from 'firebase/firestore';
+import './WordSetsLayout.scss';
+import { getFolder } from '../../firebase/folderAPI';
 
 function WordSetsLayout() {
-    const { username } = useParams();
-    const location = useLocation();
+    const { userid, folderid } = useParams();
     const navigate = useNavigate();
     const { isTabletOrMobile, isMobile } = useResponsive();
 
     const [search, setSearch] = useState('');
-    const deBoundSearch = useDebounce<string>(search, 500);
     // sort by name and date, but can chossen two options
     const [sortByName, setSortByName] = useState<'asc' | 'desc' | 'none'>('none');
     const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
-    const [startAt, setStartAt] = useState(0);
-    const [limit, setLimit] = useState(10);
-    const [currentPage, setCurrentPage] = useState(1);
 
-    console.log(location.state);
+    const query = useQuery({
+        queryKey: ['wordSets', folderid],
+        queryFn: async () => {
+            const data = await getWordSets(folderid);
+            return data;
+        }
+    });
+
+    const folderQuery = useQuery({
+        queryKey: ['folders', userid],
+        queryFn: async () => {
+            const data = await getFolder(folderid);
+            return data;
+        }
+    });
+
+    useEffect(() => {
+        let unsubscribe: Unsubscribe;
+        if (userid) {
+            console.log(folderid);
+            unsubscribe = onSnapshotWordSets(folderid, () => {
+                query.refetch();
+            });
+        }
+        return () => {
+            unsubscribe();
+        };
+    }, [userid, folderid]);
+    //
 
     const topBar_command_1: MenuItemInterface[] = [
         {
@@ -49,11 +80,11 @@ function WordSetsLayout() {
             text: 'Create Word Set',
             icon: <FolderAdd size="20" />,
             onClick: () => {
-                navigate(`/create-wordset?$inFolder=${location.state.folder.id_folder}`, {
-                    state: {
-                        folder: location.state.folder
-                    }
-                });
+                // navigate(`/create-wordset?$inFolder=${location.state.folder.id_folder}`, {
+                //     state: {
+                //         folder: location.state.folder
+                //     }
+                // });
             }
         }
     ];
@@ -115,7 +146,7 @@ function WordSetsLayout() {
         <div className="wordset-layout-container" style={{}}>
             <ColumnComponent className="top-bar">
                 <RowComponent className="top-bar-header" justifyContent="space-between">
-                    <TitleComponent title={location.state.folder.name} fontSize="3.2em" />
+                    <TitleComponent title={folderQuery.data?.name ?? ''} fontSize="3.2em" />
                     <RowComponent className="top-bar-header-command">
                         <ButtonComponent
                             style={{
@@ -136,7 +167,7 @@ function WordSetsLayout() {
                             containerStyle={{
                                 height: '40px',
                                 width: '40px',
-                                border: '2px solid var(--border-color)'
+                                border: '1px solid var(--border-color)'
                             }}
                             backgroundColor="var(--bg-color)"
                             backgroundHoverColor="var(--bg-hover-color)"
@@ -149,7 +180,7 @@ function WordSetsLayout() {
                             containerStyle={{
                                 height: '40px',
                                 width: '40px',
-                                border: '2px solid var(--border-color)'
+                                border: '1px solid var(--border-color)'
                             }}
                             backgroundColor="var(--bg-color)"
                             backgroundHoverColor="var(--bg-hover-color)"
@@ -172,7 +203,7 @@ function WordSetsLayout() {
                                 textWrap: 'nowrap'
                             }}
                             text={`Last updated:\u00A0 \u00A0 ${new Date(
-                                location.state.folder.modifiedAt?.seconds * 1000
+                                (folderQuery.data?.modifiedAt.seconds || 0) * 1000
                             ).toDateString()}`}
                         />
                     </RowComponent>
@@ -184,27 +215,97 @@ function WordSetsLayout() {
                         <SearchBoxComponent
                             searchWidth={isMobile ? '100%' : '350px'}
                             placeholder="Search folders"
-                            backGroundColor="var(--bg-active-color)"
+                            backGroundColor="var(--bg-color)"
                             borderType="none"
                             borderRadius={8}
-                            borderColor="var(--border-color)"
                             value={search}
                             onChange={(value) => {
                                 setSearch(value);
                             }}
                         />
-                        <SpaceComponent width={8} />
                         <FloatingActionButtonComponent
                             icon={<Sort size="20" />}
                             menuItems={topBar_query_menuItems_sort}
                             text="Sort"
+                            containerStyle={{
+                                height: '40px',
+                                padding: '0 8px'
+                            }}
                             menuItemsPosition="left"
+                            backgroundColor="transparent"
                             backgroundHoverColor="var(--bg-hover-color)"
                             backgroundActiveColor="var(--bg-active-color)"
                         />
                     </RowComponent>
                 </RowComponent>
             </ColumnComponent>
+
+            <div className="word-sets-container" style={{}}>
+                {query.isLoading ? (
+                    <SpinComponent
+                        indicator={ListLoadingAnimation}
+                        spinning={true}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                    />
+                ) : (
+                    <GridRow
+                        gutter={[24, 24]}
+                        style={{
+                            height: '100%'
+                        }}>
+                        {query.data?.length === 0 && <EmptyComponent text="No folders found" />}
+                        {query.data?.map((wordSet, index) => {
+                            return (
+                                <GridCol
+                                    span={isTabletOrMobile || query.data?.length === 1 ? 12 : 6}
+                                    key={index}>
+                                    <CardComponent
+                                        className="folder-card"
+                                        haveFloatingButton={true}
+                                        createAt={new Date(
+                                            wordSet.createAt?.seconds * 1000
+                                        ).toDateString()}
+                                        key={index}
+                                        title={wordSet.name}
+                                        hoverable={true}
+                                        subTitle={wordSet.words.length + ' words'}
+                                        onClick={() => {
+                                            // handleNavigateToWordSets(folder);
+                                        }}
+                                        // style={{
+                                        //     width:
+                                        //         isTabletOrMobile || query.data?.folders.length === 1
+                                        //             ? '100%'
+                                        //             : 'calc(50% - 16px)',
+                                        //     margin: 8
+                                        // }}
+                                        menuItems={[
+                                            {
+                                                text: 'Delete',
+                                                onClick: async () => {
+                                                    // await removeFolder(folder.id_folder || '');
+                                                    // setFolders(
+                                                    //     folders.filter(
+                                                    //         (f) => f.id_folder !== folder.id_folder
+                                                    //     )
+                                                    // );
+                                                },
+                                                key: 'delete'
+                                            }
+                                        ]}
+                                    />
+                                </GridCol>
+                            );
+                        })}
+                    </GridRow>
+                )}
+            </div>
         </div>
     );
 }
