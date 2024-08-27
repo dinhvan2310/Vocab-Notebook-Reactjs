@@ -65,8 +65,3 @@
       - translation: string
       - point: number
     ]
-
-
-
-git commit
-

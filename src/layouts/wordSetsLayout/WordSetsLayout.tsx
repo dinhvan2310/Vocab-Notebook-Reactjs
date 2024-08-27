@@ -13,7 +13,7 @@ import {
     Sort
 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
 import CardComponent from '../../components/Card/CardComponent';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
@@ -33,9 +33,12 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './WordSetsLayout.scss';
 import { getFolder } from '../../firebase/folderAPI';
+import { useAuth } from '../../hooks/useAuth';
 
 function WordSetsLayout() {
     const { userid, folderid } = useParams();
+    // destructuring user from useAuth and change variable name
+    const { user: currentUser } = useAuth();
     const navigate = useNavigate();
     const { isTabletOrMobile, isMobile } = useResponsive();
 
@@ -80,12 +83,9 @@ function WordSetsLayout() {
             text: 'Create Word Set',
             icon: <FolderAdd size="20" />,
             onClick: () => {
-                // navigate(`/create-wordset?$inFolder=${location.state.folder.id_folder}`, {
-                //     state: {
-                //         folder: location.state.folder
-                //     }
-                // });
-            }
+                navigate(`/create-wordset?inFolder=${folderid}`);
+            },
+            disabled: currentUser?.uid !== folderQuery.data?.id_user
         }
     ];
     const topBar_command_2: MenuItemInterface[] = [
@@ -95,7 +95,8 @@ function WordSetsLayout() {
             onClick: () => {
                 console.log('delete folder');
             },
-            icon: <FolderCross size="20" />
+            icon: <FolderCross size="20" />,
+            disabled: currentUser?.uid !== folderQuery.data?.id_user
         },
         {
             key: 'edit_folder',
@@ -103,7 +104,8 @@ function WordSetsLayout() {
             onClick: () => {
                 console.log('edit folder');
             },
-            icon: <Edit2 size="20" />
+            icon: <Edit2 size="20" />,
+            disabled: currentUser?.uid !== folderQuery.data?.id_user
         }
     ];
     const topBar_query_menuItems_sort: MenuItemInterface[] = [

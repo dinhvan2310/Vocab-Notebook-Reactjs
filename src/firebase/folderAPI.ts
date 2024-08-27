@@ -39,6 +39,9 @@ export const removeFolder = async (id_folder: string) => {
             //     folders: arrayRemove(folderRef)
             // });
         }
+        else {
+            throw new Error("You don't have permission to delete this folder");
+        }
     }
 }
 

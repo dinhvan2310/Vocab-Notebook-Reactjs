@@ -25,10 +25,15 @@ import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
+import { useAuth } from '../../hooks/useAuth';
+import NotFoundUser from '../../assets/image/no_avatar.png';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
+    // user id from url params
     const { userid } = useParams();
+    // current user who login in
+    const { user: currentUser } = useAuth();
 
     const navigate = useNavigate();
     const { isTabletOrMobile } = useResponsive();
@@ -149,7 +154,7 @@ function FoldersLayout() {
                 {!isTabletOrMobile && (
                     <RowComponent alignItems="center">
                         <img
-                            src={userQuery.data?.photoURL || ''}
+                            src={userQuery.data?.photoURL || NotFoundUser}
                             alt="avatar"
                             style={{
                                 objectFit: 'cover',
@@ -160,9 +165,12 @@ function FoldersLayout() {
                         />
                         <SpaceComponent width={16} />
                         <ColumnComponent alignItems="flex-start">
-                            <TitleComponent title={userQuery.data?.name || ''} fontSize="1.5em" />
+                            <TitleComponent
+                                title={userQuery.data?.name || 'Unknown user'}
+                                fontSize="1.5em"
+                            />
                             <SpaceComponent height={4} />
-                            <TextComponent text={userQuery.data?.email || ''} fontSize="1.3em" />
+                            <TextComponent text={userQuery.data?.email || '...'} fontSize="1.3em" />
                         </ColumnComponent>
                     </RowComponent>
                 )}
@@ -215,11 +223,7 @@ function FoldersLayout() {
                         }}
                     />
                 ) : (
-                    <GridRow
-                        gutter={[24, 24]}
-                        style={{
-                            height: '100%'
-                        }}>
+                    <GridRow gutter={[24, 24]} style={{}}>
                         {query.data?.folders.length === 0 && (
                             <EmptyComponent text="No folders found" />
                         )}
@@ -245,13 +249,6 @@ function FoldersLayout() {
                                         onClick={() => {
                                             handleNavigateToWordSets(folder);
                                         }}
-                                        // style={{
-                                        //     width:
-                                        //         isTabletOrMobile || query.data?.folders.length === 1
-                                        //             ? '100%'
-                                        //             : 'calc(50% - 16px)',
-                                        //     margin: 8
-                                        // }}
                                         menuItems={[
                                             {
                                                 text: 'Delete',
@@ -263,7 +260,8 @@ function FoldersLayout() {
                                                     //     )
                                                     // );
                                                 },
-                                                key: 'delete'
+                                                key: 'delete',
+                                                disabled: currentUser?.uid !== userid
                                             }
                                         ]}
                                     />

@@ -12,7 +12,7 @@ export const addWordSet = async (wordSet: WordSetType) => {
     // add wordSet to folder word_sets array
     const foldersRef = doc(db, "folders", wordSet.id_folder);
     await updateDoc(foldersRef, {
-        word_sets: arrayUnion(foldersRef, wordSetRef)
+        word_sets: arrayUnion( wordSetRef)
     });
     
 }

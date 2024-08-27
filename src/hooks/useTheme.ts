@@ -8,6 +8,7 @@ function useTheme() {
 
     useEffect(() => {
         document.body.dataset.theme = theme;
+        document.documentElement.classList.toggle('dark', theme === 'dark');
         localStorage.setItem('theme', theme)
     }, [theme]);
 

@@ -1,13 +1,13 @@
-import { Add, ArchiveAdd, DocumentUpload, Trash } from 'iconsax-react';
+import { AddSquare, ArchiveAdd, DocumentUpload, MinusSquare, Trash } from 'iconsax-react';
 import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../commonComponent/Column/ColumnComponent';
 import InputComponent from '../commonComponent/Input/InputComponent';
 import RowComponent from '../commonComponent/Row/RowComponent';
 import SpaceComponent from '../commonComponent/Space/SpaceComponent';
 import TitleComponent from '../commonComponent/Title/TitleComponent';
-import './WordCardComponent.scss';
 import GridCol from '../Grid/GridCol';
 import GridRow from '../Grid/GridRow';
+import './WordCardComponent.scss';
 interface WordCardComponentProps {
     index: number;
     className?: string;
@@ -50,22 +50,6 @@ function WordCardComponent(props: WordCardComponentProps) {
                     className="word-card-header-index"
                 />
                 <RowComponent>
-                    <ButtonComponent
-                        tabindex={-1}
-                        icon={<ArchiveAdd size={20} className="word-card-header-icon-command" />}
-                        backgroundColor="transparent"
-                        onClick={() => {
-                            context?.push('');
-                            onContextChange?.(index, context ?? []);
-                        }}
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        style={{
-                            height: '40px',
-                            padding: '0 12px',
-                            color: 'var(--secondary-text-color)'
-                        }}
-                    />
                     <ButtonComponent
                         tabindex={-1}
                         icon={
@@ -152,7 +136,6 @@ function WordCardComponent(props: WordCardComponentProps) {
                                             newContext[i] = value;
                                             onContextChange?.(index, newContext);
                                         }}
-                                        placeholder={i === 0 ? 'Enter context' : ''}
                                         borderType="bottom"
                                         label={'Context ' + (i + 1)}
                                         style={{
@@ -163,7 +146,7 @@ function WordCardComponent(props: WordCardComponentProps) {
                                     <ButtonComponent
                                         className="word-card-footer-delete"
                                         tabindex={-1}
-                                        icon={<Trash size={20} />}
+                                        icon={<MinusSquare size={20} />}
                                         backgroundColor="transparent"
                                         backgroundHoverColor="transparent"
                                         onClick={() => {
@@ -181,6 +164,24 @@ function WordCardComponent(props: WordCardComponentProps) {
                                 </RowComponent>
                             );
                         })}
+
+                        <RowComponent justifyContent="flex-end">
+                            <ButtonComponent
+                                icon={<AddSquare size={20} />}
+                                backgroundColor="transparent"
+                                backgroundHoverColor="var(--bg-hover-color)"
+                                backgroundActiveColor="var(--bg-active-color)"
+                                onClick={() => {
+                                    context?.push('');
+                                    onContextChange?.(index, context ?? []);
+                                }}
+                                style={{
+                                    height: '40px',
+                                    padding: '0 12px',
+                                    color: 'var(--secondary-text-color)'
+                                }}
+                            />
+                        </RowComponent>
                     </GridCol>
                 </GridRow>
                 <SpaceComponent height={16} />

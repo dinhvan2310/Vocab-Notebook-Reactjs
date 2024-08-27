@@ -1,6 +1,6 @@
 import { Add, Setting2 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
 import InputComponent from '../../components/commonComponent/Input/InputComponent';
@@ -17,11 +17,15 @@ import { WordSetType } from '../../types/WordSetType';
 import { Timestamp } from 'firebase/firestore';
 import { useMutation } from '@tanstack/react-query';
 import { addWordSet } from '../../firebase/wordSetAPI';
+import { useAuth } from '../../hooks/useAuth';
 
 function WordLayout() {
-    const location = useLocation();
+    const { user: currentUser } = useAuth();
     const navigate = useNavigate();
     const { isTabletOrMobile, isMobile } = useResponsive();
+
+    const [searchParams] = useSearchParams();
+    const folderId = searchParams.get('inFolder');
 
     const [title, setTitle] = useState('');
     const [titleError, setTitleError] = useState('');
@@ -80,7 +84,7 @@ function WordLayout() {
 
         const wordSet: WordSetType = {
             name: title,
-            id_folder: location.state.folder.id_folder,
+            id_folder: folderId ?? '',
             modifiedAt: Timestamp.now(),
             createAt: Timestamp.now(),
             visibility: 'public',
@@ -88,6 +92,8 @@ function WordLayout() {
         };
 
         mutation.mutate(wordSet);
+
+        navigate(`/user/${currentUser?.uid}/folders/${folderId}`);
     };
 
     const checkCanSave = () => {

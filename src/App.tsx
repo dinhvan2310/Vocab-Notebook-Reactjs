@@ -12,6 +12,7 @@ import HomeLayout from './layouts/homeLayout/HomeLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
 import WordLayout from './layouts/wordLayout/WordLayout';
 import AuthProvider from './contexts/AuthProvider';
+import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';
 function App() {
     useEffect(() => {
         //  Set the theme
@@ -39,6 +40,7 @@ function App() {
         {
             path: '/',
             element: <MainLayout />,
+            errorElement: <NotFoundLayout />,
             children: [
                 {
                     path: '/',
@@ -63,6 +65,10 @@ function App() {
                             <WordLayout />
                         </ProtectedRoute>
                     )
+                },
+                {
+                    path: '/not-found',
+                    element: <NotFoundLayout />
                 }
             ]
         },
