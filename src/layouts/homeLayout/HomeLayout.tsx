@@ -1,6 +1,3 @@
-import { Minus } from 'iconsax-react';
-import GridCol from '../../components/Grid/GridCol';
-import GridRow from '../../components/Grid/GridRow';
 import Upload from '../../components/Upload/Upload';
 
 function HomeLayout() {
