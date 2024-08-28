@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface TextComponentProps {
-    text: string | number;
+    text?: string | number;
     fontSize?: string;
     isVisible?: boolean;
     textColor?: string;

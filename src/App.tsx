@@ -2,17 +2,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import WebFont from 'webfontloader';
-import { AuthLayout } from './features/authentication/AuthLayout';
+import AuthProvider from './contexts/AuthProvider';
 import ProtectedRoute from './features/authentication/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import ExamsLayout from './layouts/examsLayout/ExamsLayout';
 import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
-import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
+import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
 import WordLayout from './layouts/wordLayout/WordLayout';
-import AuthProvider from './contexts/AuthProvider';
-import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';
+import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
+
 function App() {
     useEffect(() => {
         //  Set the theme

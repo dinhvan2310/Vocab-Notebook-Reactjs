@@ -9,6 +9,8 @@ export default interface FolderType {
 
     createAt: Timestamp; // Folder created date
     modifiedAt: Timestamp; // Folder modified date
+
+    imageUrl: string; // Folder image URL
     
     word_sets: DocumentReference[]; // Reference to WordSet document
 }

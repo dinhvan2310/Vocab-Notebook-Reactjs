@@ -18,6 +18,9 @@ interface FloatingActionButtonProps {
     color?: string;
     menuItemsPosition?: 'left' | 'right' | 'center';
     menuItemsBackgroundColor?: string;
+
+    selectedKey?: string;
+    onSelectedKeyChange?: (key: string) => void;
 }
 
 function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
@@ -72,7 +75,7 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
     }, []);
 
     return (
-        <div className="floating-action-button">
+        <div className="floating-action-button flex-shrink-0">
             <div
                 onClick={(e) => {
                     e.stopPropagation();
@@ -105,6 +108,8 @@ function FloatingActionButtonComponent(props: FloatingActionButtonProps) {
                     <MenuItemsComponent
                         headerComponent={headerComponent}
                         border={true}
+                        selectedKey={props.selectedKey}
+                        onSelectedKeyChange={props.onSelectedKeyChange}
                         menuItems={menuItems}
                         width={menuItemWidth}
                         containerStyle={{

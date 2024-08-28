@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Unsubscribe } from 'firebase/auth/web-extension';
-import { ArrowCircleDown, ArrowCircleUp, CloseCircle, Sort } from 'iconsax-react';
+import { Card, Element3, TableDocument, Text, Timer } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
+import NotFoundUser from '../../assets/image/no_avatar.png';
 import CardComponent from '../../components/Card/CardComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
@@ -12,7 +13,6 @@ import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
 import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import EmptyComponent from '../../components/Empty/EmptyComponent';
-import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
 import GridCol from '../../components/Grid/GridCol';
 import GridRow from '../../components/Grid/GridRow';
 import PaginationComponent from '../../components/Pagination/PaginationComponent';
@@ -20,13 +20,11 @@ import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import { getFolders, onSnapshotFolders, removeFolder } from '../../firebase/folderAPI';
 import { getUser } from '../../firebase/userAPI';
+import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
-import { MenuItemInterface } from '../../types/MenuItemType';
 import './FoldersLayout.scss';
-import { useAuth } from '../../hooks/useAuth';
-import NotFoundUser from '../../assets/image/no_avatar.png';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -36,13 +34,66 @@ function FoldersLayout() {
     const { user: currentUser } = useAuth();
 
     const navigate = useNavigate();
-    const { isTabletOrMobile } = useResponsive();
+    const { isTabletOrMobile, isDesktopOrLaptop, isMobile } = useResponsive();
+
+    const viewModeOptions = (() => {
+        if (isMobile)
+            return [
+                {
+                    label: 'List',
+                    value: 'list',
+                    icon: <TableDocument size="16" />
+                },
+                {
+                    label: 'Large card',
+                    value: 'card',
+                    icon: <Card size="16" />
+                }
+            ];
+        else
+            return [
+                {
+                    label: 'Table',
+                    value: 'table',
+                    icon: <Element3 size="16" />
+                },
+                {
+                    label: 'List',
+                    value: 'list',
+                    icon: <TableDocument size="16" />
+                },
+                {
+                    label: 'Large card',
+                    value: 'card',
+                    icon: <Card size="16" />
+                }
+            ];
+    })();
+
+    const [sortBy, setSortBy] = useState<'name_lowercase' | 'createAt'>();
+    const sortByOptions = [
+        { label: 'Name', value: 'name_lowercase', icon: <Text size="16" /> },
+        { label: 'Date', value: 'createAt', icon: <Timer size="16" /> }
+    ];
+
+    useEffect(() => {
+        console.log('isTabletOrMobile', isTabletOrMobile);
+        console.log('isDesktopOrLaptop', isDesktopOrLaptop);
+        console.log('isMobile', isMobile);
+    }, [isTabletOrMobile, isDesktopOrLaptop, isMobile]);
 
     // Data
     // command state
 
     const [startAt, setStartAt] = useState(0);
     const [limit, setLimit] = useState(10);
+    const [viewMode, setViewMode] = useState<'table' | 'list' | 'card'>();
+
+    // set view mode to list if isMobile
+    useEffect(() => {
+        if (isMobile && viewMode === 'table') setViewMode('list');
+    }, [isTabletOrMobile, isDesktopOrLaptop, isMobile]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const limitPerPageOptions = [
         {
@@ -50,36 +101,26 @@ function FoldersLayout() {
             value: '10'
         },
         {
-            label: '20',
-            value: '20'
+            label: '15',
+            value: '15'
         },
         {
-            label: '50',
-            value: '50'
+            label: '20',
+            value: '20'
         }
     ];
 
     const [search, setSearch] = useState('');
     const deBoundSearch = useDebounce<string>(search, 500);
-    // sort by name and date, but can chossen two options
-    const [sortByName, setSortByName] = useState<'asc' | 'desc' | 'none'>('none');
-    const [sortByDate, setSortByDate] = useState<'asc' | 'desc' | 'none'>('desc');
     // Get folders from data object and setFolders
     const fetchFolders = async () => {
         if (!userid) return null;
-        const data = await getFolders(
-            userid,
-            deBoundSearch,
-            sortByName,
-            sortByDate,
-            startAt,
-            limit
-        );
+        const data = await getFolders(userid, deBoundSearch, sortBy, startAt, limit);
         return data;
     };
     // Query
     const query = useQuery({
-        queryKey: ['folders', deBoundSearch, sortByName, sortByDate, startAt, limit, userid],
+        queryKey: ['folders', deBoundSearch, startAt, limit, userid, sortBy],
         queryFn: fetchFolders
     });
 
@@ -106,43 +147,6 @@ function FoldersLayout() {
         };
     }, [userid]);
     //
-
-    const topBar_commandBar_menuItems_sort: MenuItemInterface[] = [
-        {
-            text: `Name`,
-            onClick: () => {
-                setSortByName(
-                    sortByName === 'asc' ? 'desc' : sortByName === 'desc' ? 'none' : 'asc'
-                );
-            },
-            key: 'sort_by_name',
-            icon:
-                sortByName === 'asc' ? (
-                    <ArrowCircleUp size="20" />
-                ) : sortByName === 'desc' ? (
-                    <ArrowCircleDown size="20" />
-                ) : (
-                    <CloseCircle size="20" />
-                )
-        },
-        {
-            text: 'Date',
-            onClick: () => {
-                setSortByDate(
-                    sortByDate === 'asc' ? 'desc' : sortByDate === 'desc' ? 'none' : 'asc'
-                );
-            },
-            key: 'sort_by_date',
-            icon:
-                sortByDate === 'asc' ? (
-                    <ArrowCircleUp size="20" />
-                ) : sortByDate === 'desc' ? (
-                    <ArrowCircleDown size="20" />
-                ) : (
-                    <CloseCircle size="20" />
-                )
-        }
-    ];
 
     const handleNavigateToWordSets = (folder: FolderType) => {
         navigate(`/user/${userid}/folders/${folder.id_folder}`);
@@ -195,7 +199,7 @@ function FoldersLayout() {
                             setSearch(value);
                         }}
                     />
-                    <FloatingActionButtonComponent
+                    {/* <FloatingActionButtonComponent
                         icon={<Sort size="20" />}
                         menuItems={topBar_commandBar_menuItems_sort}
                         text="Sort"
@@ -206,10 +210,70 @@ function FoldersLayout() {
                             height: '40px',
                             padding: '0 8px'
                         }}
-                    />
+                    /> */}
                 </div>
             </div>
-            <div className="folders-container" style={{}}>
+            <div className="flex flex-row justify-end mt-4">
+                <SelectComponent
+                    options={viewModeOptions}
+                    title="View mode"
+                    defaultValue={isMobile ? 'list' : 'table'}
+                    value={viewMode}
+                    positionPopup="bottom"
+                    width="150px"
+                    color="var(--secondary-text-color)"
+                    style={{
+                        backgroundColor: 'var(--bg-color)',
+                        borderColor: 'var(--border-color)'
+                    }}
+                    optionStyle={{
+                        backgroundColor: 'var(--bg-color)'
+                    }}
+                    hoverColor="var(--primary-color)"
+                    onChange={(value) => {
+                        setViewMode(value as 'table' | 'list' | 'card');
+                    }}
+                />
+                <SpaceComponent width={8} />
+                <SelectComponent
+                    options={sortByOptions}
+                    defaultValue="name_lowercase"
+                    positionPopup="bottom"
+                    width="120px"
+                    color="var(--secondary-text-color)"
+                    style={{
+                        backgroundColor: 'var(--bg-color)',
+                        borderColor: 'var(--border-color)'
+                    }}
+                    optionStyle={{
+                        backgroundColor: 'var(--bg-color)'
+                    }}
+                    hoverColor="var(--primary-color)"
+                    onChange={(value) => {
+                        setSortBy(value as 'name_lowercase' | 'createAt');
+                    }}
+                    value={sortBy}
+                    title="Sort by"
+                />
+            </div>
+            <div
+                className=" 
+                mt-4
+                px-4
+                py-4
+                scrollbar
+                dark:scrollbarDark
+                h-full
+                w-full
+                flex flex-row
+                flex-wrap
+                justify-center
+                items-start
+                gap-8
+                overflow-y-auto
+                overflow-x-hidden
+            "
+                style={{}}>
                 {query.isLoading ? (
                     <SpinComponent
                         indicator={ListLoadingAnimation}
@@ -231,13 +295,33 @@ function FoldersLayout() {
                             return (
                                 <GridCol
                                     span={
-                                        isTabletOrMobile || query.data?.folders.length === 1
+                                        // default view mode is table on pc/tablet and list on mobile
+                                        viewMode === undefined
+                                            ? isMobile
+                                                ? 12 // list view mode
+                                                : 4 // table view mode
+                                            : // view mode is table
+                                            viewMode === 'table'
+                                            ? 4
+                                            : viewMode === 'list'
                                             ? 12
-                                            : 6
+                                            : viewMode === 'card'
+                                            ? isMobile
+                                                ? 12
+                                                : isTabletOrMobile
+                                                ? 6
+                                                : 3
+                                            : 12
                                     }
                                     key={index}>
                                     <CardComponent
+                                        type={viewMode === 'card' ? 'card-image' : 'card-text'}
+                                        imageSrc={folder.imageUrl}
                                         className="folder-card"
+                                        style={{
+                                            width: '100%',
+                                            height: viewMode === 'card' ? '320px' : '100%'
+                                        }}
                                         haveFloatingButton={true}
                                         createAt={new Date(
                                             folder.createAt?.seconds * 1000
@@ -290,7 +374,8 @@ function FoldersLayout() {
                 />
                 <SpaceComponent width={16} />
                 <SelectComponent
-                    defaultValue={limit.toString()}
+                    value={limit.toString()}
+                    title="Limit per page"
                     positionPopup="top"
                     options={limitPerPageOptions}
                     onChange={(value) => {

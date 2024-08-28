@@ -1,5 +1,5 @@
 import { ArrowDown2 } from 'iconsax-react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import SpaceComponent from '../commonComponent/Space/SpaceComponent';
 import TextComponent from '../commonComponent/Text/TextComponent';
 import './SelectComponent.scss';
@@ -7,10 +7,13 @@ import './SelectComponent.scss';
 interface Data<T> {
     label: string;
     value: T;
+    icon?: ReactNode;
 }
 
 interface SelectComponentProps<T> {
-    defaultValue: string;
+    title?: string;
+    defaultValue?: string;
+    value: string | undefined;
     options: Data<T>[];
     onChange: (value: T) => void;
 
@@ -24,7 +27,9 @@ interface SelectComponentProps<T> {
 }
 function SelectComponent(props: SelectComponentProps<string>) {
     const {
+        title,
         defaultValue,
+        value,
         options = [],
         onChange,
         width = '100%',
@@ -39,17 +44,17 @@ function SelectComponent(props: SelectComponentProps<string>) {
     const [isHover, setIsHover] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
-    const [selectedValue, setSelectedValue] = useState(() => {
-        if (options.filter((opt) => opt.value === defaultValue).length === 0) {
-            return options[0].value;
+    const handleClickOutside = (event: MouseEvent) => {
+        if ((event?.target as HTMLElement)?.closest('.select-container') === null) {
+            setIsOpen(false);
         }
-        return defaultValue;
-    });
+    };
 
     return (
         <div
             onClick={() => {
                 setIsOpen(!isOpen);
+                document.addEventListener('click', handleClickOutside);
             }}
             className="select-container"
             style={{
@@ -65,7 +70,11 @@ function SelectComponent(props: SelectComponentProps<string>) {
             }}>
             <div className="select">
                 <TextComponent
-                    text={options.filter((opt) => opt.value === selectedValue)[0].label}
+                    text={
+                        value === undefined
+                            ? title
+                            : options.find((option) => option.value === value)?.label
+                    }
                     textColor={color}
                 />
                 <SpaceComponent width={16} />
@@ -79,14 +88,24 @@ function SelectComponent(props: SelectComponentProps<string>) {
                     {options.map((option, index) => (
                         <div
                             key={index}
-                            className={`option ${option.value === defaultValue ? 'selected' : ''}`}
+                            className={`
+                                option 
+                                ${
+                                    value === undefined
+                                        ? defaultValue === option.value && 'selected'
+                                        : value === option.value && 'selected'
+                                }
+
+                                `}
                             style={{}}
                             onClick={() => {
                                 onChange(option.value);
-                                setSelectedValue(option.value);
                                 setIsOpen(false);
                             }}>
-                            <TextComponent text={option.label} />
+                            <div className="flex-row flex items-center">
+                                {option.icon}
+                                <TextComponent className="ml-2" text={option.label} />
+                            </div>
                         </div>
                     ))}
                 </div>

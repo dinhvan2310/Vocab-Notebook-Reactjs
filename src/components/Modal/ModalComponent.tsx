@@ -17,6 +17,9 @@ interface ModalComponentProps {
     isCloseIcon?: boolean;
     isFooter?: boolean;
     animationType?: 'slideIn' | 'fadeIn' | 'zoomIn' | 'none';
+
+    disableButtonConfirm?: boolean;
+    buttonConfirmText?: string;
 }
 
 function ModalComponent(props: ModalComponentProps) {
@@ -31,7 +34,9 @@ function ModalComponent(props: ModalComponentProps) {
         width,
         isCloseIcon,
         isFooter,
-        animationType = 'none'
+        animationType = 'none',
+        buttonConfirmText = 'Confirm',
+        disableButtonConfirm = false
     } = props;
     return (
         <div
@@ -75,20 +80,10 @@ function ModalComponent(props: ModalComponentProps) {
                 {title && <SpaceComponent height={24} />}
                 <div className="modal-body">{children}</div>
                 {isFooter && (
-                    <RowComponent className="modal-footer">
+                    <RowComponent className="modal-footer" justifyContent="flex-end">
                         <ButtonComponent
-                            text="Cancel"
-                            onClick={onCancel}
-                            style={{
-                                padding: '12px 24px'
-                            }}
-                            backgroundColor="var(--red-color)"
-                            backgroundHoverColor="var(--red-hover-color)"
-                            backgroundActiveColor="var(--red-active-color)"
-                        />
-                        <SpaceComponent width={8} />
-                        <ButtonComponent
-                            text="Confirm"
+                            disabled={disableButtonConfirm}
+                            text={buttonConfirmText}
                             onClick={onConfirm}
                             style={{
                                 padding: '12px 24px'

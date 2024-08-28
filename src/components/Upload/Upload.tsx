@@ -6,6 +6,7 @@ interface UploadProps {
     name?: string;
     type: 'picture' | 'file';
     action: (file: File | null) => void;
+    onRemove?: () => void;
 
     disabled?: boolean;
     render?: (file: File | null) => ReactNode;
@@ -17,6 +18,7 @@ function Upload(props: UploadProps) {
         type = 'picture',
         name = type === 'picture' ? 'Upload' : 'Click to upload',
         action,
+        onRemove,
         disabled = false,
         render = (file: File | null) => {
             switch (type) {
@@ -27,6 +29,7 @@ function Upload(props: UploadProps) {
                             onClick={(e) => {
                                 setFile(null);
                                 action(null);
+                                onRemove?.();
                                 e.preventDefault();
                             }}>
                             <div className="absolute top-0 right-0  w-full h-full rounded-lg ">
@@ -56,7 +59,7 @@ function Upload(props: UploadProps) {
                 case 'file':
                     return (
                         <div className="flex flex-col items-center">
-                            <DocumentUpload size={20} />
+                            <DocumentUpload size={20} className="mb-2" />
                             <TextComponent text={name || 'Upload'} />
                         </div>
                     );
@@ -72,8 +75,14 @@ function Upload(props: UploadProps) {
         return (
             <div className="">
                 <div
-                    className="flex border-[1px] inline-flex px-4 py-2 rounded-lg border-borderLight dark:border-borderDark
-                  hover:border-primaryLight-hover dark:hover:border-primaryDark-hover 
+                    className="flex 
+                                border-dashed
+                                border-[1px] 
+                                inline-flex 
+                                px-4 py-2
+                                 rounded-lg 
+                                 border-borderLight dark:border-borderDark
+                                hover:border-primaryLight-hover dark:hover:border-primaryDark-hover 
 
                 ">
                     <input

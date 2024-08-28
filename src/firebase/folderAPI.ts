@@ -14,6 +14,7 @@ export const addFolder = async (folder: FolderType) => {
         id_user: folder.id_user,
         
         name: folder.name,
+        imageUrl: folder.imageUrl,
         name_lowercase: folder.name_lowercase,
         createAt: folder.createAt,
         modifiedAt: folder.modifiedAt,
@@ -64,8 +65,7 @@ export const getFolders = async (
     id_user: string,
     stringSearch: string = '',
 
-    sortByName: 'asc' | 'desc' | 'none' = 'none',
-    sortByDate: 'asc' | 'desc' | 'none' = 'none',
+    sortBy: 'name_lowercase' | 'createAt' | 'none' = 'none',
 
     _startAt: number = 0,
     _limit: number = 5,
@@ -85,11 +85,8 @@ export const getFolders = async (
             where("name_lowercase", ">=", _stringSearch),
             where("name_lowercase", "<=", _stringSearch + "\uf8ff"),
         ) 
-    if (sortByName !== 'none') {
-        q = query(q, orderBy("name_lowercase", sortByName));
-    }
-    if (sortByDate !== 'none') {
-        q = query(q, orderBy("createAt", sortByDate));
+    if (sortBy !== 'none') {
+        q = query(q, orderBy(sortBy, 'desc'));
     }
 
     

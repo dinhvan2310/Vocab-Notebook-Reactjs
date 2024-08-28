@@ -2,11 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    .scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        background-color: #f7f8fc;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        border-radius: 50px;
+        background-color: #6b7c93;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb:hover {
+        // background: #c0a0b9;
+    }
+
+    .scrollbarDark::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scrollbarDark::-webkit-scrollbar-track {
+        background-color: #252424;
+    }
+
+    .scrollbarDark::-webkit-scrollbar-thumb {
+        border-radius: 50px;
+        background-color: #b8bbbf;
+    }
+
+    .scrollbarDark::-webkit-scrollbar-thumb:hover {
+        // background: #c0a0b9;
+    }
+}
+
 * {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
-
 }
 
 body {
@@ -20,7 +55,6 @@ body {
         --secondary-hover-color: rgb(255, 220, 28);
         --secondary-active-color: rgb(255, 204, 0);
 
-
         --bg-color: #2c2c2c;
         --bg-hover-color: #252424;
         --bg-active-color: #1e1e1e;
@@ -29,15 +63,14 @@ body {
         --secondary-text-color: #b8bbbf;
         // --text-color-light: rgb(217, 221, 232);
 
-        --border-color: #686D76;
+        --border-color: #686d76;
         --disabled-color: #586380;
 
-        
         --white-color: #fff;
-        --black-color:  #282e3e;
-        --red-color: #F5004F;
-        --red-hover-color: #FF6969;
-        --red-active-color: #FF0000;
+        --black-color: #282e3e;
+        --red-color: #f5004f;
+        --red-hover-color: #ff6969;
+        --red-active-color: #ff0000;
     }
 
     &[data-theme='light'] {
@@ -50,7 +83,6 @@ body {
         --secondary-hover-color: rgb(255, 220, 28);
         --secondary-active-color: rgb(255, 204, 0);
 
-
         --bg-color: #fff;
         --bg-hover-color: #f7f8fc;
         --bg-active-color: #edeff4;
@@ -62,12 +94,12 @@ body {
         --border-color: #d9dde8;
 
         --disabled-color: #d9dde8;
-        
+
         --white-color: #fff;
-        --black-color:  #282e3e;
-        --red-color: #F5004F;
-        --red-hover-color: #FF6969;
-        --red-active-color: #FF0000;
+        --black-color: #282e3e;
+        --red-color: #f5004f;
+        --red-hover-color: #ff6969;
+        --red-active-color: #ff0000;
     }
 }
 
@@ -79,7 +111,5 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
 
-    transition: background-color 0.5s, color 0.2s; 
+    transition: background-color 0.5s, color 0.2s;
 }
-
-

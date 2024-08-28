@@ -13,6 +13,7 @@ interface SearchBoxComponentProps {
     borderType?: 'top' | 'bottom' | 'all' | 'none';
     borderColorOnFocus?: string;
     style?: React.CSSProperties;
+    className?: string;
 }
 
 function SearchBoxComponent(props: SearchBoxComponentProps) {
@@ -26,7 +27,8 @@ function SearchBoxComponent(props: SearchBoxComponentProps) {
         borderType = 'all',
         borderColorOnFocus = 'var(--border-color)',
         style,
-        borderRadius = 8
+        borderRadius = 8,
+        className = ''
     } = props;
 
     const [isFocus, setIsFocus] = useState(false);
@@ -35,7 +37,7 @@ function SearchBoxComponent(props: SearchBoxComponentProps) {
         <div
             onFocus={() => setIsFocus(true)}
             onBlur={() => setIsFocus(false)}
-            className="search-box"
+            className={`search-box ${className}`}
             style={{
                 width: searchWidth,
                 backgroundColor: backGroundColor,

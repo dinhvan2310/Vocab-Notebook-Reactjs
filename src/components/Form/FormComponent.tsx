@@ -7,7 +7,7 @@ import RowComponent from '../commonComponent/Row/RowComponent';
 import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 
 interface FormComponentProps {
-    onFinished: () => Promise<void>;
+    onFinished?: () => Promise<void>;
     haveSubmitButton?: boolean;
     submitButtonText?: string;
     formItems: FormItemType[];
@@ -24,7 +24,7 @@ function FormComponent(props: FormComponentProps) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     setIsButtonSubmitLoading(true);
-                    await onFinished();
+                    await onFinished?.();
                     setIsButtonSubmitLoading(false);
                 }
             }}
@@ -58,7 +58,7 @@ function FormComponent(props: FormComponentProps) {
                             }}
                             onClick={async () => {
                                 setIsButtonSubmitLoading(true);
-                                await onFinished();
+                                await onFinished?.();
                                 setIsButtonSubmitLoading(false);
                             }}
                         />

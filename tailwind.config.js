@@ -71,7 +71,11 @@ export default {
           hover: '#FF6969',
           active: '#FF0000',
         },
-      }
+      },
+      boxShadow: {
+        light: '0 0 8px 0 #d9dde8',
+        dark: '0 0 8px 0 #686D76',
+      },
     },
   },
   plugins: [],

@@ -34,6 +34,9 @@ import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import TextComponent from '../components/commonComponent/Text/TextComponent';
 import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
 import { useResponsive } from '../hooks/useResponsive';
+import Upload from '../components/Upload/Upload';
+import { uploadImage } from '../firebase/utils/uploadImage';
+import FolderImage from '../assets/image/folder.png';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------
@@ -50,6 +53,7 @@ function MainLayout() {
 
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
+    const [newFolderImage, setNewFolderImage] = useState<File | null>(null);
     // keep track of the active page in the sidebar menu
     const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams' | 'none'>(
         'home'
@@ -115,21 +119,29 @@ function MainLayout() {
     const handleAddFolder = () => {
         setOpenModalAddNewFolder(true);
     };
+
+    const checkFolderNameIsValid = () => {
+        return createFolder_name.trim() !== '';
+    };
     const handleAddFolderFinish = async () => {
         if (user === null) throw new Error('User is not logged in');
 
-        const folder: FolderType = {
-            id_user: user?.uid || '',
-
-            name: createFolder_name,
-            name_lowercase: createFolder_name.toLowerCase(),
-            createAt: Timestamp.now(),
-            modifiedAt: Timestamp.now(),
-
-            word_sets: []
-        };
-
         try {
+            const imageUrl = newFolderImage ? await uploadImage(newFolderImage) : FolderImage;
+
+            const folder: FolderType = {
+                id_user: user?.uid || '',
+
+                name: createFolder_name,
+                name_lowercase: createFolder_name.toLowerCase(),
+                createAt: Timestamp.now(),
+                modifiedAt: Timestamp.now(),
+
+                imageUrl: imageUrl,
+
+                word_sets: []
+            };
+
             const newFolder = await addFolder(folder);
             navigate(`/user/${user?.uid}/folders/${newFolder.id}`);
         } catch (exception) {
@@ -259,19 +271,33 @@ function MainLayout() {
                 width="800px"
                 closeOnOverlayClick={true}
                 open={openModalAddNewFolder}
-                isFooter={false}
+                isFooter={true}
                 onCancel={() => {
                     setOpenModalAddNewFolder(false);
                     setCreateFolder_name('');
                 }}
-                onConfirm={() => {}}
+                onConfirm={handleAddFolderFinish}
+                disableButtonConfirm={!checkFolderNameIsValid()}
                 title="Create new folder">
                 <FormComponent
-                    onFinished={handleAddFolderFinish}
+                    // onFinished={handleAddFolderFinish}
                     formItems={formItems}
-                    haveSubmitButton={true}
+                    haveSubmitButton={false}
                     submitButtonText="Create"
                 />
+                <SpaceComponent height={32} />
+                <RowComponent justifyContent="center" alignItems="flex-start">
+                    <Upload
+                        action={(file) => setNewFolderImage(file)}
+                        type="picture"
+                        onRemove={() => setNewFolderImage(null)}
+                        name="Cover Image"
+                        style={{
+                            width: '260px',
+                            height: '140px'
+                        }}
+                    />
+                </RowComponent>
             </ModalComponent>
             {/* Header ------------------------------------------------------------------------------ */}
             <header className="headerContainer">
@@ -292,7 +318,11 @@ function MainLayout() {
                     }}>
                     <HambergerMenu className="iconMenu" color="#586380" size="42" />
                 </div>
-                <SearchBoxComponent value={searchValue} onChange={setSearchValue} />
+                <SearchBoxComponent
+                    value={searchValue}
+                    onChange={setSearchValue}
+                    className="w-1/2"
+                />
                 <SpaceComponent width={32} />
                 <RowComponent alignItems="center" justifyContent="space-around" style={{}}>
                     {user ? (
