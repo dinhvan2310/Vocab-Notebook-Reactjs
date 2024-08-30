@@ -12,6 +12,7 @@ import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
 import WordLayout from './layouts/wordLayout/WordLayout';
 import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
+import MessageProvider from './contexts/MessageProvider';
 
 function App() {
     useEffect(() => {
@@ -78,12 +79,20 @@ function App() {
         }
     ]);
 
-    const queryClient = new QueryClient();
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                staleTime: 1000 * 60 * 5
+            }
+        }
+    });
 
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <RouterProvider router={router} />
+                <MessageProvider>
+                    <RouterProvider router={router} />
+                </MessageProvider>
             </AuthProvider>
         </QueryClientProvider>
     );

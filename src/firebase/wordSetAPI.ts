@@ -42,24 +42,24 @@ export const getWordSets = async (id_folder: string | undefined) => {
 }
 
 
-export const onSnapshotWordSets = (id_folder: string | undefined, callback: (wordSets: WordSetType[]) => void) => {
+export const onSnapshotWordSets = (id_folder: string | undefined, callback: () => void) => {
     if (!id_folder) throw new Error("Folder id is not provided");
 
     const q = query(collection(db, "wordSets"), where("id_folder", "==", id_folder));
-    return onSnapshot(q, (querySnapshot) => {
-        const wordSets: WordSetType[] = [];
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            wordSets.push({
-                id_word_set: doc.id,
-                id_folder: data.id_folder,
-                name: data.name,
-                visibility: data.visibility,
-                createAt: data.createAt,
-                modifiedAt: data.modifiedAt,
-                words: data.words,
-            });
-        });
-        callback(wordSets);
+    return onSnapshot(q, () => {
+        // const wordSets: WordSetType[] = [];
+        // querySnapshot.forEach((doc) => {
+        //     const data = doc.data();
+        //     wordSets.push({
+        //         id_word_set: doc.id,
+        //         id_folder: data.id_folder,
+        //         name: data.name,
+        //         visibility: data.visibility,
+        //         createAt: data.createAt,
+        //         modifiedAt: data.modifiedAt,
+    //         words: data.words,
+        //     });
+        // });
+        callback();
     });
 }

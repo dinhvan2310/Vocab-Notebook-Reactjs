@@ -36,7 +36,8 @@ import ButtonComponent from '../components/commonComponent/Button/ButtonComponen
 import { useResponsive } from '../hooks/useResponsive';
 import Upload from '../components/Upload/Upload';
 import { uploadImage } from '../firebase/utils/uploadImage';
-import FolderImage from '../assets/image/folder.png';
+import { useMutation } from '@tanstack/react-query';
+import { useMessage } from '../hooks/useMessage';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------
@@ -50,6 +51,7 @@ function MainLayout() {
     // navigation
     const navigate = useNavigate();
     const location = useLocation();
+    const message = useMessage();
 
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
@@ -120,20 +122,14 @@ function MainLayout() {
         setOpenModalAddNewFolder(true);
     };
 
-    const checkFolderNameIsValid = () => {
-        return createFolder_name.trim() !== '';
-    };
-    const handleAddFolderFinish = async () => {
-        if (user === null) throw new Error('User is not logged in');
-
-        try {
-            const imageUrl = newFolderImage ? await uploadImage(newFolderImage) : FolderImage;
+    const handleAddFolderFinishMutation = useMutation({
+        mutationFn: async () => {
+            const imageUrl = newFolderImage ? await uploadImage(newFolderImage) : '';
 
             const folder: FolderType = {
                 id_user: user?.uid || '',
 
                 name: createFolder_name,
-                name_lowercase: createFolder_name.toLowerCase(),
                 createAt: Timestamp.now(),
                 modifiedAt: Timestamp.now(),
 
@@ -143,13 +139,32 @@ function MainLayout() {
             };
 
             const newFolder = await addFolder(folder);
-            navigate(`/user/${user?.uid}/folders/${newFolder.id}`);
+            return newFolder;
+        },
+        mutationKey: ['addFolder']
+    });
+
+    const checkFolderNameIsValid = () => {
+        return createFolder_name.trim() !== '';
+    };
+    const handleAddFolderFinish = async () => {
+        if (user === null) throw new Error('User is not logged in');
+
+        try {
+            const newFolder = await handleAddFolderFinishMutation.mutateAsync();
+
+            setCreateFolder_name('');
+            setNewFolderImage(null);
+            setOpenModalAddNewFolder(false);
+
+            message('success', 'Create folder successfully', 3000);
+
+            if (!RegExp('/user/.*/folders$').test(location.pathname)) {
+                navigate(`/user/${user?.uid}/folders/${newFolder.id}`);
+            }
         } catch (exception) {
             console.log(exception);
         }
-
-        setOpenModalAddNewFolder(false);
-        setCreateFolder_name('');
     };
     const menuItemsAdd: MenuItemInterface[] = [
         {
@@ -268,16 +283,18 @@ function MainLayout() {
             <ModalComponent
                 animationType="zoomIn"
                 isCloseIcon={true}
-                width="800px"
+                width="600px"
                 closeOnOverlayClick={true}
                 open={openModalAddNewFolder}
                 isFooter={true}
                 onCancel={() => {
                     setOpenModalAddNewFolder(false);
                     setCreateFolder_name('');
+                    setNewFolderImage(null);
                 }}
                 onConfirm={handleAddFolderFinish}
                 disableButtonConfirm={!checkFolderNameIsValid()}
+                buttonComfirmLoading={handleAddFolderFinishMutation.isPending}
                 title="Create new folder">
                 <FormComponent
                     // onFinished={handleAddFolderFinish}
@@ -288,7 +305,7 @@ function MainLayout() {
                 <SpaceComponent height={32} />
                 <RowComponent justifyContent="center" alignItems="flex-start">
                     <Upload
-                        action={(file) => setNewFolderImage(file)}
+                        action={(f) => setNewFolderImage(f as File)}
                         type="picture"
                         onRemove={() => setNewFolderImage(null)}
                         name="Cover Image"

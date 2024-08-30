@@ -2,15 +2,15 @@ import { DocumentReference, Timestamp } from "firebase/firestore";
 
 export default interface FolderType {
     id_folder?: string;
-    id_user: string; // User ID
+    id_user?: string; // User ID
     
-    name: string; // Folder name
+    name?: string; // Folder name
     name_lowercase?: string; // Folder name in lowercase
 
-    createAt: Timestamp; // Folder created date
-    modifiedAt: Timestamp; // Folder modified date
+    createAt?: Timestamp; // Folder created date
+    modifiedAt?: Timestamp; // Folder modified date
 
-    imageUrl: string; // Folder image URL
+    imageUrl?: string; // Folder image URL
     
-    word_sets: DocumentReference[]; // Reference to WordSet document
+    word_sets?: DocumentReference[]; // Reference to WordSet document
 }

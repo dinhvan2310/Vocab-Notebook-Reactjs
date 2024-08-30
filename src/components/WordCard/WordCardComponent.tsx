@@ -1,4 +1,4 @@
-import { AddSquare, ArchiveAdd, DocumentUpload, MinusSquare, Trash } from 'iconsax-react';
+import { AddSquare, MinusSquare, Trash } from 'iconsax-react';
 import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../commonComponent/Column/ColumnComponent';
 import InputComponent from '../commonComponent/Input/InputComponent';
@@ -7,6 +7,7 @@ import SpaceComponent from '../commonComponent/Space/SpaceComponent';
 import TitleComponent from '../commonComponent/Title/TitleComponent';
 import GridCol from '../Grid/GridCol';
 import GridRow from '../Grid/GridRow';
+import Upload from '../Upload/Upload';
 import './WordCardComponent.scss';
 interface WordCardComponentProps {
     index: number;
@@ -50,21 +51,6 @@ function WordCardComponent(props: WordCardComponentProps) {
                     className="word-card-header-index"
                 />
                 <RowComponent>
-                    <ButtonComponent
-                        tabindex={-1}
-                        icon={
-                            <DocumentUpload size={20} className="word-card-header-icon-command" />
-                        }
-                        backgroundColor="transparent"
-                        onClick={() => {}}
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        style={{
-                            height: '40px',
-                            padding: '0 12px',
-                            color: 'var(--secondary-text-color)'
-                        }}
-                    />
                     <ButtonComponent
                         tabindex={-1}
                         icon={<Trash size={20} className="word-card-header-icon-command-delete" />}
@@ -123,8 +109,8 @@ function WordCardComponent(props: WordCardComponentProps) {
                     width: '100%',
                     padding: '0 24px 24px 24px'
                 }}>
-                <GridRow>
-                    <GridCol span={12}>
+                <GridRow gutter={24}>
+                    <GridCol span={10}>
                         {context?.map((item, i) => {
                             return (
                                 <RowComponent alignItems="flex-end">
@@ -148,13 +134,13 @@ function WordCardComponent(props: WordCardComponentProps) {
                                         tabindex={-1}
                                         icon={<MinusSquare size={20} />}
                                         backgroundColor="transparent"
-                                        backgroundHoverColor="transparent"
+                                        backgroundHoverColor="var(--bg-hover-color)"
+                                        backgroundActiveColor="var(--bg-active-color)"
                                         onClick={() => {
                                             const newContext = [...context];
                                             newContext.splice(i, 1);
                                             onContextChange?.(index, newContext);
                                         }}
-                                        backgroundActiveColor="transparent"
                                         style={{
                                             height: '40px',
                                             padding: '0 12px',
@@ -182,6 +168,15 @@ function WordCardComponent(props: WordCardComponentProps) {
                                 }}
                             />
                         </RowComponent>
+                    </GridCol>
+                    <GridCol span={2}>
+                        <Upload
+                            className="w-full h-full max-h-[200px] min-h-[150px]"
+                            type="picture"
+                            action={(file) => {
+                                console.log(file);
+                            }}
+                        />
                     </GridCol>
                 </GridRow>
                 <SpaceComponent height={16} />

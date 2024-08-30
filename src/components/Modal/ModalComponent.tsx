@@ -20,6 +20,7 @@ interface ModalComponentProps {
 
     disableButtonConfirm?: boolean;
     buttonConfirmText?: string;
+    buttonComfirmLoading?: boolean;
 }
 
 function ModalComponent(props: ModalComponentProps) {
@@ -36,63 +37,65 @@ function ModalComponent(props: ModalComponentProps) {
         isFooter,
         animationType = 'none',
         buttonConfirmText = 'Confirm',
-        disableButtonConfirm = false
+        disableButtonConfirm = false,
+        buttonComfirmLoading = false
     } = props;
     return (
-        <div
-            className="modal-component"
-            style={{
-                display: open ? 'flex' : 'none'
-            }}
-            onClick={() => {
-                if (closeOnOverlayClick) {
-                    onCancel();
-                }
-                // if (closeOnOverlayClick) {
-                //     switch (animationType) {
-                //         case 'fadeIn': {
-                //             onCancel();
-                //             modalRef.current?.classList.remove('fadeIn');
-                //             modalRef.current?.classList.add('fadeOut');
-                //             break;
-                //         }
-                //     }
-                // }
-            }}>
+        open && (
             <div
-                className={`modal-content ${animationType === 'none' ? '' : animationType}`}
-                onClick={(event) => event.stopPropagation()}
-                style={{ ...style, width: width || 'auto' }}>
-                {isCloseIcon && (
-                    <CloseSquare
-                        className="close-icon"
-                        style={{
-                            position: 'absolute',
-                            top: 16,
-                            right: 16
-                        }}
-                        size={24}
-                        onClick={onCancel}
-                    />
-                )}
-                {title && <SpaceComponent height={24} />}
-                {title && <TitleComponent title={title} fontSize="2.8em" fontWeight={700} />}
-                {title && <SpaceComponent height={24} />}
-                <div className="modal-body">{children}</div>
-                {isFooter && (
-                    <RowComponent className="modal-footer" justifyContent="flex-end">
-                        <ButtonComponent
-                            disabled={disableButtonConfirm}
-                            text={buttonConfirmText}
-                            onClick={onConfirm}
+                className="modal-component"
+                style={{}}
+                onClick={() => {
+                    if (closeOnOverlayClick) {
+                        onCancel();
+                    }
+                    // if (closeOnOverlayClick) {
+                    //     switch (animationType) {
+                    //         case 'fadeIn': {
+                    //             onCancel();
+                    //             modalRef.current?.classList.remove('fadeIn');
+                    //             modalRef.current?.classList.add('fadeOut');
+                    //             break;
+                    //         }
+                    //     }
+                    // }
+                }}>
+                <div
+                    className={`modal-content ${animationType === 'none' ? '' : animationType}`}
+                    onClick={(event) => event.stopPropagation()}
+                    style={{ ...style, width: width || 'auto' }}>
+                    {isCloseIcon && (
+                        <CloseSquare
+                            className="close-icon"
                             style={{
-                                padding: '12px 24px'
+                                position: 'absolute',
+                                top: 16,
+                                right: 16
                             }}
+                            size={24}
+                            onClick={onCancel}
                         />
-                    </RowComponent>
-                )}
+                    )}
+                    {title && <SpaceComponent height={24} />}
+                    {title && <TitleComponent title={title} fontSize="2.8em" fontWeight={700} />}
+                    {title && <SpaceComponent height={24} />}
+                    <div className="modal-body">{children}</div>
+                    {isFooter && (
+                        <RowComponent className="modal-footer" justifyContent="flex-end">
+                            <ButtonComponent
+                                isLoading={buttonComfirmLoading}
+                                disabled={disableButtonConfirm}
+                                text={buttonConfirmText}
+                                onClick={onConfirm}
+                                style={{
+                                    padding: '12px 24px'
+                                }}
+                            />
+                        </RowComponent>
+                    )}
+                </div>
             </div>
-        </div>
+        )
     );
 }
 

@@ -184,7 +184,7 @@ function WordLayout() {
                     </RowComponent>
                 </ColumnComponent>
             </header>
-            <main className="word-content">
+            <main className="word-content pr-16 pl-12">
                 {data.length === 0 && <EmptyComponent />}
                 {data.map((item, index) => {
                     return (

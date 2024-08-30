@@ -76,6 +76,23 @@ export default {
         light: '0 0 8px 0 #d9dde8',
         dark: '0 0 8px 0 #686D76',
       },
+      keyframes: {
+        fadeIn: {
+          from: {
+            opacity: 0,
+            transform: 'translate(-50%, -10px) scale(0.98)'
+          },
+          to: {
+            opacity: 1,
+            transform: 'translate(-50%, 0px) scale(1)'
+          },
+        },
+
+      }
+    },
+    animation: {
+      fadeIn: 'fadeIn 0.5s ease-in-out forwards',
+      fadeOut: 'fadeOut 0.5s ease-in-out forwards',
     },
   },
   plugins: [],

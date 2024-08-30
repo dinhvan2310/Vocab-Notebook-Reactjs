@@ -1,34 +1,36 @@
 import { Add, DocumentUpload, GallerySlash, NoteRemove } from 'iconsax-react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import TextComponent from '../commonComponent/Text/TextComponent';
 
 interface UploadProps {
     name?: string;
     type: 'picture' | 'file';
-    action: (file: File | null) => void;
+    action: (file: File | undefined) => void;
     onRemove?: () => void;
 
     disabled?: boolean;
-    render?: (file: File | null) => ReactNode;
+    render?: (file: File | undefined) => ReactNode;
     accept?: string;
     style?: React.CSSProperties;
+    className?: string;
 }
 function Upload(props: UploadProps) {
     const {
+        className = '',
         type = 'picture',
         name = type === 'picture' ? 'Upload' : 'Click to upload',
         action,
         onRemove,
         disabled = false,
-        render = (file: File | null) => {
+        render = (file: File | undefined) => {
             switch (type) {
                 case 'picture':
                     return file ? (
                         <div
                             className="group"
                             onClick={(e) => {
-                                setFile(null);
-                                action(null);
+                                setFile(undefined);
+                                action(undefined);
                                 onRemove?.();
                                 e.preventDefault();
                             }}>
@@ -65,17 +67,21 @@ function Upload(props: UploadProps) {
                     );
             }
         },
-        accept,
+        accept = type === 'picture'
+            ? '.png,.image,.jpg,.jpeg,.gif,.svg,.webp'
+            : type === 'file'
+            ? '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx'
+            : '',
         style
     } = props;
 
-    const [file, setFile] = useState<File | null>(null);
+    const [file, setFile] = useState<File | undefined>(undefined);
 
     if (type === 'file') {
         return (
-            <div className="">
+            <div className={className}>
                 <div
-                    className="flex 
+                    className=" 
                                 border-dashed
                                 border-[1px] 
                                 inline-flex 
@@ -88,9 +94,10 @@ function Upload(props: UploadProps) {
                     <input
                         type="file"
                         className="w-0 h-0"
-                        id="inputFile"
                         accept={accept}
                         onInput={(e) => {
+                            console.log(e);
+
                             const target = e.target as HTMLInputElement;
                             const file = target.files?.[0];
                             if (file) {
@@ -99,7 +106,7 @@ function Upload(props: UploadProps) {
                             }
                         }}
                     />
-                    <label htmlFor="inputFile" className="flex flex-row cursor-pointer">
+                    <label className="flex flex-row cursor-pointer">
                         <DocumentUpload size={18} className="mr-4" />
                         <TextComponent text={name} />
                     </label>
@@ -110,8 +117,8 @@ function Upload(props: UploadProps) {
                         <div
                             className="cursor-pointer ml-2"
                             onClick={() => {
-                                setFile(null);
-                                action(null);
+                                setFile(undefined);
+                                action(undefined);
                             }}>
                             <NoteRemove
                                 size={17}
@@ -128,7 +135,7 @@ function Upload(props: UploadProps) {
 
     return (
         <div
-            className={`border-dashed  border-borderLight dark:border-borderDark inline-flex 
+            className={`${className} border-dashed  border-borderLight dark:border-borderDark inline-flex 
       border-[1px]  w-[100px] h-[100px] justify-center items-center  rounded-lg
           relative 
       ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
@@ -142,8 +149,7 @@ function Upload(props: UploadProps) {
             <input
                 accept={accept}
                 type="file"
-                id="input"
-                className="h-0 w-0"
+                className="h-full w-full absolute top-0 left-0 opacity-0 cursor-pointer"
                 onInput={(e) => {
                     const target = e.target as HTMLInputElement;
                     const file = target.files?.[0];
@@ -153,9 +159,9 @@ function Upload(props: UploadProps) {
                     }
                 }}
             />
-            <label htmlFor="input" title="Upload" className="cursor-pointer w-full h-full">
+            <label title="Upload" className="cursor-pointer w-full h-full">
                 <div className="flex flex-col items-center justify-center  w-full h-full">
-                    {render(file || null)}
+                    {render(file || undefined)}
                 </div>
             </label>
         </div>

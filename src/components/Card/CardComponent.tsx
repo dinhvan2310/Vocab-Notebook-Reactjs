@@ -62,8 +62,10 @@ function CardComponent(props: CardComponentProps) {
                     w-full
                     group-hover:transform group-hover:scale-105
                     transition-transform
+                    rounded-lg
                     bg-bgLight dark:bg-bgDark
-                    rounded-t-lg
+                    
+                    group-hover:shadow-dark hover:shadow-light
                 ">
                     <img
                         src={imageSrc}
@@ -82,7 +84,6 @@ function CardComponent(props: CardComponentProps) {
                         h-1/3
                         rounded-b-lg
                     bg-bgLight dark:bg-bgDark
-                    group-hover:shadow-dark hover:shadow-light
                 transition-transform
                     ">
                     <div
