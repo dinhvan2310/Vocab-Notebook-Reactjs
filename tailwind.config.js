@@ -32,7 +32,7 @@ export default {
           DEFAULT: '#686D76',
         },
         disableDark: {
-          DEFAULT: '#586380',
+          DEFAULT: '#3c3f41',
         },
 
 
@@ -77,7 +77,7 @@ export default {
         dark: '0 0 8px 0 #686D76',
       },
       keyframes: {
-        fadeIn: {
+        fadeInCenter: {
           from: {
             opacity: 0,
             transform: 'translate(-50%, -10px) scale(0.98)'
@@ -87,12 +87,22 @@ export default {
             transform: 'translate(-50%, 0px) scale(1)'
           },
         },
+        fadeIn: {
+          from: {
+            opacity: 0,
+            transform: 'translateY(-10px) scale(0.98)'
+          },
+          to: {
+            opacity: 1,
+            transform: 'translateY(0px) scale(1)'
+          }
+        }
 
+      },
+      animation: {
+        fadeInCenter: 'fadeInCenter 0.3s ease-in-out',
+        fadeIn: 'fadeIn 0.3s ease-in-out'
       }
-    },
-    animation: {
-      fadeIn: 'fadeIn 0.5s ease-in-out forwards',
-      fadeOut: 'fadeOut 0.5s ease-in-out forwards',
     },
   },
   plugins: [],

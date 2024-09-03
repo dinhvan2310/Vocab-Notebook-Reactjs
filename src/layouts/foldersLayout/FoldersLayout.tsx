@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Unsubscribe } from 'firebase/auth/web-extension';
-import { Card, Edit, Element3, TableDocument, Text, Timer, Trash } from 'iconsax-react';
+import { Card, Edit, Element3, Refresh2, TableDocument, Text, Timer, Trash } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
@@ -32,13 +32,13 @@ import {
     updateFolder
 } from '../../firebase/folderAPI';
 import { getUser } from '../../firebase/userAPI';
-import { deleteImage, uploadImage } from '../../firebase/utils/uploadImage';
+import { uploadImage } from '../../firebase/utils/uploadImage';
 import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
+import { useMessage } from '../../hooks/useMessage';
 import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import './FoldersLayout.scss';
-import { useMessage } from '../../hooks/useMessage';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -46,60 +46,18 @@ function FoldersLayout() {
     const { userid } = useParams();
     // current user who login in
     const { user: currentUser } = useAuth();
-
     const message = useMessage();
     const navigate = useNavigate();
-    const { isTabletOrMobile, isDesktopOrLaptop, isMobile } = useResponsive();
-
+    const { md, lg, xl, xxl } = useResponsive();
     const [openModalEditFolder, setOpenModalEditFolder] = useState(false);
     const [folderEditing, setFolderEditing] = useState<FolderType | null>(null);
     const [folderImageEditing, setFolderImageEditing] = useState<File | null>(null);
-    const handleOpenModalEditFolder = (folder: FolderType) => {
-        setOpenModalEditFolder(true);
-        setFolderEditing(folder);
-        // setFolderNameEditing(folder.name);
-        // setFolderImageURLEditing(folder.imageUrl);
-        // setFolderIDEditing(folder.id_folder ?? '');
-    };
 
-    const viewModeOptions = (() => {
-        if (isMobile)
-            return [
-                {
-                    label: 'List',
-                    value: 'list',
-                    icon: <TableDocument size="16" />
-                },
-                {
-                    label: 'Large card',
-                    value: 'card',
-                    icon: <Card size="16" />
-                }
-            ];
-        else
-            return [
-                {
-                    label: 'Table',
-                    value: 'table',
-                    icon: <Element3 size="16" />
-                },
-                {
-                    label: 'List',
-                    value: 'list',
-                    icon: <TableDocument size="16" />
-                },
-                {
-                    label: 'Large card',
-                    value: 'card',
-                    icon: <Card size="16" />
-                }
-            ];
-    })();
-
-    const [sortBy, setSortBy] = useState<'name_lowercase' | 'createAt'>();
+    const [sortBy, setSortBy] = useState<'nameLowercase' | 'modifiedAt' | 'createAt'>();
     const sortByOptions = [
-        { label: 'Name', value: 'name_lowercase', icon: <Text size="16" /> },
-        { label: 'Date', value: 'createAt', icon: <Timer size="16" /> }
+        { label: 'Name', value: 'nameLowercase', icon: <Text size="16" /> },
+        { label: 'Modified', value: 'modifiedAt', icon: <Refresh2 size="16" /> },
+        { label: 'Created', value: 'createAt', icon: <Timer size="16" /> }
     ];
 
     // Data
@@ -110,12 +68,31 @@ function FoldersLayout() {
     const [viewMode, setViewMode] = useState<'table' | 'list' | 'card'>(() => {
         return getFolderViewModeDefault();
     });
-
-    // set view mode to list if isMobile
     useEffect(() => {
-        if (isMobile && viewMode === 'table') setViewMode('list');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isTabletOrMobile, isDesktopOrLaptop, isMobile]);
+        if (!lg && viewMode === 'table') {
+            setViewMode('list');
+        }
+    }, [lg]);
+    // set view mode to list if isMobile
+
+    const viewModeOptions = [
+        {
+            label: 'Table',
+            value: 'table',
+            icon: <Element3 size="16" />,
+            disable: !lg
+        },
+        {
+            label: 'List',
+            value: 'list',
+            icon: <TableDocument size="16" />
+        },
+        {
+            label: 'Large card',
+            value: 'card',
+            icon: <Card size="16" />
+        }
+    ];
 
     const [currentPage, setCurrentPage] = useState(1);
     const limitPerPageOptions = [
@@ -138,13 +115,14 @@ function FoldersLayout() {
     // Get folders from data object and setFolders
     const fetchFolders = async () => {
         if (!userid) return null;
-        const data = await getFolders(userid, deBoundSearch, sortBy, startAt, limit);
+        const data = await getFolders(userid, startAt, limit, deBoundSearch, sortBy);
         return data;
     };
     // Query
     const query = useQuery({
-        queryKey: ['folders', deBoundSearch, startAt, limit, userid, sortBy],
-        queryFn: fetchFolders
+        queryKey: ['folders', startAt, limit, deBoundSearch, sortBy],
+        queryFn: fetchFolders,
+        staleTime: 0
     });
 
     const userQuery = useQuery({
@@ -162,6 +140,7 @@ function FoldersLayout() {
         if (userid) {
             unsubscribe = onSnapshotFolders(userid, () => {
                 query.refetch();
+                // clear cache
             });
         }
         return () => {
@@ -172,7 +151,7 @@ function FoldersLayout() {
     //
 
     const handleNavigateToWordSets = (folder: FolderType) => {
-        navigate(`/user/${userid}/folders/${folder.id_folder}`);
+        navigate(`/user/${userid}/folders/${folder.folderId}`);
     };
 
     const checkCanEditFolder = () => {
@@ -180,6 +159,13 @@ function FoldersLayout() {
             return false;
         }
         return true;
+    };
+    const handleOpenModalEditFolder = (folder: FolderType) => {
+        setOpenModalEditFolder(true);
+        setFolderEditing(folder);
+        // setFolderNameEditing(folder.name);
+        // setFolderImageURLEditing(folder.imageUrl);
+        // setFolderIDEditing(folder.id_folder ?? '');
     };
 
     const updateFolderMutation = useMutation({
@@ -193,14 +179,13 @@ function FoldersLayout() {
             }
 
             //
+            if (!folderEditing) return null;
             const folder: FolderType = {
-                name: folderEditing?.name || '',
-                imageUrl: url || folderEditing?.imageUrl,
-                id_folder: folderEditing?.id_folder || '',
-                word_sets: []
+                ...folderEditing,
+                imageUrl: url || folderEditing?.imageUrl
             };
 
-            return await updateFolder(folder);
+            return await updateFolder(folder.folderId || '', folder.name, folder.imageUrl || '');
         },
         mutationKey: ['updateFolder', folderEditing, folderImageEditing]
     });
@@ -237,7 +222,10 @@ function FoldersLayout() {
                             placeholder: 'Folder name',
                             required: true,
                             value: folderEditing?.name,
-                            onChange: (value) => setFolderEditing({ ...folderEditing, name: value })
+                            onChange: (value) =>
+                                setFolderEditing(
+                                    folderEditing ? { ...folderEditing, name: value } : null
+                                )
                         }
                     ]}
                     haveSubmitButton={false}
@@ -269,9 +257,6 @@ function FoldersLayout() {
                                     />
                                 }
                                 onClick={async () => {
-                                    await deleteImage(folderEditing?.imageUrl || '');
-                                    const newFolder = { ...folderEditing, imageUrl: '' };
-                                    await updateFolder(newFolder);
                                     setFolderImageEditing(null);
                                     setFolderEditing({ ...folderEditing, imageUrl: '' });
                                 }}
@@ -296,35 +281,42 @@ function FoldersLayout() {
             </ModalComponent>
 
             <div className="top-bar">
-                {!isTabletOrMobile && (
-                    <RowComponent alignItems="center">
-                        <img
-                            src={userQuery.data?.photoURL || NotFoundUser}
-                            alt="avatar"
-                            style={{
-                                objectFit: 'cover',
-                                width: '64px',
-                                height: '64px',
-                                borderRadius: '50%'
-                            }}
-                        />
-                        <SpaceComponent width={16} />
-                        <ColumnComponent alignItems="flex-start">
-                            <TitleComponent
-                                title={userQuery.data?.name || 'Unknown user'}
-                                fontSize="1.5em"
+                {lg && (
+                    <>
+                        <RowComponent alignItems="center">
+                            <img
+                                src={userQuery.data?.photoURL || NotFoundUser}
+                                alt="avatar"
+                                style={{
+                                    objectFit: 'cover',
+                                    width: '64px',
+                                    height: '64px',
+                                    borderRadius: '50%'
+                                }}
                             />
-                            <SpaceComponent height={4} />
-                            <TextComponent text={userQuery.data?.email || '...'} fontSize="1.3em" />
-                        </ColumnComponent>
-                    </RowComponent>
+                            <SpaceComponent width={16} />
+                            <ColumnComponent alignItems="flex-start">
+                                <TitleComponent
+                                    title={userQuery.data?.name || 'Unknown user'}
+                                    fontSize="1.5em"
+                                />
+                                <SpaceComponent height={4} />
+                                <TextComponent
+                                    text={userQuery.data?.email || '...'}
+                                    fontSize="1.3em"
+                                />
+                            </ColumnComponent>
+                        </RowComponent>
+                        <SpaceComponent width={64} />
+                    </>
                 )}
-                {!isTabletOrMobile && <SpaceComponent width={64} />}
                 <div
-                    className="command-bar"
-                    style={{
-                        maxWidth: isTabletOrMobile ? '100%' : '500px'
-                    }}>
+                    className="command-bar
+                        max-w-[100%]
+                        lg:max-w-[360px]
+                        xl:max-w-[480px]
+                        2xl:max-w-[600px]
+                    ">
                     <SearchBoxComponent
                         searchWidth={'100%'}
                         placeholder="Search folders"
@@ -340,25 +332,13 @@ function FoldersLayout() {
                             setSearch(value);
                         }}
                     />
-                    {/* <FloatingActionButtonComponent
-                        icon={<Sort size="20" />}
-                        menuItems={topBar_commandBar_menuItems_sort}
-                        text="Sort"
-                        menuItemsPosition="left"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        containerStyle={{
-                            height: '40px',
-                            padding: '0 8px'
-                        }}
-                    /> */}
                 </div>
             </div>
             <div className="flex flex-row justify-end mt-4">
                 <SelectComponent
                     options={viewModeOptions}
                     title="View mode"
-                    defaultValue={isMobile ? 'list' : 'table'}
+                    defaultValue={'table'}
                     value={viewMode}
                     positionPopup="bottom"
                     width="150px"
@@ -379,9 +359,9 @@ function FoldersLayout() {
                 <SpaceComponent width={8} />
                 <SelectComponent
                     options={sortByOptions}
-                    defaultValue="name_lowercase"
+                    defaultValue="nameLowercase"
                     positionPopup="bottom"
-                    width="120px"
+                    width="150px"
                     color="var(--secondary-text-color)"
                     style={{
                         backgroundColor: 'var(--bg-color)',
@@ -392,7 +372,7 @@ function FoldersLayout() {
                     }}
                     hoverColor="var(--primary-color)"
                     onChange={(value) => {
-                        setSortBy(value as 'name_lowercase' | 'createAt');
+                        setSortBy(value as 'nameLowercase' | 'modifiedAt' | 'createAt');
                     }}
                     value={sortBy}
                     title="Sort by"
@@ -400,9 +380,10 @@ function FoldersLayout() {
             </div>
             <div
                 className=" 
-                mt-4
-                px-4
-                py-4
+                mt-6
+                pt-2
+                px-0
+                lg:px-4
                 scrollbar
                 dark:scrollbarDark
                 h-full
@@ -429,31 +410,29 @@ function FoldersLayout() {
                         }}
                     />
                 ) : (
-                    <GridRow gutter={[24, 24]} className="w-full">
+                    <GridRow gutter={[24, 24]} wrap={true} className={`w-full`}>
                         {query.data?.folders.length === 0 && (
-                            <EmptyComponent text="No folders found" />
+                            <EmptyComponent text="No folders found" className="mt-24" />
                         )}
                         {query.data?.folders.map((folder, index) => {
                             return (
                                 <GridCol
                                     span={
-                                        // default view mode is table on pc/tablet and list on mobile
-                                        viewMode === undefined
-                                            ? isMobile
-                                                ? 12 // list view mode
-                                                : 4 // table view mode
-                                            : // view mode is table
-                                            viewMode === 'table'
-                                            ? 4
+                                        viewMode === 'table'
+                                            ? !xl
+                                                ? 6
+                                                : !xxl
+                                                ? 4
+                                                : 3
                                             : viewMode === 'list'
                                             ? 12
-                                            : viewMode === 'card'
-                                            ? isMobile
-                                                ? 12
-                                                : isTabletOrMobile
-                                                ? 6
-                                                : 3
-                                            : 12
+                                            : !md
+                                            ? 12
+                                            : !xl
+                                            ? 6
+                                            : !xxl
+                                            ? 3
+                                            : 2
                                     }
                                     key={index}>
                                     <CardComponent
@@ -471,7 +450,7 @@ function FoldersLayout() {
                                         key={index}
                                         title={folder.name}
                                         hoverable={true}
-                                        subTitle={folder?.word_sets?.length + ' word sets'}
+                                        subTitle={folder?.wordSets?.length + ' word sets'}
                                         onClick={() => {
                                             handleNavigateToWordSets(folder);
                                         }}
@@ -488,11 +467,12 @@ function FoldersLayout() {
                                             {
                                                 text: 'Delete',
                                                 onClick: async () => {
+                                                    await removeFolder(folder.folderId || '');
+
                                                     message(
                                                         'success',
                                                         'Delete folder successfully'
                                                     );
-                                                    await removeFolder(folder.id_folder || '');
                                                 },
                                                 key: 'delete',
                                                 disabled: currentUser?.uid !== userid,

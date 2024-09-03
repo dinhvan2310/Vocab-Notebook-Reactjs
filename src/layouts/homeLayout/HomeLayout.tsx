@@ -1,47 +1,102 @@
+import { Timestamp } from 'firebase/firestore';
+import { useState } from 'react';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
-import Upload from '../../components/Upload/Upload';
-import { uploadImage } from '../../firebase/utils/uploadImage';
+import InputComponent from '../../components/commonComponent/Input/InputComponent';
+import GridCol from '../../components/Grid/GridCol';
+import GridRow from '../../components/Grid/GridRow';
+import {
+    addWordSet,
+    getWordSet,
+    getWordSets,
+    removeWordSet,
+    updateWordSet
+} from '../../firebase/wordSetAPI';
 import { useMessage } from '../../hooks/useMessage';
+import { getFolders } from '../../firebase/folderAPI';
 
 function HomeLayout() {
     const message = useMessage();
-    return (
-        <>
-            <Upload
-                action={async (file) => {
-                    if (!file) return;
-                    const url = await uploadImage(file);
-                    console.log(url);
-                }}
-                type="picture"
-                style={{}}
-            />
 
-            <ButtonComponent
-                text="Show Message Success"
-                onClick={() => {
-                    message('success', 'This is a success message');
-                }}
+    const [folderId, setFolderId] = useState<string>('');
+    const [wordSetId, setWordSetId] = useState<string>('');
+
+    return (
+        <div className="flex flex-col">
+            <InputComponent
+                onChange={(value) => setFolderId(value)}
+                value={folderId}
+                type="text"
+                borderType="all"
+                label="Folder ID"
             />
-            <ButtonComponent
-                text="Show Message Error"
-                onClick={() => {
-                    message('error', 'This is a success message error');
-                }}
+            <InputComponent
+                onChange={(value) => setWordSetId(value)}
+                value={wordSetId}
+                type="text"
+                borderType="all"
+                label="WordSet ID"
             />
-            <ButtonComponent
-                text="Show Message Info"
-                onClick={() => {
-                    message('info', 'This is a success message info');
-                }}
-            />
-            <ButtonComponent
-                text="Show Message Warning"
-                onClick={() => {
-                    message('warning', 'This is a success message warning');
-                }}
-            />
-        </>
+            <GridRow gutter={[16, 16]} className="w-full">
+                <GridCol span={2}>
+                    <ButtonComponent
+                        text="addWordSet"
+                        onClick={async () => {
+                            await getFolders(
+                                '6e6E7UuYArfdv32s0silzBgmxt32',
+                                0,
+                                10,
+                                '12',
+                                'nameLowercase'
+                            );
+                        }}
+                    />
+                </GridCol>
+                <GridCol span={2}>
+                    <ButtonComponent
+                        text="updateWordSet"
+                        onClick={async () => {
+                            const wordSet = await getWordSet(wordSetId);
+                            const rs = await updateWordSet(
+                                wordSetId,
+                                wordSet.name + ' updated',
+                                wordSet.visibility,
+                                wordSet.imageUrl,
+                                wordSet.words
+                            );
+
+                            console.log(rs);
+                        }}
+                    />
+                </GridCol>
+                <GridCol span={2}>
+                    <ButtonComponent
+                        text="Delete WordSet"
+                        onClick={async () => {
+                            await removeWordSet(wordSetId);
+                            setWordSetId('');
+                        }}
+                    />
+                </GridCol>
+                <GridCol span={2}>
+                    <ButtonComponent
+                        text="Get WordSet"
+                        onClick={async () => {
+                            const rs = await getWordSet(wordSetId);
+                            console.log(rs);
+                        }}
+                    />
+                </GridCol>
+                <GridCol span={2}>
+                    <ButtonComponent
+                        onClick={async () => {
+                            const rs = await getWordSets(folderId, 0, 10, '', 'nameLowercase');
+                            console.log(rs);
+                        }}
+                        text="Get All WordSet"
+                    />
+                </GridCol>
+            </GridRow>
+        </div>
     );
 }
 

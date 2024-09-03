@@ -62,7 +62,7 @@ function Message(props: MessageProps) {
                 
                 
                 
-                animate-fadeIn
+                animate-fadeInCenter
                 `}>
                 {icon}
                 <TextComponent text={message} className="ml-2" />

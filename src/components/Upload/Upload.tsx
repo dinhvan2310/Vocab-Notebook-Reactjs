@@ -1,5 +1,5 @@
 import { Add, DocumentUpload, GallerySlash, NoteRemove } from 'iconsax-react';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import TextComponent from '../commonComponent/Text/TextComponent';
 
 interface UploadProps {
@@ -9,20 +9,24 @@ interface UploadProps {
     onRemove?: () => void;
 
     disabled?: boolean;
-    render?: (file: File | undefined) => ReactNode;
+    render?: (file: File | undefined | string) => ReactNode;
     accept?: string;
     style?: React.CSSProperties;
     className?: string;
+
+    // picture props
+    defaultImage?: File | string;
 }
 function Upload(props: UploadProps) {
     const {
+        defaultImage,
         className = '',
         type = 'picture',
         name = type === 'picture' ? 'Upload' : 'Click to upload',
         action,
         onRemove,
         disabled = false,
-        render = (file: File | undefined) => {
+        render = (file: File | undefined | string) => {
             switch (type) {
                 case 'picture':
                     return file ? (
@@ -36,17 +40,19 @@ function Upload(props: UploadProps) {
                             }}>
                             <div className="absolute top-0 right-0  w-full h-full rounded-lg ">
                                 <img
-                                    src={URL.createObjectURL(file)}
+                                    src={
+                                        typeof file === 'string' ? file : URL.createObjectURL(file)
+                                    }
                                     alt="file"
                                     className="w-full h-full rounded-lg object-cover
-                              group-hover:blur-[1px] 
+                            group-hover:blur-[1px] 
                             "
                                 />
                             </div>
                             <div
                                 className="
-                          absolute cursor-pointer top-1/2 -translate-x-1/2 left-1/2 -translate-y-1/2
-                          hidden group-hover:flex 
+                        absolute cursor-pointer top-1/2 -translate-x-1/2 left-1/2 -translate-y-1/2
+                        hidden group-hover:flex 
                         ">
                                 <GallerySlash size={24} className="text-red-500" variant="Broken" />
                             </div>
@@ -86,8 +92,8 @@ function Upload(props: UploadProps) {
                                 border-[1px] 
                                 inline-flex 
                                 px-4 py-2
-                                 rounded-lg 
-                                 border-borderLight dark:border-borderDark
+                                rounded-lg 
+                                border-borderLight dark:border-borderDark
                                 hover:border-primaryLight-hover dark:hover:border-primaryDark-hover 
 
                 ">
@@ -161,7 +167,7 @@ function Upload(props: UploadProps) {
             />
             <label title="Upload" className="cursor-pointer w-full h-full">
                 <div className="flex flex-col items-center justify-center  w-full h-full">
-                    {render(file || undefined)}
+                    {render(file || defaultImage || undefined)}
                 </div>
             </label>
         </div>

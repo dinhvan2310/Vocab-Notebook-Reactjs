@@ -47,7 +47,7 @@ function MainLayout() {
     const { user } = useAuth();
     const { signOut } = useAuth();
 
-    const { isTabletOrMobile } = useResponsive();
+    const { md } = useResponsive();
     // navigation
     const navigate = useNavigate();
     const location = useLocation();
@@ -62,7 +62,7 @@ function MainLayout() {
     );
     const [inlineCollapsed, setInlineCollapsed] = useState<
         undefined | 'inline-collapsed' | 'popup-menu'
-    >(() => (isTabletOrMobile ? 'inline-collapsed' : undefined));
+    >(() => (!md ? 'inline-collapsed' : undefined));
     // keep track of the active page in the sidebar menu
 
     useEffect(() => {
@@ -78,12 +78,12 @@ function MainLayout() {
     }, [location]);
 
     useEffect(() => {
-        if (isTabletOrMobile) {
+        if (!md) {
             setInlineCollapsed('inline-collapsed');
         } else {
             setInlineCollapsed(undefined);
         }
-    }, [isTabletOrMobile]);
+    }, [!md]);
 
     // open modal to add new folder
     const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
@@ -127,15 +127,13 @@ function MainLayout() {
             const imageUrl = newFolderImage ? await uploadImage(newFolderImage) : '';
 
             const folder: FolderType = {
-                id_user: user?.uid || '',
-
                 name: createFolder_name,
                 createAt: Timestamp.now(),
                 modifiedAt: Timestamp.now(),
 
                 imageUrl: imageUrl,
 
-                word_sets: []
+                wordSets: []
             };
 
             const newFolder = await addFolder(folder);
@@ -321,7 +319,7 @@ function MainLayout() {
                 <div
                     className="iconMenuContainer"
                     onClick={() => {
-                        if (isTabletOrMobile) {
+                        if (!md) {
                             setInlineCollapsed(
                                 inlineCollapsed === 'popup-menu' ? 'inline-collapsed' : 'popup-menu'
                             );
@@ -423,10 +421,13 @@ function MainLayout() {
                 {/* Right container - main content --------------------------------------------------------- */}
                 <main className="rightContainer">
                     <div
-                        className="rightContent"
+                        className="rightContent
+                            scrollbar
+                            dark:scrollbarDark
+                        "
                         style={{
-                            paddingLeft: isTabletOrMobile ? '16px' : '48px',
-                            paddingRight: isTabletOrMobile ? '16px' : '48px'
+                            paddingLeft: !md ? '16px' : '48px',
+                            paddingRight: !md ? '16px' : '48px'
                         }}>
                         <Outlet />
                     </div>

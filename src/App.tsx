@@ -10,9 +10,10 @@ import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';
 import SignUpLayout from './layouts/signUpLayout/SignUpLayout';
-import WordLayout from './layouts/wordLayout/WordLayout';
 import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
 import MessageProvider from './contexts/MessageProvider';
+import WordEditLayout from './layouts/wordEditLayout/WordEditLayout';
+import { getWordSet } from './firebase/wordSetAPI';
 
 function App() {
     useEffect(() => {
@@ -63,9 +64,20 @@ function App() {
                     path: '/create-wordset',
                     element: (
                         <ProtectedRoute>
-                            <WordLayout />
+                            <WordEditLayout />
                         </ProtectedRoute>
                     )
+                },
+                {
+                    path: '/edit-wordset/:wordsetid',
+                    element: (
+                        <ProtectedRoute>
+                            <WordEditLayout />
+                        </ProtectedRoute>
+                    ),
+                    loader: async ({ params }) => {
+                        return await getWordSet(params.wordsetid ?? '');
+                    }
                 },
                 {
                     path: '/not-found',

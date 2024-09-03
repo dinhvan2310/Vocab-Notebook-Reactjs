@@ -8,6 +8,7 @@ interface Data<T> {
     label: string;
     value: T;
     icon?: ReactNode;
+    disable?: boolean;
 }
 
 interface SelectComponentProps<T> {
@@ -60,7 +61,6 @@ function SelectComponent(props: SelectComponentProps<string>) {
             style={{
                 minWidth: width,
                 borderColor: isHover ? hoverColor : color,
-                pointerEvents: disabled ? 'none' : 'auto',
                 opacity: disabled ? 0.5 : 1,
                 ...style
             }}
@@ -68,7 +68,7 @@ function SelectComponent(props: SelectComponentProps<string>) {
             onMouseLeave={() => {
                 setIsHover(false);
             }}>
-            <div className="select">
+            <div className="select cursor-pointer">
                 <TextComponent
                     text={
                         value === undefined
@@ -95,7 +95,8 @@ function SelectComponent(props: SelectComponentProps<string>) {
                                         ? defaultValue === option.value && 'selected'
                                         : value === option.value && 'selected'
                                 }
-
+                                ${option.disable && 'pointer-events-none'}
+                                ${option.disable && 'opacity-50'}
                                 `}
                             style={{}}
                             onClick={() => {

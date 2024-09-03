@@ -1,6 +1,7 @@
 import TextareaAutosize from 'react-textarea-autosize';
 import TextComponent from '../Text/TextComponent';
 import './InputComponent.scss';
+import TitleComponent from '../Title/TitleComponent';
 
 interface InputComponentProps {
     type: 'text' | 'textarea' | 'password' | 'email';
@@ -18,6 +19,7 @@ interface InputComponentProps {
     // effect only borderType = 'bottom'
     animationType?: 'none' | 'slideInLeft' | 'slideCenter';
     tabindex?: number;
+    errorText?: string;
 }
 
 function InputComponent(props: InputComponentProps) {
@@ -34,7 +36,8 @@ function InputComponent(props: InputComponentProps) {
         width = '100%',
         fontSize = '1.6em',
         animationType = 'none',
-        tabindex
+        tabindex,
+        errorText
     } = props;
 
     return (
@@ -83,7 +86,20 @@ function InputComponent(props: InputComponentProps) {
                     }}
                     className="bar"></span>
             </div>
-            <TextComponent text={label?.toUpperCase() ?? ''} fontSize="1.1em" className="label" />
+            {errorText ? (
+                <TitleComponent
+                    title={errorText?.toUpperCase() ?? ''}
+                    fontSize="1.1em"
+                    className="label mt-1"
+                    color="var(--red-color)"
+                />
+            ) : (
+                <TitleComponent
+                    title={label?.toUpperCase() ?? ''}
+                    fontSize="1.1em"
+                    className="label mt-1"
+                />
+            )}
         </div>
     );
 }

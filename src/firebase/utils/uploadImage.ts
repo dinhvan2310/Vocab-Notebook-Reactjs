@@ -2,8 +2,8 @@ import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebas
 import { storage } from "../firebase-config";
 
 
-export const uploadImage = async (file: File) => {
-
+export const uploadImage = async (file?: File) => {
+    if (!file) return;
 
     // refactor name of file to date + . + file extension
     const storageRef = ref(storage, 'images/' + Date.now() + '.' + file.name.split('.').pop());

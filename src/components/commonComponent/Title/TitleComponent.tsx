@@ -18,13 +18,13 @@ function TitleComponent(props: TitleComponentProps) {
 
     return (
         <div
-            className={`title-component ${className || ''}`}
             style={{
                 ...containerStyle,
                 fontSize: fontSize || '1.6em',
                 color: color || 'var(--text-color)',
                 fontWeight: fontWeight || 600
-            }}>
+            }}
+            className={`title-component ${className || ''}`}>
             {icon && <div className="iconContainer">{icon}</div>}
             {icon && <SpaceComponent width={16} />}
             <div style={titleStyle} className="title">

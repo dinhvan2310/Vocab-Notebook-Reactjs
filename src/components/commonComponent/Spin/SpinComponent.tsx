@@ -7,12 +7,13 @@ interface SpinComponentProps {
     indicator?: object;
     spinning?: boolean;
     style?: React.CSSProperties;
+    className?: string;
 }
 
 function SpinComponent(props: SpinComponentProps) {
-    const { indicator = LoadingDefault, spinning = true, style } = props;
+    const { indicator = LoadingDefault, spinning = true, style, className = '' } = props;
     return (
-        <div style={style} className={`spin-container`}>
+        <div style={style} className={`spin-container ${className}`}>
             <div className={`spin`}>
                 <div className="spin-dot">
                     {

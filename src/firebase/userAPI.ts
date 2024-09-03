@@ -2,16 +2,35 @@ import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase/firebase-config';
 import { GoogleAuthProvider, signInWithPopup, FacebookAuthProvider, User } from 'firebase/auth';
 import { UserType } from '../types/UserType';
-import NoAvatar from '../assets/image/no_avatar.png'
 
 const ggProvider = new GoogleAuthProvider();
 const fbProvider = new FacebookAuthProvider();
 
-const addUser = async (user: UserType) => {
+const validateUser = (user: UserType) => {
     if (user === undefined) {
         throw new Error('User is undefined');
     }
-    await setDoc(doc(db, 'users', user.id_user??''), user);
+    if (user.userId === undefined) {
+        throw new Error('User ID is undefined');
+    }
+    if (user.email === undefined) {
+        throw new Error('Email is undefined');
+    }
+    if (user.name === undefined) {
+        throw new Error('Name is undefined');
+    }
+    if (user.provider === undefined) {
+        throw new Error('Provider is undefined');
+    }
+    if (user.createAt === undefined) {
+        throw new Error('CreateAt is undefined');
+    }
+}
+
+const addUser = async (user: UserType) => {
+    validateUser(user);
+
+    await setDoc(doc(db, 'users', user.userId??''), user);
 };
 
 export const signInWithGoogle = async () => {
@@ -19,13 +38,12 @@ export const signInWithGoogle = async () => {
         getDoc(doc(db, 'users', result.user?.uid)).then((doc) => {
             if (!doc.exists()) {
                 const user: UserType = {
-                    id_user: result.user?.uid,
+                    userId: result.user?.uid,
                     email: result.user?.email ?? '',
                     name: result.user?.displayName ?? '',
-                    photoURL: result.user?.photoURL ?? NoAvatar,
+                    photoURL: result.user?.photoURL ?? '',
                     createAt: Timestamp.fromDate(new Date(result.user?.metadata.creationTime ?? '')),
                     provider: result.user?.providerId ?? 'google.com',
-                    folders: [],
                 }
                 addUser(user);
                 
@@ -38,13 +56,12 @@ export const signInWithFacebook = async () => {
         getDoc(doc(db, 'users', result.user?.uid)).then((doc) => {
             if (!doc.exists()) {
                 const user: UserType = {
-                    id_user: result.user?.uid,
+                    userId: result.user?.uid,
                     email: result.user?.email ?? '',
                     name: result.user?.displayName ?? '',
                     photoURL: result.user?.photoURL ?? '',
                     createAt: Timestamp.fromDate(new Date(result.user?.metadata.creationTime ?? '')),
                     provider: result.user?.providerId ?? 'facebook.com',
-                    folders: [],
                 }
                 addUser(user);
             }
@@ -53,9 +70,10 @@ export const signInWithFacebook = async () => {
 };
 export const signOut = () => {
     auth.signOut().then(() => {
-                
     });
 };
+
+
 export const authStateChange = (callback: (user: User | null) => void) => {
     return auth.onAuthStateChanged(callback);
 };

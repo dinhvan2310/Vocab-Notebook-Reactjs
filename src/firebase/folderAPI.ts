@@ -1,105 +1,125 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from "firebase/firestore";
-import FolderType from "../types/FolderType";
-import { auth, db } from "./firebase-config";
-import { deleteImage } from "./utils/uploadImage";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    DocumentReference,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    orderBy,
+    query,
+    Timestamp,
+    updateDoc,
+    where
+} from 'firebase/firestore';
+import FolderType from '../types/FolderType';
+import { auth, db } from './firebase-config';
+import { deleteImage } from './utils/uploadImage';
+
+const validateFolder = (folder: FolderType) => {
+    if (!folder.name) throw new Error('Folder name is not provided');
+    if (folder.name.length > 50) throw new Error('Folder name is too long');
+};
 
 /// Add a folder to the database and update the user's folders array in the user document
 export const addFolder = async (folder: FolderType) => {
-
-    console.log('addFolder');
+    console.log('addFolder', folder);
 
     const user = auth.currentUser;
-    if (!user) throw new Error("User is not logged in");
+    if (!user) throw new Error('User is not logged in');
 
-    if (!folder.id_user) throw new Error("User id is not provided");
-    if (!folder.name) throw new Error("Folder name is not provided");
-    if (folder.name.trim() === '') throw new Error("Folder name is empty");
+    validateFolder(folder);
 
-    const collectionRef = collection(db, "folders");
+    const folderRef = collection(db, 'foldersGlobal');
 
     // add folder
-    return (await addDoc(collectionRef, {
-        id_user: folder.id_user,
-        
-        name: folder.name.trim(),
-        imageUrl: folder.imageUrl,
-        name_lowercase: folder.name.trim().toLowerCase(),
-        createAt: folder.createAt,
-        modifiedAt: folder.modifiedAt,
-        word_sets: folder.word_sets,
-    }));
-}
+    return await addDoc(folderRef, {
+        userRef: folder.userRef ?? doc(db, 'users', user.uid),
 
-export const updateFolder = async (folder: FolderType) => {
+        name: folder.name.trim() || '', // not happen because of validateFolder
+        nameLowercase: folder.name.trim().toLowerCase() || '', // not happen because of validateFolder
+        imageUrl: folder.imageUrl || '',
+        createAt: folder.createAt || Timestamp.now(),
+        modifiedAt: folder.modifiedAt || Timestamp.now(),
+        wordSets: folder.wordSets || []
+    });
+};
 
+export const updateFolder = async (
+    folderRef: string | DocumentReference | undefined,
+    name: string,
+    imageUrl: string | undefined
+) => {
     console.log('updateFolder');
 
     const user = auth.currentUser;
-    if (!user) throw new Error("User is not logged in");
+    if (!user) throw new Error('User is not logged in');
 
-    console.log('updateFolder', folder);
+    if (!folderRef) throw new Error('Folder reference is not provided');
 
-    if (folder.id_folder === undefined) throw new Error("Folder id is not provided");
-    if (!folder.name) throw new Error("Folder name is not provided");
-    if (folder.name.trim() === '') throw new Error("Folder name is empty");
+    const _folderRef =
+        typeof folderRef === 'string' ? doc(db, 'foldersGlobal', folderRef) : folderRef;
+    const _folderDoc = await getDoc(_folderRef);
+    if (!_folderDoc.exists()) throw new Error('Folder is not found');
+    // Check permission to update the folder (only the owner can update the folder)
+    if (_folderDoc.data().userRef.id !== user?.uid)
+        throw new Error("You don't have permission to update this folder");
 
-    const folderRef = doc(db, "folders", folder.id_folder);
-    const folderDoc = await getDoc(folderRef);
-    if (folderDoc.exists()){
-        console.log(folderDoc.data());
-        // Check permission to update the folder (only the owner can update the folder)
-        if (folderDoc.data().id_user === user?.uid) {
-                await updateDoc(folderRef, {
-                    name: folder.name,
-                    imageUrl: folder.imageUrl,
-                    name_lowercase: folder.name.toLowerCase(),
-                    modifiedAt: Timestamp.now(),
-                })
-            
-        }
-        else {
-            throw new Error("You don't have permission to update this folder");
-        }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    if (imageUrl === undefined) imageUrl = _folderDoc.data().imageUrl;
+    // xoá image cũ bên storage nếu có
+    if ( imageUrl !== _folderDoc.data().imageUrl && _folderDoc.data().imageUrl !== '') {
+        await deleteImage(_folderDoc.data().imageUrl);
+    // không có gì thay đổi thì không cần update
+    } else {
+        if (name.trim().toLowerCase() === _folderDoc.data().nameLowercase) return;
     }
-    else {
-        throw new Error("Folder is not found");
-    }
-}
+    // update folder, modifiedAt is updated automatically
+    await updateDoc(_folderRef, {
+        name: name.trim(),
+        nameLowercase: name.trim().toLowerCase(),
+        imageUrl: imageUrl || '',
+        modifiedAt: Timestamp.now()
+    });
+};
 
 /// Remove a folder from the database and update the user's folders array in the user document
-export const removeFolder = async (id_folder: string) => {
-
-    console.log('removeFolder');
+export const removeFolder = async (folderRef: string | DocumentReference) => {
+    console.log('removeFolder', folderRef);
 
     const user = auth.currentUser;
-    if (!user) throw new Error("User is not logged in");
-     
-    
-    const folderRef = doc(db, "folders", id_folder);
-    const folderDoc = await getDoc(folderRef);
-    if (folderDoc.exists()){
-        // Check permission to delete the folder (only the owner can delete the folder)
-        if (folderDoc.data().id_user === user?.uid) {
-            await deleteDoc(doc(db, "folders", id_folder));
-            
-            if (folderDoc.data().imageUrl) {
-                await deleteImage(folderDoc.data().imageUrl);
-            }
-        }
-        else {
-            throw new Error("You don't have permission to delete this folder");
-        }
+    if (!user) throw new Error('User is not logged in');
+
+    const _folderRef =
+        typeof folderRef === 'string' ? doc(db, 'foldersGlobal', folderRef) : folderRef;
+    const _folderDoc = await getDoc(_folderRef);
+    if (!_folderDoc.exists()) throw new Error('Folder is not found');
+
+    // Check permission to delete the folder (only the owner can delete the folder)
+    if (_folderDoc.data().userRef.id !== user?.uid)
+        throw new Error("You don't have permission to delete this folder");
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // delete folder
+    await deleteDoc(_folderRef);
+    // delete image from storage if it exists
+    if (_folderDoc.data().imageUrl) {
+        await deleteImage(_folderDoc.data().imageUrl);
     }
-}
+    // delete all wordsets in the folder
+    const wordSetsRef = _folderDoc.data().wordSets;
+    for (const wordSetRef of wordSetsRef) {
+        await deleteDoc(wordSetRef);
+    }
 
+};
 
-export const onSnapshotFolders = (userid: string , callback: () => void) => {
-
-    
-
-    const q = query(collection(db, "folders"), where("id_user", "==", userid));
+export const onSnapshotFolders = (userId: string, callback: () => void) => {
+    const userRef = doc(db, 'users', userId);
+    const q = query(collection(db, 'foldersGlobal'), where('userRef', '==', userRef));
     return onSnapshot(q, () => {
-
         console.log('onSnapshotFolders');
         // const folders: FolderType[] = [];
         // snapshot.forEach((doc) => {
@@ -109,69 +129,105 @@ export const onSnapshotFolders = (userid: string , callback: () => void) => {
         // });
         callback();
     });
-}
+};
+
+// export const getFolders = async (
+//     userId: string,
+//     stringSearch: string = '',
+
+//     sortBy: 'nameLowercase' | 'createAt'  = 'nameLowercase',
+
+//     _startAt: number = 0,
+//     _limit: number = 5,
+// ) => {
+//     console.log('getFolders');
+
+//     // if (!userId) throw new Error("User id is not provided");
+//     const userRef = doc(db, "users", userId);
+
+//     const collectionRef = collection(db, "folders");
+//     const _stringSearch = stringSearch.trim().toLowerCase();
+
+//     console.log(userId, _stringSearch, sortBy, _startAt, _limit);
+
+//     console.log(sortBy)
+
+//     // query
+//     let q =
+//         query(
+//             collectionRef,
+//             where("userRef", "==", userRef),
+//         )
+//     q = query(q, orderBy(sortBy));
+
+//     // get data from query
+//     const querySnapshot = await getDocs(q);
+//     const numOfTotalFolders = querySnapshot.size;
+//     const folders: FolderType[] = [];
+//     querySnapshot.docs.forEach((doc) => {
+//         const folder = doc.data() as FolderType;
+//         folder.folderId = doc.id;
+//         folders.push(folder);
+//     });
+
+//     return { folders , numOfTotalFolders };
+// }
 
 export const getFolders = async (
-    id_user: string,
-    stringSearch: string = '',
-
-    sortBy: 'name_lowercase' | 'createAt' | 'none' = 'none',
-
-    _startAt: number = 0,
-    _limit: number = 5,
+    userId: string,
+    startAt: number = 0,
+    limit: number = 5,
+    search: string = '',
+    sortBy: 'nameLowercase' | 'modifiedAt' | 'createAt' = 'nameLowercase'
 ) => {
-
-    console.log('getFolders');
-
-    const __startAt = _startAt < 0 ? 0 : _startAt;
-    const __limit = _limit < 0 ? 0 : _limit;
-    
-    const collectionRef = collection(db, "folders");
-
-    
-    const _stringSearch = stringSearch.trim().toLowerCase();
-    // query
-    let q = 
-        query(
-            collectionRef, 
-            where("id_user", "==", id_user),
-            where("name_lowercase", ">=", _stringSearch),
-            where("name_lowercase", "<=", _stringSearch + "\uf8ff"),
-        ) 
-    if (sortBy !== 'none') {
-        q = query(q, orderBy(sortBy, 'desc'));
+    if (!userId) throw new Error('User id is not provided');
+    const userRef = doc(db, 'users', userId);
+    let q;
+    if (search) {
+        q = query(
+            collection(db, 'foldersGlobal'),
+            where('userRef', '==', userRef),
+            where('nameLoweprcase', '>=', search.toLowerCase()),
+            where('nameLowercase', '<=', search.toLowerCase() + '\uf8ff'),
+            orderBy(sortBy, sortBy === 'nameLowercase' ? 'asc' : 'desc')
+        );
+    } else {
+        q = query(
+            collection(db, 'foldersGlobal'),
+            where('userRef', '==', userRef),
+            orderBy(sortBy, sortBy === 'nameLowercase' ? 'asc' : 'desc')
+        );
     }
-
-    
-
-    // get data from query
     const querySnapshot = await getDocs(q);
-    const numOfTotalFolders = querySnapshot.size;
     const folders: FolderType[] = [];
-    querySnapshot.docs.slice(__startAt, __startAt + __limit).forEach((doc) => {
+    querySnapshot.docs.slice(startAt, startAt + limit).forEach((doc) => {
         const folder = doc.data() as FolderType;
-        folder.id_folder = doc.id;
+        folder.folderId = doc.id;
         folders.push(folder);
     });
 
-    return { folders , numOfTotalFolders };
-}
+    console.log('getFolders', folders);
 
-export const getFolder = async (id_folder: string | undefined) => {
+    return {
+        folders: folders,
+        numOfTotalFolders: querySnapshot.size
+    };
+};
 
+export const getFolder = async (folderId: string | undefined) => {
     console.log('getFolder');
+    if (!folderId) throw new Error('Folder id is not provided');
 
-    if (!id_folder) throw new Error("Folder id is not provided");
-    const folderRef = doc(db, "folders", id_folder);
+    const folderRef = doc(db, 'foldersGlobal', folderId);
     const folderDoc = await getDoc(folderRef);
-    if (folderDoc.exists()){
+    if (folderDoc.exists()) {
         return folderDoc.data() as FolderType;
+    } else {
+        throw new Error('Folder is not found');
     }
-    return null;
-}
+};
 
 export const getFolderViewModeDefault = () => {
-
     const viewMode = localStorage.getItem('viewMode');
     if (viewMode === null) {
         localStorage.setItem('viewMode', 'table');
@@ -179,8 +235,11 @@ export const getFolderViewModeDefault = () => {
     }
 
     return viewMode as 'table' | 'list' | 'card';
-}
+};
 
 export const setFolderViewModeDefault = (viewMode: 'table' | 'list' | 'card') => {
-    localStorage.setItem('viewMode', viewMode);
-}
+    const viewModeDefault = localStorage.getItem('viewMode');
+    if (viewModeDefault !== viewMode) {
+        localStorage.setItem('viewMode', viewMode);
+    }
+};
