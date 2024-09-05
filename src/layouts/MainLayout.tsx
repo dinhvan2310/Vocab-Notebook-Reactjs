@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { Timestamp } from 'firebase/firestore';
 import {
     Add,
@@ -10,34 +11,32 @@ import {
     LampOn,
     LampSlash,
     Logout,
-    NotificationStatus,
     Setting
 } from 'iconsax-react';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
+import ColumnComponent from '../components/commonComponent/Column/ColumnComponent';
+import RowComponent from '../components/commonComponent/Row/RowComponent';
+import SpaceComponent from '../components/commonComponent/Space/SpaceComponent';
+import TextComponent from '../components/commonComponent/Text/TextComponent';
+import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import FloatingActionButtonComponent from '../components/FloatButton/FloatingActionButtonComponent';
 import FormComponent from '../components/Form/FormComponent';
 import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
 import ModalComponent from '../components/Modal/ModalComponent';
 import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
+import Upload from '../components/Upload/Upload';
 import { addFolder } from '../firebase/folderAPI';
+import { uploadImage } from '../firebase/utils/uploadImage';
 import { useAuth } from '../hooks/useAuth';
+import { useMessage } from '../hooks/useMessage';
+import { useResponsive } from '../hooks/useResponsive';
 import useTheme from '../hooks/useTheme';
 import FolderType from '../types/FolderType';
 import FormItemType from '../types/FormItemType';
 import { MenuItemInterface } from '../types/MenuItemType';
 import './MainLayout.scss';
-import RowComponent from '../components/commonComponent/Row/RowComponent';
-import SpaceComponent from '../components/commonComponent/Space/SpaceComponent';
-import ColumnComponent from '../components/commonComponent/Column/ColumnComponent';
-import TitleComponent from '../components/commonComponent/Title/TitleComponent';
-import TextComponent from '../components/commonComponent/Text/TextComponent';
-import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
-import { useResponsive } from '../hooks/useResponsive';
-import Upload from '../components/Upload/Upload';
-import { uploadImage } from '../firebase/utils/uploadImage';
-import { useMutation } from '@tanstack/react-query';
-import { useMessage } from '../hooks/useMessage';
 
 function MainLayout() {
     //  state declaration ---------------------------------------------------------------
@@ -57,9 +56,7 @@ function MainLayout() {
     const [searchValue, setSearchValue] = React.useState('');
     const [newFolderImage, setNewFolderImage] = useState<File | null>(null);
     // keep track of the active page in the sidebar menu
-    const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'exams' | 'none'>(
-        'home'
-    );
+    const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'none'>('home');
     const [inlineCollapsed, setInlineCollapsed] = useState<
         undefined | 'inline-collapsed' | 'popup-menu'
     >(() => (!md ? 'inline-collapsed' : undefined));
@@ -70,8 +67,6 @@ function MainLayout() {
             setActivePage('home');
         } else if (RegExp('/user/.*/folders$').test(location.pathname)) {
             setActivePage('folders');
-        } else if (location.pathname === '/exams') {
-            setActivePage('exams');
         } else {
             setActivePage('none');
         }
@@ -90,16 +85,13 @@ function MainLayout() {
     // new folder name relate add add new folder modal
     const [createFolder_name, setCreateFolder_name] = useState<string>('');
     // function declaration ---------------------------------------------------------------
-    const handleNavigatePage = (key: 'home' | 'folders' | 'exams') => {
+    const handleNavigatePage = (key: 'home' | 'folders') => {
         switch (key) {
             case 'home':
                 navigate('/');
                 break;
             case 'folders':
                 navigate(`/user/${user?.uid}/folders`);
-                break;
-            case 'exams':
-                navigate('/exams');
                 break;
         }
     };
@@ -242,12 +234,6 @@ function MainLayout() {
             text: 'Thư mục của bạn',
             icon: <Folder size={20} />,
             onClick: () => handleNavigatePage('folders'),
-            disabled: user === null
-        },
-        {
-            key: 'exams',
-            text: 'Đề thi online',
-            icon: <NotificationStatus size={20} />,
             disabled: user === null
         }
     ];
@@ -410,9 +396,7 @@ function MainLayout() {
                             top: '96px',
                             border: 'none'
                         }}
-                        onSelectedKeyChange={(key) =>
-                            handleNavigatePage(key as 'home' | 'folders' | 'exams')
-                        }
+                        onSelectedKeyChange={(key) => handleNavigatePage(key as 'home' | 'folders')}
                         border={false}
                         selectedKey={activePage}
                         menuItems={menuItemsSideBar}

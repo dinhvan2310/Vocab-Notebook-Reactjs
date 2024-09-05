@@ -2,23 +2,28 @@ import React from 'react';
 
 interface HorizontalRuleComponentProps {
     text: string;
+    style?: React.CSSProperties;
+    className?: string;
+    type: 'center' | 'left' | 'right';
 }
 
 function HorizontalRuleComponent(props: HorizontalRuleComponentProps) {
-    const { text } = props;
+    const { text, style, className = '', type = 'center' } = props;
     return (
         <div
+            className={`${className}`}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 width: '100%',
-                margin: '16px 0'
+                margin: '16px 0',
+                ...style
             }}>
             <div
                 style={{
-                    flex: 1,
                     height: 1,
-                    backgroundColor: 'var(--border-color)'
+                    backgroundColor: 'var(--border-color)',
+                    flex: type === 'center' || type === 'right' ? 1 : 0
                 }}
             />
             <div
@@ -32,7 +37,7 @@ function HorizontalRuleComponent(props: HorizontalRuleComponentProps) {
             </div>
             <div
                 style={{
-                    flex: 1,
+                    flex: type === 'center' || type === 'left' ? 1 : 0,
                     height: 1,
                     backgroundColor: 'var(--border-color)'
                 }}

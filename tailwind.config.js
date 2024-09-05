@@ -96,12 +96,16 @@ export default {
             opacity: 1,
             transform: 'translateY(0px) scale(1)'
           }
-        }
-
+        },
+        flipVertical: {
+          '50%': { transform: 'rotateX(180deg)' },
+        },
       },
       animation: {
         fadeInCenter: 'fadeInCenter 0.3s ease-in-out',
-        fadeIn: 'fadeIn 0.3s ease-in-out'
+        fadeIn: 'fadeIn 0.3s ease-in-out',
+        vflipForward: 'flipVertical 0.5s ease-in-out',
+        vflipBackward: 'flipVertical 0.5s ease-in-out reverse',
       }
     },
   },

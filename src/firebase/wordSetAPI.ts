@@ -19,7 +19,7 @@ import {
 import { WordSetType } from '../types/WordSetType';
 import { auth, db } from './firebase-config';
 import FolderType from '../types/FolderType';
-import { deleteImage } from './utils/uploadImage';
+import { deleteImage, uploadImage } from './utils/uploadImage';
 import { WordType } from '../types/WordType';
 
 const validateWordSet = (wordSet: WordSetType) => {
@@ -37,12 +37,21 @@ export const addWordSet = async (wordSet: WordSetType) => {
     const collectionRef = collection(db, 'wordSetsGlobal');
     const folderRef: DocumentReference = typeof wordSet.folderRef === 'string' ? doc(db, 'foldersGlobal', wordSet.folderRef) : wordSet.folderRef;
 
+
+    const imageUrl = wordSet.imageUrl === '' ? '' :
+        typeof wordSet.imageUrl === 'string' ?  wordSet.imageUrl : 
+        await uploadImage(wordSet.imageUrl)
     // -----------------------------------------------------------------------------------------
-    // add wordSet
-    const wordSetRef = await addDoc(collectionRef, {
+    const newWords = await Promise.all(wordSet.words.map(async (word) => {
+        return {
+            ...word,
+            imageURL: typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL)
+        }
+    }));
+    const newWordSet = {
         folderRef: folderRef,
         name: wordSet.name.trim() || '',
-        imageUrl: wordSet.imageUrl || '',
+        imageUrl: imageUrl,
         nameLowercase: wordSet.name.trim().toLowerCase() || '',
 
         visibility: wordSet.visibility || 'public',
@@ -50,8 +59,11 @@ export const addWordSet = async (wordSet: WordSetType) => {
         editablePassword: wordSet.editablePassword || '',
         createAt: wordSet.createAt || Timestamp.now(), 
         modifiedAt: wordSet.modifiedAt || Timestamp.now(),
-        words: wordSet.words || [],
-    });
+        words:newWords
+    }
+    console.log('newWordSet', newWordSet);
+    // add wordSet
+    const wordSetRef = await addDoc(collectionRef, newWordSet);
     // update wordset array in folder document
     updateDoc(folderRef, {
         wordSets: arrayUnion(wordSetRef)
@@ -66,9 +78,9 @@ export const updateWordSet = async (
     visibility: 'public' | 'private', 
     editableBy: 'owner' | 'everyone',
     editablePassword: string,
-    imageUrl: string, 
+    imageUrl: string | File, 
     words: WordType[]
-) => {
+) : Promise<string> => {
     console.log('updateWordSet');
 
     const user = auth.currentUser;
@@ -84,30 +96,36 @@ export const updateWordSet = async (
 
     const folderData: FolderType = folderDoc.data();
     if (folderData.userRef?.id === user.uid) {
+        const _imageUrl = typeof imageUrl === 'string' ? imageUrl : await uploadImage(imageUrl)
         // delete the old image on storage if the new image is different
-        if (imageUrl && imageUrl !== wordSetDoc.data().imageUrl) {
+        if (_imageUrl && _imageUrl !== wordSetDoc.data().imageUrl) {
             if (wordSetDoc.data().imageUrl) {
                 deleteImage(wordSetDoc.data().imageUrl);
             }
         }
 
+        const newWords = await Promise.all(words.map(async (word) => {
+            return {
+                ...word,
+                imageURL: typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL)
+            }
+        }));
+
         const newWordSet = {
             name: name.trim() || '',
             nameLowercase: name.trim().toLowerCase() || '',
-            imageUrl: imageUrl || '',
+            imageUrl: _imageUrl || '',
             visibility: visibility || 'public',
             modifiedAt: Timestamp.now(),
-            words: words || [],
+            words: newWords || [],
 
             editableBy: editableBy || 'owner',
             editablePassword: editableBy === 'owner' ? '' : editablePassword || '',
         }
         // delete the old image on storage if the new image is different
         for(let i = 0; i < wordSetDoc.data().words.length; i++) {
-            if (newWordSet.words[i].imageURL && newWordSet.words[i].imageURL !== wordSetDoc.data().words[i].imageURL) {
-                if (wordSetDoc.data().words[i].imageURL) {
+            if (wordSetDoc.data().words[i].imageURL && newWordSet.words[i].imageURL !== wordSetDoc.data().words[i].imageURL) {
                     deleteImage(wordSetDoc.data().words[i].imageURL);
-                }
             }
         }
         // update wordset
@@ -118,7 +136,10 @@ export const updateWordSet = async (
         });
         
 
-        return newWordSet;
+        return wordSetRef.id;
+    }
+    else {
+        throw new Error('You do not have permission to update this wordSet');
     }
 };
 
@@ -143,12 +164,15 @@ export const removeWordSet = async (wordSetId: string) => {
     // -----------------------------------------------------------------------------------------
     // delete image from storage if it exists
     if (wordSetDoc.data().imageUrl) {
+        console.log('deleteImageCoverWordSet');
         deleteImage(wordSetDoc.data().imageUrl);
     }
     // delete wordSet
     wordSetDoc.data().words.forEach(async (word: WordType) => {
-        if (word.imageURL) {
-            deleteImage(word.imageURL);
+        const imageUrl = typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL)
+        if (imageUrl) {
+            console.log('deleteImageWordSet');
+            deleteImage(imageUrl);
         }
     })
     // remove wordSet from wordSets array in folder document
@@ -167,7 +191,7 @@ export const getWordSet = async (wordSetId: string) => {
     return {
         ...wordSetDoc.data(),
         wordsetId: wordSetDoc.id
-    };
+    } as WordSetType;
 };
 
 export const getWordSets = async (
@@ -235,4 +259,54 @@ export const getWordSetViewMode = () => {
         return 'table';
     }
     return viewMode as 'table' | 'list' | 'card';
+}
+
+export const updateWord = async (
+    wordSetId: string, 
+    wordId: string, 
+    imageURL?: string, 
+    meaning?: string,
+    contexts?: string[],
+    name?: string,
+    learned?: boolean,
+) => {
+    console.log('updateWord', wordSetId, wordId, learned);
+
+    const user = auth.currentUser;
+    if (!user) throw new Error('User is not logged in');
+
+    const wordSetRef = doc(db, 'wordSetsGlobal', wordSetId);
+    const wordSetDoc = await getDoc(wordSetRef);
+    if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
+
+    const oldWord = wordSetDoc.data().words.find((word: WordType) => word.nameLowercase === wordId.trim().toLowerCase());
+    if (!oldWord) throw new Error('Word is not found');
+
+    const updateWord = {
+        imageURL: imageURL || oldWord.imageURL,
+        meaning: meaning || oldWord.meaning,
+        contexts: contexts || oldWord.contexts,
+        name: name || oldWord.name,
+        nameLowercase: name ? name.trim().toLowerCase() : oldWord.nameLowercase,
+        learned: learned !== undefined ? learned : oldWord.learned,
+    }
+
+    if (imageURL && imageURL !== oldWord.imageURL) {
+        if (oldWord.imageURL) {
+            deleteImage(oldWord.imageURL);
+        }
+    }
+
+    const newWords = wordSetDoc.data().words.map((word: WordType) => {
+        if (word.nameLowercase === wordId.trim().toLowerCase()) {
+            return updateWord;
+        }
+        return word;
+    });
+
+    await updateDoc(wordSetRef, {
+        words: newWords
+    });
+
+    return wordId;
 }

@@ -16,6 +16,7 @@ import {
 import FolderType from '../types/FolderType';
 import { auth, db } from './firebase-config';
 import { deleteImage } from './utils/uploadImage';
+import { removeWordSet } from './wordSetAPI';
 
 const validateFolder = (folder: FolderType) => {
     if (!folder.name) throw new Error('Folder name is not provided');
@@ -102,18 +103,20 @@ export const removeFolder = async (folderRef: string | DocumentReference) => {
         throw new Error("You don't have permission to delete this folder");
 
     // ---------------------------------------------------------------------------------------------------------------
-    // delete folder
-    await deleteDoc(_folderRef);
+    
     // delete image from storage if it exists
     if (_folderDoc.data().imageUrl) {
+        console.log('deleteImageCoverFolder');
         await deleteImage(_folderDoc.data().imageUrl);
     }
     // delete all wordsets in the folder
     const wordSetsRef = _folderDoc.data().wordSets;
-    for (const wordSetRef of wordSetsRef) {
-        await deleteDoc(wordSetRef);
+    for (let i = 0; i < wordSetsRef.length; i++) {
+        await removeWordSet(wordSetsRef[i].id);
     }
 
+    // delete folder
+    deleteDoc(_folderRef);
 };
 
 export const onSnapshotFolders = (userId: string, callback: () => void) => {
@@ -221,7 +224,9 @@ export const getFolder = async (folderId: string | undefined) => {
     const folderRef = doc(db, 'foldersGlobal', folderId);
     const folderDoc = await getDoc(folderRef);
     if (folderDoc.exists()) {
-        return folderDoc.data() as FolderType;
+        const folder = folderDoc.data() as FolderType;
+        folder.folderId = folderDoc.id;
+        return folder;
     } else {
         throw new Error('Folder is not found');
     }

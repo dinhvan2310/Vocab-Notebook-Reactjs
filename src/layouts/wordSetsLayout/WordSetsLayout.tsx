@@ -227,6 +227,12 @@ function WordSetsLayout() {
         mutationKey: ['updateFolder', folderEditing, folderImageEditing]
     });
 
+    const handleClickWordSet = (wordSetId: string) => {
+        if (userid && folderid && wordSetId)
+            navigate(`/user/${userid}/folders/${folderid}/wordset/${wordSetId}`);
+        else message('error', 'Error when navigate to wordset');
+    };
+
     return (
         <div
             className="wordset-container 
@@ -535,7 +541,7 @@ function WordSetsLayout() {
                                         hoverable={true}
                                         subTitle={item.words.length + ' words'}
                                         onClick={() => {
-                                            // handleNavigateToWordSets(item);
+                                            handleClickWordSet(item.wordsetId ?? '');
                                         }}
                                         menuItems={[
                                             {

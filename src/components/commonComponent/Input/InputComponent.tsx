@@ -55,13 +55,16 @@ function InputComponent(props: InputComponentProps) {
                 {type === 'textarea' ? (
                     <TextareaAutosize
                         value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={(e) => {
+                            onChange(e.target.value);
+                        }}
                         className={`text-area ${borderType}`}
                         placeholder={placeholder}
                         style={{
                             width: width,
                             fontSize: fontSize,
                             resize: 'none',
+                            whiteSpace: 'pre-line',
                             ...inputStyle
                         }}
                     />
@@ -77,7 +80,9 @@ function InputComponent(props: InputComponentProps) {
                         }}
                         placeholder={placeholder}
                         value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={(e) => {
+                            onChange(e.target.value);
+                        }}
                     />
                 )}
                 <span

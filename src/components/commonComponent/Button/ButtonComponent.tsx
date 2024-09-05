@@ -13,7 +13,7 @@ interface ButtonComponentProps {
     backgroundActiveColor?: string;
     disabled?: boolean;
     borderColor?: string;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     style?: React.CSSProperties;
     fontSize?: string;
     isLoading?: boolean;
@@ -28,7 +28,7 @@ function ButtonComponent(props: ButtonComponentProps) {
     const {
         text,
         className,
-        onClick = () => {},
+        onClick,
         type = 'button',
         icon,
         style,

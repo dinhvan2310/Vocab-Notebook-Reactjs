@@ -3,7 +3,7 @@ import './TitleComponent.scss';
 import SpaceComponent from '../Space/SpaceComponent';
 
 interface TitleComponentProps {
-    title: string;
+    title?: string;
     icon?: React.ReactNode;
     containerStyle?: React.CSSProperties;
     titleStyle?: React.CSSProperties;
@@ -11,10 +11,20 @@ interface TitleComponentProps {
     fontWeight?: number;
     color?: string;
     className?: string;
+    children?: React.ReactNode;
 }
 function TitleComponent(props: TitleComponentProps) {
-    const { title, icon, containerStyle, titleStyle, fontSize, color, className, fontWeight } =
-        props;
+    const {
+        title,
+        icon,
+        containerStyle,
+        titleStyle,
+        fontSize,
+        color,
+        className,
+        fontWeight,
+        children
+    } = props;
 
     return (
         <div
@@ -28,7 +38,7 @@ function TitleComponent(props: TitleComponentProps) {
             {icon && <div className="iconContainer">{icon}</div>}
             {icon && <SpaceComponent width={16} />}
             <div style={titleStyle} className="title">
-                {title}
+                {children || title}
             </div>
         </div>
     );

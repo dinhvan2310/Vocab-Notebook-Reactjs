@@ -14,6 +14,9 @@ import WordSetsLayout from './layouts/wordSetsLayout/WordSetsLayout';
 import MessageProvider from './contexts/MessageProvider';
 import WordEditLayout from './layouts/wordEditLayout/WordEditLayout';
 import { getWordSet } from './firebase/wordSetAPI';
+import WordLearnLayout from './layouts/wordLearnLayout/WordLearnLayout';
+import { getUser } from './firebase/userAPI';
+import { getFolder } from './firebase/folderAPI';
 
 function App() {
     useEffect(() => {
@@ -57,10 +60,6 @@ function App() {
                     element: <WordSetsLayout />
                 },
                 {
-                    path: 'exams',
-                    element: <ExamsLayout />
-                },
-                {
                     path: '/create-wordset',
                     element: (
                         <ProtectedRoute>
@@ -80,6 +79,17 @@ function App() {
                     }
                 },
                 {
+                    path: '/user/:userid/folders/:folderid/wordset/:wordsetid',
+                    element: <WordLearnLayout />,
+                    loader: async ({ params }) => {
+                        return {
+                            wordSet: await getWordSet(params.wordsetid ?? ''),
+                            user: await getUser(params.userid ?? ''),
+                            folder: await getFolder(params.folderid ?? '')
+                        };
+                    }
+                },
+                {
                     path: '/not-found',
                     element: <NotFoundLayout />
                 }
@@ -94,7 +104,7 @@ function App() {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 1000 * 60 * 5
+                // staleTime: 1000 * 60 * 5
             }
         }
     });

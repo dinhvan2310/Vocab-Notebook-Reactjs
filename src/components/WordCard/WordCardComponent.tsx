@@ -9,7 +9,6 @@ import GridCol from '../Grid/GridCol';
 import GridRow from '../Grid/GridRow';
 import Upload from '../Upload/Upload';
 import './WordCardComponent.scss';
-import { uploadImage } from '../../firebase/utils/uploadImage';
 import { WordEditType } from '../../layouts/wordEditLayout/WordEditLayout';
 interface WordCardComponentProps {
     index: number;
@@ -179,8 +178,7 @@ function WordCardComponent(props: WordCardComponentProps) {
                             defaultImage={word.imageURL}
                             type="picture"
                             action={async (file) => {
-                                const url = await uploadImage(file);
-                                onWordChange(index, { ...word, imageURL: url ?? '' });
+                                onWordChange(index, { ...word, imageURL: file });
                             }}
                             onRemove={() => {
                                 onWordChange(index, { ...word, imageURL: '' });

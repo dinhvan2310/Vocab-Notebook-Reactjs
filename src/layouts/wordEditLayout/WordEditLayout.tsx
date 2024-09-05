@@ -83,109 +83,6 @@ function WordEditLayout() {
     // options ui
 
     // function
-    const handleSave = async () => {
-        if (title === '') {
-            setTitleError('Title is required');
-            message('error', 'Title is required !');
-            return;
-        }
-
-        // reset error text
-        setData((prev) => {
-            const newData = [...prev];
-            newData.forEach((item) => {
-                item.titleErrorText = undefined;
-                item.meaningErrorText = undefined;
-                item.contextErrorText = undefined;
-            });
-            return newData;
-        });
-
-        if (checkCanSave() === false) {
-            message('error', 'Please fill all fields !');
-
-            data.forEach((item, index) => {
-                if (item.name === '') {
-                    setData((prev) => {
-                        const newData = [...prev];
-                        newData[index].titleErrorText = 'Name is required';
-                        return newData;
-                    });
-                }
-                if (item.meaning === '') {
-                    setData((prev) => {
-                        const newData = [...prev];
-                        newData[index].meaningErrorText = 'Meaning is required';
-                        return newData;
-                    });
-                }
-                if (!item.contexts.every((context) => context !== '')) {
-                    const i = item.contexts.findIndex((context) => context === '');
-                    setData((prev) => {
-                        const newData = [...prev];
-                        newData[index].contextErrorText = {
-                            index: i,
-                            contextErrorText: 'Context is required'
-                        };
-                        return newData;
-                    });
-                }
-            });
-
-            return;
-        }
-
-        let url;
-        if (imageCover) {
-            if (typeof imageCover === 'string') {
-                url = imageCover;
-            } else {
-                url = await uploadImage(imageCover);
-            }
-        }
-
-        const newWordSet: WordSetType = {
-            wordsetId: wordSet?.wordsetId ?? '',
-            imageUrl: url ?? '',
-            folderRef: wordSet?.folderRef ?? folderId ?? '',
-
-            name: title.trim(),
-            nameLowercase: title.toLowerCase().trim(),
-
-            visibility: visibility,
-            editableBy: editableBy,
-            editablePassword: editableBy === 'everyone' ? editableByPublicPass : '',
-
-            createAt: wordSet?.createAt ?? Timestamp.now(),
-            modifiedAt: Timestamp.now(),
-
-            words: data.map((item) => {
-                return {
-                    name: item.name,
-                    meaning: item.meaning,
-                    contexts: item.contexts,
-                    imageURL: item.imageURL
-                };
-            })
-        };
-
-        if (wordSet) {
-            // update word set
-            await updateWordSet(
-                wordSet.wordsetId ?? '',
-                newWordSet.name,
-                newWordSet.visibility,
-                newWordSet.editableBy,
-                newWordSet.editablePassword ?? '',
-                newWordSet.imageUrl ?? '',
-                newWordSet.words
-            );
-        } else {
-            await addWordSet(newWordSet);
-        }
-
-        navigate(`/user/${currentUser?.uid}/folders/${folderId}`);
-    };
 
     const checkCanSave = () => {
         return data.every((item) => {
@@ -199,7 +96,120 @@ function WordEditLayout() {
 
     // query
     const mutation = useMutation({
-        mutationFn: handleSave
+        mutationFn: async () => {
+            if (title === '') {
+                setTitleError('Title is required');
+                message('error', 'Title is required !');
+                return;
+            }
+
+            // reset error text
+            setData((prev) => {
+                const newData = [...prev];
+                newData.forEach((item) => {
+                    item.titleErrorText = undefined;
+                    item.meaningErrorText = undefined;
+                    item.contextErrorText = undefined;
+                });
+                return newData;
+            });
+
+            if (checkCanSave() === false) {
+                message('error', 'Please fill all fields !');
+
+                data.forEach((item, index) => {
+                    if (item.name === '') {
+                        setData((prev) => {
+                            const newData = [...prev];
+                            newData[index].titleErrorText = 'Name is required';
+                            return newData;
+                        });
+                    }
+                    if (item.meaning === '') {
+                        setData((prev) => {
+                            const newData = [...prev];
+                            newData[index].meaningErrorText = 'Meaning is required';
+                            return newData;
+                        });
+                    }
+                    if (!item.contexts.every((context) => context !== '')) {
+                        const i = item.contexts.findIndex((context) => context === '');
+                        setData((prev) => {
+                            const newData = [...prev];
+                            newData[index].contextErrorText = {
+                                index: i,
+                                contextErrorText: 'Context is required'
+                            };
+                            return newData;
+                        });
+                    }
+                });
+
+                return;
+            }
+
+            let url;
+            if (imageCover) {
+                if (typeof imageCover === 'string') {
+                    url = imageCover;
+                } else {
+                    url = await uploadImage(imageCover);
+                }
+            }
+
+            const newWordSet: WordSetType = {
+                wordsetId: wordSet?.wordsetId ?? '',
+                imageUrl: url ?? '',
+                folderRef: wordSet?.folderRef ?? folderId ?? '',
+
+                name: title.trim(),
+                nameLowercase: title.toLowerCase().trim(),
+
+                visibility: visibility,
+                editableBy: editableBy,
+                editablePassword: editableBy === 'everyone' ? editableByPublicPass : '',
+
+                createAt: wordSet?.createAt ?? Timestamp.now(),
+                modifiedAt: Timestamp.now(),
+
+                words: data.map((item) => {
+                    return {
+                        name: item.name.trim(),
+                        meaning: item.meaning,
+                        contexts: item.contexts,
+                        imageURL: item.imageURL,
+                        learned: false,
+                        createdAt: Timestamp.now(),
+                        nameLowercase: item.name.toLowerCase().trim()
+                    };
+                })
+            };
+
+            console.log(newWordSet);
+
+            let wordSetId = '';
+            if (wordSet) {
+                // update word set
+                wordSetId = await updateWordSet(
+                    wordSet.wordsetId ?? '',
+                    newWordSet.name,
+                    newWordSet.visibility,
+                    newWordSet.editableBy,
+                    newWordSet.editablePassword ?? '',
+                    newWordSet.imageUrl ?? '',
+                    newWordSet.words
+                );
+            } else {
+                wordSetId = await addWordSet(newWordSet);
+            }
+
+            navigate(
+                `/user/${currentUser?.uid}/folders/${
+                    folderId === undefined ? wordSet.folderRef.id : folderId
+                }/wordset/${wordSetId}`
+            );
+        },
+        mutationKey: ['handleSave']
     });
 
     return (
@@ -401,7 +411,7 @@ function WordEditLayout() {
                                 tabindex={-1}
                                 text={wordSet ? 'Update' : 'Create'}
                                 onClick={() => {
-                                    handleSave();
+                                    mutation.mutate();
                                 }}
                                 backgroundColor="var(--primary-color)"
                                 backgroundHoverColor="var(--primary-hover-color)"

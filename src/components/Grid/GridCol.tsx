@@ -9,16 +9,17 @@ interface GridColProps {
     gutter?: number;
 
     style?: React.CSSProperties;
+    className?: string;
 }
 function GridCol(props: GridColProps) {
-    const { children, span, flex, offset, order, gutter, style } = props;
+    const { children, span, flex, offset, order, gutter, style, className = '' } = props;
 
     const gutterX = Array.isArray(gutter) ? gutter[0] : gutter;
     const gutterY = Array.isArray(gutter) ? gutter[1] : 0;
 
     return (
         <div
-            className="grid-col"
+            className={`grid-col ${className}`}
             style={{
                 flex: flex || `0 0 ${(span / 12) * 100}%`,
                 maxWidth: flex ? 'none' : `${(span / 12) * 100}%`,

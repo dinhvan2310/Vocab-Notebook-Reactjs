@@ -19,6 +19,9 @@ function TextComponent(props: TextComponentProps) {
             style={{
                 visibility: isVisible ? 'visible' : 'hidden',
                 fontSize: fontSize || '1.4em',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
                 fontWeight: 600,
                 color: textColor || 'var(--secondary-text-color)',
                 ...style

@@ -125,8 +125,10 @@ function CardComponent(props: CardComponentProps) {
 
     return (
         <div
-            className={`${cardContainerClass} ${className}
-                    px-8 py-8 h-full w-full
+            className={`${cardContainerClass} 
+                    px-4 py-4 lg:px-6 lg:py-6 
+                    h-full w-full
+                    ${className}
                 `}
             onClick={onClick}
             style={{
