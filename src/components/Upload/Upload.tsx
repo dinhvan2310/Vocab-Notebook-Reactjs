@@ -1,5 +1,8 @@
 import { Add, DocumentUpload, GallerySlash, NoteRemove } from 'iconsax-react';
 import { ReactNode, useState } from 'react';
+import ColumnComponent from '../commonComponent/Column/ColumnComponent';
+import InputComponent from '../commonComponent/Input/InputComponent';
+import RowComponent from '../commonComponent/Row/RowComponent';
 import TextComponent from '../commonComponent/Text/TextComponent';
 
 interface UploadProps {
@@ -37,6 +40,9 @@ function Upload(props: UploadProps) {
                                 action(undefined);
                                 onRemove?.();
                                 e.preventDefault();
+
+                                setShowUrl(true);
+                                setUrl(undefined);
                             }}>
                             <div className="absolute top-0 right-0  w-full h-full rounded-lg ">
                                 <img
@@ -82,6 +88,9 @@ function Upload(props: UploadProps) {
     } = props;
 
     const [file, setFile] = useState<File | undefined>(undefined);
+    const [showUrl, setShowUrl] = useState<boolean>(true);
+
+    const [url, setUrl] = useState<string | undefined>(undefined);
 
     if (type === 'file') {
         return (
@@ -142,7 +151,7 @@ function Upload(props: UploadProps) {
     return (
         <div
             className={`${className} border-dashed  border-borderLight dark:border-borderDark inline-flex 
-      border-[1px]  w-[100px] h-[100px] justify-center items-center  rounded-lg
+      border-[1px]  w-[100px] h-[100px] justify-center items-center  rounded-lg flex-col 
           relative 
       ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
       ${
@@ -162,14 +171,53 @@ function Upload(props: UploadProps) {
                     if (file) {
                         setFile(file);
                         action(file);
+                        setUrl(undefined);
+
+                        showUrl && setShowUrl(false);
                     }
                 }}
             />
-            <label title="Upload" className="cursor-pointer w-full h-full">
-                <div className="flex flex-col items-center justify-center  w-full h-full">
-                    {render(file || defaultImage || undefined)}
-                </div>
-            </label>
+            <ColumnComponent>
+                <label title="Upload" className="cursor-pointer w-full h-full ">
+                    <div className="flex flex-col items-center justify-center  w-full h-full">
+                        {render(file || defaultImage || undefined)}
+                    </div>
+                </label>
+            </ColumnComponent>
+            {showUrl && (
+                <RowComponent
+                    alignItems="flex-end"
+                    style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        left: '12px',
+                        right: '12px'
+                    }}>
+                    <InputComponent
+                        style={{}}
+                        value={url ?? ''}
+                        onChange={async (image) => {
+                            setUrl(image);
+                            if (image) {
+                                const response = await fetch(image);
+                                // here image is url/location of image
+                                const blob = await response.blob();
+                                const file = new File([blob], 'image.jpg', { type: blob.type });
+                                console.log(file);
+                                setFile(file);
+                                action(file);
+                            } else {
+                                setFile(undefined);
+                                action(undefined);
+                            }
+                        }}
+                        type="text"
+                        borderType="bottom"
+                        placeholder="URL"
+                        fontSize="1em"
+                    />
+                </RowComponent>
+            )}
         </div>
     );
 }

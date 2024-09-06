@@ -23,6 +23,7 @@ interface ButtonComponentProps {
     className?: string;
     children?: ReactNode;
     tabindex?: number;
+    tooltip?: string;
 }
 function ButtonComponent(props: ButtonComponentProps) {
     const {
@@ -43,7 +44,8 @@ function ButtonComponent(props: ButtonComponentProps) {
         buttonWidth = 'auto',
         disabled = false,
         tabindex,
-        children
+        children,
+        tooltip
     } = props;
 
     const [isHover, setIsHover] = React.useState(false);
@@ -60,6 +62,7 @@ function ButtonComponent(props: ButtonComponentProps) {
     return (
         <button
             tabIndex={tabindex ?? 0}
+            title={tooltip}
             type={type}
             onClick={onClick}
             className={`button ${className ?? ''}`}
@@ -73,6 +76,7 @@ function ButtonComponent(props: ButtonComponentProps) {
             onMouseUp={() => setIsActive(false)}
             style={{
                 backgroundColor: backGroundColor,
+                opacity: disabled ? '0.4' : 1,
                 border: isBorder ? `1px solid ${borderColor}` : 'none',
                 pointerEvents: isLoading || disabled ? 'none' : 'auto',
                 width: buttonWidth,

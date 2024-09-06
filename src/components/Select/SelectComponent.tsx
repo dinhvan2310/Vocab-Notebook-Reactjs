@@ -68,7 +68,7 @@ function SelectComponent(props: SelectComponentProps<string>) {
             onMouseLeave={() => {
                 setIsHover(false);
             }}>
-            <div className="select cursor-pointer">
+            <div className="select cursor-pointer p-2">
                 <TextComponent
                     text={
                         value === undefined

@@ -20,6 +20,8 @@ interface InputComponentProps {
     animationType?: 'none' | 'slideInLeft' | 'slideCenter';
     tabindex?: number;
     errorText?: string;
+
+    readonly?: boolean;
 }
 
 function InputComponent(props: InputComponentProps) {
@@ -37,7 +39,8 @@ function InputComponent(props: InputComponentProps) {
         fontSize = '1.6em',
         animationType = 'none',
         tabindex,
-        errorText
+        errorText,
+        readonly = false
     } = props;
 
     return (
@@ -67,6 +70,8 @@ function InputComponent(props: InputComponentProps) {
                             whiteSpace: 'pre-line',
                             ...inputStyle
                         }}
+                        tabIndex={tabindex}
+                        readOnly={readonly}
                     />
                 ) : (
                     <input
@@ -83,6 +88,7 @@ function InputComponent(props: InputComponentProps) {
                         onChange={(e) => {
                             onChange(e.target.value);
                         }}
+                        readOnly={readonly}
                     />
                 )}
                 <span

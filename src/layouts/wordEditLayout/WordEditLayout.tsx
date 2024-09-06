@@ -257,6 +257,7 @@ function WordEditLayout() {
                         }}
                         className="w-full mb-8 h-[200px]"
                     />
+
                     <RowComponent justifyContent="space-between" className="w-full mb-8">
                         <ColumnComponent className="w-full" alignItems="flex-start">
                             <TitleComponent title="Visible to" className="mb-2" />

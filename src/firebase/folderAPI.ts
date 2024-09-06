@@ -52,7 +52,7 @@ export const updateFolder = async (
     name: string,
     imageUrl: string | undefined
 ) => {
-    console.log('updateFolder');
+    console.log('updateFolder', imageUrl);
 
     const user = auth.currentUser;
     if (!user) throw new Error('User is not logged in');
@@ -69,13 +69,11 @@ export const updateFolder = async (
 
 
     // ---------------------------------------------------------------------------------------------------------------
-    if (imageUrl === undefined) imageUrl = _folderDoc.data().imageUrl;
+    // if (imageUrl === undefined) imageUrl = _folderDoc.data().imageUrl;
     // xoá image cũ bên storage nếu có
     if ( imageUrl !== _folderDoc.data().imageUrl && _folderDoc.data().imageUrl !== '') {
         await deleteImage(_folderDoc.data().imageUrl);
     // không có gì thay đổi thì không cần update
-    } else {
-        if (name.trim().toLowerCase() === _folderDoc.data().nameLowercase) return;
     }
     // update folder, modifiedAt is updated automatically
     await updateDoc(_folderRef, {

@@ -128,6 +128,9 @@ function WordSetsLayout() {
         staleTime: 0,
         gcTime: 0
     });
+
+    console.log(query.data?.wordSets);
+
     // fetch Folder from folderid
     const folderQuery = useQuery({
         queryKey: ['folders', folderid],

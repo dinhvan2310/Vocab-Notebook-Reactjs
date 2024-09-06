@@ -1,4 +1,16 @@
-import { Aave, Edit2, Notepad, Setting2, Star1, Timer1 } from 'iconsax-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+    Aave,
+    Edit2,
+    Export,
+    Import,
+    Notepad,
+    Setting2,
+    Star1,
+    Timer1,
+    VolumeHigh
+} from 'iconsax-react';
+import { useState } from 'react';
 import { useLoaderData, useNavigate, useParams } from 'react-router-dom';
 import NotFoundUser from '../../assets/image/no_avatar.png';
 import CardComponent from '../../components/Card/CardComponent';
@@ -6,22 +18,23 @@ import Carousel from '../../components/Carousel/Carousel';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
 import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
+import InputComponent from '../../components/commonComponent/Input/InputComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
 import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import GridCol from '../../components/Grid/GridCol';
 import GridRow from '../../components/Grid/GridRow';
-import { getWordSet, updateWord } from '../../firebase/wordSetAPI';
+import ModalComponent from '../../components/Modal/ModalComponent';
+import SelectComponent from '../../components/Select/SelectComponent';
+import Upload from '../../components/Upload/Upload';
+import { getWordSet, updateWord, updateWordSet } from '../../firebase/wordSetAPI';
 import FlashCard from '../../flashCard/FlashCard';
 import FolderType from '../../types/FolderType';
 import { UserType } from '../../types/UserType';
 import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 import { timeAgo } from '../../utils/timeAgo';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import SelectComponent from '../../components/Select/SelectComponent';
 
 function WordLearnLayout() {
     // meta data
@@ -40,11 +53,44 @@ function WordLearnLayout() {
         }
     });
 
+    const updateWordSetMutation = useMutation({
+        mutationFn: async () => {
+            // save setting to database
+            await updateWordSet(
+                wordSetQuery.data?.wordsetId ?? '',
+                wordSetQuery.data?.name ?? '',
+                visibility,
+                editableBy,
+                editableByPublicPass,
+                imageCover ?? '',
+                wordSetQuery.data?.words ?? []
+            );
+            wordSetQuery.refetch();
+        },
+        mutationKey: ['updateWordSet']
+    });
+
     // state
     // const [autoPlayFlashCard, setAutoPlayFlashCard] = useState(false);
+    const [modalExportOpen, setModalExportOpen] = useState(false);
+    const [modalSettingOpen, setModalSettingOpen] = useState(false);
     const [learnedSelected, setLearnedSelected] = useState<'all' | 'starred'>('all');
     const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Created' | 'Learned'>(
         'Amphabet'
+    );
+
+    const [imageCover, setImageCover] = useState<File | null | string>(
+        wordSetQuery.data?.imageUrl ? wordSetQuery.data.imageUrl : null
+    );
+
+    const [editableBy, setEditableBy] = useState<'owner' | 'everyone'>(
+        wordSetQuery.data?.editableBy ?? 'owner'
+    );
+    const [editableByPublicPass, setEditableByPublicPass] = useState<string>(
+        wordSetQuery.data?.editablePassword ?? ''
+    );
+    const [visibility, setVisibility] = useState<'public' | 'private'>(
+        wordSetQuery.data?.visibility ?? 'public'
     );
 
     //options UI
@@ -88,6 +134,190 @@ function WordLearnLayout() {
             className="flex flex-col
             max-w-[1024px] m-auto
         ">
+            {/* modal */}
+            <ModalComponent
+                open={modalExportOpen}
+                // disableButtonConfirm={editableBy === 'everyone' && editableByPublicPass === ''}
+                animationType="zoomIn"
+                width="760px"
+                isCloseIcon={true}
+                // buttonComfirmLoading={updateWordSetMutation.isPending}
+                closeOnOverlayClick={true}
+                onCancel={() => {
+                    setModalExportOpen(false);
+                    // reset state
+                    // if (!wordSetQuery.data) {
+                    //     setImageCover(null);
+                    //     setVisibility('public');
+                    //     setEditableBy('owner');
+                    //     setEditableByPublicPass('');
+                    // } else {
+                    //     setImageCover(wordSetQuery.data.imageUrl ?? null);
+                    //     setVisibility(wordSetQuery.data.visibility);
+                    //     setEditableBy(wordSetQuery.data.editableBy);
+                    //     setEditableByPublicPass(wordSetQuery.data.editablePassword ?? '');
+                    // }
+                }}
+                onConfirm={async () => {
+                    // save setting on state
+                    // await updateWordSetMutation.mutateAsync();
+                    setModalExportOpen(false);
+                }}
+                title="Export"
+                buttonConfirmText="Export"
+                isFooter={true}>
+                <ColumnComponent
+                    className="w-full px-4 overflow-x-auto max-h-32
+                    scrollbar dark:scrollbarDark
+                ">
+                    <InputComponent
+                        type="textarea"
+                        value={JSON.stringify(wordSetQuery.data?.words)}
+                        style={{
+                            borderRadius: '0px'
+                        }}
+                        borderType="bottom"
+                        label={'Words'}
+                        animationType="slideCenter"
+                        readonly={true}
+                    />
+                </ColumnComponent>
+            </ModalComponent>
+            <ModalComponent
+                open={modalSettingOpen}
+                disableButtonConfirm={editableBy === 'everyone' && editableByPublicPass === ''}
+                animationType="zoomIn"
+                width="760px"
+                isCloseIcon={true}
+                buttonComfirmLoading={updateWordSetMutation.isPending}
+                closeOnOverlayClick={true}
+                onCancel={() => {
+                    setModalSettingOpen(false);
+                    // reset state
+                    if (!wordSetQuery.data) {
+                        setImageCover(null);
+                        setVisibility('public');
+                        setEditableBy('owner');
+                        setEditableByPublicPass('');
+                    } else {
+                        setImageCover(wordSetQuery.data.imageUrl ?? null);
+                        setVisibility(wordSetQuery.data.visibility);
+                        setEditableBy(wordSetQuery.data.editableBy);
+                        setEditableByPublicPass(wordSetQuery.data.editablePassword ?? '');
+                    }
+                }}
+                onConfirm={async () => {
+                    // save setting on state
+                    await updateWordSetMutation.mutateAsync();
+                    setModalSettingOpen(false);
+                }}
+                title="Settings"
+                buttonConfirmText="Save"
+                isFooter={true}>
+                <ColumnComponent className="w-full px-4">
+                    <Upload
+                        defaultImage={imageCover ?? undefined}
+                        type="picture"
+                        name="Upload a cover image"
+                        action={(file) => {
+                            setImageCover(file || null);
+                        }}
+                        onRemove={() => {
+                            setImageCover(null);
+                        }}
+                        className="w-full mb-8 h-[200px]"
+                    />
+                    <RowComponent justifyContent="space-between" className="w-full mb-8">
+                        <ColumnComponent className="w-full" alignItems="flex-start">
+                            <TitleComponent title="Visible to" className="mb-2" />
+                            <SelectComponent
+                                style={{
+                                    borderRadius: '0px'
+                                }}
+                                width="100%"
+                                options={[
+                                    {
+                                        label: 'Everyone',
+                                        value: 'public'
+                                    },
+                                    {
+                                        label: 'Only me',
+                                        value: 'private'
+                                    }
+                                ]}
+                                optionStyle={{
+                                    borderRadius: '0px'
+                                }}
+                                onChange={(value) => {
+                                    setVisibility(value as 'public' | 'private');
+                                }}
+                                value={visibility}
+                            />
+                            <TextComponent
+                                fontSize="1.2em"
+                                className="mt-2"
+                                text={
+                                    visibility === 'public'
+                                        ? 'Anyone can view'
+                                        : 'Only you can view'
+                                }
+                            />
+                        </ColumnComponent>
+                        <SpaceComponent width={48} />
+                        <ColumnComponent className="w-full" alignItems="flex-start">
+                            <TitleComponent title="Editable by" className="mb-2" />
+                            <SelectComponent
+                                style={{
+                                    borderRadius: '0px'
+                                }}
+                                width="100%"
+                                options={[
+                                    {
+                                        label: 'Only me',
+                                        value: 'owner'
+                                    },
+                                    {
+                                        label: 'Everyone with password',
+                                        value: 'everyone'
+                                    }
+                                ]}
+                                optionStyle={{
+                                    borderRadius: '0px'
+                                }}
+                                onChange={(value) => {
+                                    setEditableBy(value as 'everyone' | 'owner');
+                                }}
+                                value={editableBy}
+                            />
+                            <TextComponent
+                                fontSize="1.2em"
+                                className="mt-2"
+                                text={
+                                    editableBy === 'everyone'
+                                        ? 'Anyone can edit with password'
+                                        : 'Only you can edit'
+                                }
+                            />
+                        </ColumnComponent>
+                    </RowComponent>
+                    {editableBy === 'everyone' && (
+                        <InputComponent
+                            placeholder="Enter a password"
+                            type="password"
+                            style={{
+                                borderRadius: '0px'
+                            }}
+                            borderType="bottom"
+                            label={'Password'}
+                            value={editableByPublicPass}
+                            onChange={(value) => {
+                                setEditableByPublicPass(value);
+                            }}
+                            animationType="slideInLeft"
+                        />
+                    )}
+                </ColumnComponent>
+            </ModalComponent>
             <TitleComponent title={wordSetQuery.data?.name} className="mb-8" fontSize="3em" />
             <RowComponent className="relative">
                 <Carousel
@@ -98,6 +328,7 @@ function WordLearnLayout() {
                             question={word.name}
                             answer={word.meaning}
                             className="bg-bgLight dark:bg-bgDark"
+                            audioUrl={word.audio}
                         />
                     ))}
                     style={{
@@ -157,11 +388,46 @@ function WordLearnLayout() {
                     />
                     <SpaceComponent width={8} />
                     <ButtonComponent
+                        style={{
+                            height: '40px',
+                            paddingLeft: '16px',
+                            paddingRight: '16px'
+                        }}
+                        tooltip="Import"
+                        icon={<Import size={20} />}
+                        onClick={() => {}}
+                        backgroundColor="var(--bg-color)"
+                        backgroundHoverColor="var(--bg-hover-color)"
+                        backgroundActiveColor="var(--bg-active-color)"
+                        isBorder={true}
+                        textColor="var(--secondary-text-color)"
+                    />
+                    <SpaceComponent width={8} />
+                    <ButtonComponent
+                        style={{
+                            height: '40px',
+                            paddingLeft: '16px',
+                            paddingRight: '16px'
+                        }}
+                        tooltip="Export"
+                        icon={<Export size={20} />}
+                        onClick={() => {
+                            setModalExportOpen(true);
+                        }}
+                        backgroundColor="var(--bg-color)"
+                        backgroundHoverColor="var(--bg-hover-color)"
+                        backgroundActiveColor="var(--bg-active-color)"
+                        isBorder={true}
+                        textColor="var(--secondary-text-color)"
+                    />
+                    <SpaceComponent width={8} />
+                    <ButtonComponent
                         tabindex={-1}
                         icon={<Edit2 size={20} />}
                         onClick={() => {
                             handleEditWordSet();
                         }}
+                        tooltip="Edit word set"
                         backgroundColor="var(--bg-color)"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
@@ -178,8 +444,9 @@ function WordLearnLayout() {
                         tabindex={-1}
                         icon={<Setting2 size={20} />}
                         onClick={() => {
-                            // setModalSettingOpen(true);
+                            setModalSettingOpen(true);
                         }}
+                        tooltip="Setting"
                         backgroundColor="var(--bg-color)"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
@@ -261,7 +528,7 @@ function WordLearnLayout() {
                                     </ColumnComponent>
                                 </GridCol>
                                 <GridCol span={8}>
-                                    <ColumnComponent alignItems="flex-start">
+                                    <ColumnComponent alignItems="flex-start" className="pr-8">
                                         <TextComponent text={word.meaning} fontSize="1.6em" />
                                         <SpaceComponent height={12} />
                                         {word.contexts &&
@@ -282,40 +549,91 @@ function WordLearnLayout() {
                                     </ColumnComponent>
                                 </GridCol>
                             </GridRow>
-                            <ButtonComponent
-                                onClick={async (e) => {
-                                    e.preventDefault();
-                                    await updateWord(
-                                        wordSetQuery.data?.wordsetId ?? '',
-                                        word.name,
-                                        undefined,
-                                        undefined,
-                                        undefined,
-                                        undefined,
-                                        !word.learned
-                                    );
-                                    wordSetQuery.refetch();
-                                }}
+                            <ColumnComponent
                                 style={{
                                     position: 'absolute',
                                     top: 16,
-                                    right: 16,
-                                    padding: '8px'
-                                }}
-                                backgroundColor="transparent"
-                                backgroundHoverColor="var(--bg-hover-color)"
-                                backgroundActiveColor="var(--bg-active-color)">
-                                <Star1
-                                    size={20}
-                                    className="
-                                "
-                                    variant={word.learned ? 'Bold' : 'Linear'}
-                                />
-                            </ButtonComponent>
+                                    right: 16
+                                }}>
+                                <ButtonComponent
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        if (word.audio === '') return;
+
+                                        const audio = new Audio(word.audio);
+                                        audio.play();
+                                    }}
+                                    style={{
+                                        padding: '8px'
+                                    }}
+                                    disabled={word.audio === ''}
+                                    backgroundColor="transparent"
+                                    backgroundHoverColor="var(--bg-hover-color)"
+                                    backgroundActiveColor="var(--bg-active-color)">
+                                    <VolumeHigh
+                                        size={20}
+                                        className="
+                                    "
+                                        variant={word.audio === '' ? 'Bold' : 'Linear'}
+                                    />
+                                </ButtonComponent>
+                                <ButtonComponent
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        await updateWord(
+                                            wordSetQuery.data?.wordsetId ?? '',
+                                            word.name,
+                                            word.imageURL as string,
+                                            word.meaning,
+                                            word.contexts,
+                                            word.name,
+                                            !word.learned,
+                                            word.audio
+                                        );
+                                        wordSetQuery.refetch();
+                                    }}
+                                    style={{
+                                        padding: '8px'
+                                    }}
+                                    backgroundColor="transparent"
+                                    backgroundHoverColor="var(--bg-hover-color)"
+                                    backgroundActiveColor="var(--bg-active-color)">
+                                    <Star1
+                                        size={20}
+                                        className="
+                                    "
+                                        variant={word.learned ? 'Bold' : 'Linear'}
+                                    />
+                                </ButtonComponent>
+                            </ColumnComponent>
                         </CardComponent>
                     </GridCol>
                 ))}
             </GridRow>
+            <SpaceComponent height={48} />
+            <RowComponent>
+                <ButtonComponent
+                    style={{
+                        paddingLeft: '26px',
+                        paddingRight: '26px',
+                        paddingBottom: '10px',
+                        paddingTop: '10px',
+                        width: 'fit-content',
+                        fontSize: '1.4em',
+                        fontWeight: '500'
+                    }}
+                    text="Add or edit word"
+                    onClick={() => {
+                        handleEditWordSet();
+                    }}
+                    backgroundColor="var(--bg-color)"
+                    backgroundHoverColor="var(--bg-hover-color)"
+                    backgroundActiveColor="var(--bg-active-color)"
+                    isBorder={true}
+                    icon={<Edit2 size={20} />}
+                    textColor="var(--secondary-text-color)"
+                />
+            </RowComponent>
             <SpaceComponent height={64} />
         </div>
     );

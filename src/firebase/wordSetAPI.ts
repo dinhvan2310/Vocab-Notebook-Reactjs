@@ -21,10 +21,66 @@ import { auth, db } from './firebase-config';
 import FolderType from '../types/FolderType';
 import { deleteImage, uploadImage } from './utils/uploadImage';
 import { WordType } from '../types/WordType';
+import { getWordDefinition } from '../APIs/freeDictionary/freeDictionary';
 
 const validateWordSet = (wordSet: WordSetType) => {
     if (wordSet.name.length > 50) throw new Error('WordSet name is too long');
 };
+
+const getWordAudio = async (word: string) => {
+    const rs = await getWordDefinition(word.trim().toLowerCase());
+    if (rs.message) return '';
+
+    // [
+    //     {
+    //         "word": "meditate",
+    //         "phonetics": [
+    //             {
+    //                 "audio": "https://api.dictionaryapi.dev/media/pronunciations/en/meditate-us.mp3",
+    //                 "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=1780214",
+    //                 "license": {
+    //                     "name": "BY-SA 3.0",
+    //                     "url": "https://creativecommons.org/licenses/by-sa/3.0"
+    //                 }
+    //             }
+    //         ],
+    //         "meanings": [
+    //             {
+    //                 "partOfSpeech": "verb",
+    //                 "definitions": [
+    //                     {
+    //                         "definition": "To contemplate; to keep the mind fixed upon something; to study.",
+    //                         "synonyms": [],
+    //                         "antonyms": []
+    //                     },
+    //                     {
+    //                         "definition": "To sit or lie down and come to a deep rest while still remaining conscious.",
+    //                         "synonyms": [],
+    //                         "antonyms": []
+    //                     },
+    //                     {
+    //                         "definition": "To consider; to reflect on.",
+    //                         "synonyms": [],
+    //                         "antonyms": []
+    //                     }
+    //                 ],
+    //                 "synonyms": [],
+    //                 "antonyms": []
+    //             }
+    //         ],
+    //         "license": {
+    //             "name": "CC BY-SA 3.0",
+    //             "url": "https://creativecommons.org/licenses/by-sa/3.0"
+    //         },
+    //         "sourceUrls": [
+    //             "https://en.wiktionary.org/wiki/meditate"
+    //         ]
+    //     }
+    // ]
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return rs.find((w: { phonetics: any[]; }) => w.phonetics.find((p: { audio: any; }) => p.audio))?.phonetics.find((p: { audio: any; }) => p.audio)?.audio || '';
+}
 
 export const addWordSet = async (wordSet: WordSetType) => {
     console.log('addWordSet', wordSet);
@@ -45,14 +101,15 @@ export const addWordSet = async (wordSet: WordSetType) => {
     const newWords = await Promise.all(wordSet.words.map(async (word) => {
         return {
             ...word,
+            audio: await getWordAudio(word.name),
             imageURL: typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL)
         }
     }));
     const newWordSet = {
         folderRef: folderRef,
         name: wordSet.name.trim() || '',
-        imageUrl: imageUrl,
         nameLowercase: wordSet.name.trim().toLowerCase() || '',
+        imageUrl: imageUrl,
 
         visibility: wordSet.visibility || 'public',
         editableBy: wordSet.editableBy || 'owner',
@@ -269,26 +326,27 @@ export const updateWord = async (
     contexts?: string[],
     name?: string,
     learned?: boolean,
+    audio?: string
 ) => {
-    console.log('updateWord', wordSetId, wordId, learned);
+    console.log('updateWord', wordSetId, wordId, learned, audio, contexts, imageURL, meaning, name);
 
     const user = auth.currentUser;
     if (!user) throw new Error('User is not logged in');
 
-    const wordSetRef = doc(db, 'wordSetsGlobal', wordSetId);
+const wordSetRef = doc(db, 'wordSetsGlobal', wordSetId);
     const wordSetDoc = await getDoc(wordSetRef);
     if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
 
-    const oldWord = wordSetDoc.data().words.find((word: WordType) => word.nameLowercase === wordId.trim().toLowerCase());
+    const oldWord = wordSetDoc.data().words.find((word: WordType) => word.name === wordId.trim().toLowerCase());
     if (!oldWord) throw new Error('Word is not found');
 
     const updateWord = {
-        imageURL: imageURL || oldWord.imageURL,
+        imageURL: imageURL || '',
         meaning: meaning || oldWord.meaning,
-        contexts: contexts || oldWord.contexts,
-        name: name || oldWord.name,
-        nameLowercase: name ? name.trim().toLowerCase() : oldWord.nameLowercase,
-        learned: learned !== undefined ? learned : oldWord.learned,
+        contexts: contexts || [],
+        name: name?.trim().toLowerCase() || oldWord.name,
+        learned: learned === undefined ? oldWord.learned : learned,
+        audio: audio || oldWord.audio
     }
 
     if (imageURL && imageURL !== oldWord.imageURL) {
@@ -298,7 +356,7 @@ export const updateWord = async (
     }
 
     const newWords = wordSetDoc.data().words.map((word: WordType) => {
-        if (word.nameLowercase === wordId.trim().toLowerCase()) {
+        if (word.name === wordId.trim().toLowerCase()) {
             return updateWord;
         }
         return word;

@@ -49,3 +49,5 @@ export interface WordSetType {
 - Xoá wordSet
     > xoá wordSet thì xoá image bên storage
     > xoá wordSet thì xoá wordSet trong folder đó
+
+

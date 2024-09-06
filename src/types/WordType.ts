@@ -6,9 +6,9 @@ export interface WordType {
     meaning: string;
     contexts: string[];
     name: string;
-    nameLowercase?: string;
 
     learned?: boolean;
     createdAt?: Timestamp;
+    audio?: string;
 }
 

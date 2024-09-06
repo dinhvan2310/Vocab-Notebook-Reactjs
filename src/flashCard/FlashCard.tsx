@@ -3,10 +3,12 @@ import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import { VolumeHigh } from 'iconsax-react';
 import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
 import TextComponent from '../components/commonComponent/Text/TextComponent';
+import { useAudio } from '../hooks/useAudio';
 
 interface FlashCardProps {
     question: string;
     answer: string;
+    audioUrl?: string;
 
     style?: React.CSSProperties;
     className?: string;
@@ -14,7 +16,9 @@ interface FlashCardProps {
 
 function FlashCard(props: FlashCardProps) {
     // props
-    const { question, answer, style, className = '' } = props;
+    const { question, answer, style, className = '', audioUrl = '' } = props;
+
+    const audio = useAudio(audioUrl);
 
     // state
     const [showAnswer, setShowAnswer] = useState(false);
@@ -35,6 +39,7 @@ function FlashCard(props: FlashCardProps) {
             <ButtonComponent
                 onClick={(e) => {
                     e.preventDefault();
+                    audio.play();
                 }}
                 style={{
                     position: 'absolute',
@@ -44,9 +49,10 @@ function FlashCard(props: FlashCardProps) {
                     padding: '8px'
                 }}
                 backgroundColor="transparent"
+                disabled={audioUrl === ''}
                 backgroundHoverColor="var(--bg-hover-color)"
                 backgroundActiveColor="var(--bg-active-color)">
-                <VolumeHigh size={24} className="" />
+                <VolumeHigh size={20} className="" variant={audioUrl === '' ? 'Bold' : 'Linear'} />
             </ButtonComponent>
             <div
                 className="absolute w-full h-full 
@@ -59,7 +65,6 @@ function FlashCard(props: FlashCardProps) {
                     fontSize="2.6em"
                     className="text-center"
                     titleStyle={{
-                        textWrap: 'wrap',
                         wordWrap: 'break-word'
                     }}
                     containerStyle={{}}
