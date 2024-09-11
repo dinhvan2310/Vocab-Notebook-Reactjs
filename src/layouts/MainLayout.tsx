@@ -1,11 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
-import { Timestamp } from 'firebase/firestore';
 import {
-    Add,
-    Additem,
     Award,
     Folder,
-    FolderAdd,
     HambergerMenu,
     Home,
     LampOn,
@@ -22,19 +17,12 @@ import SpaceComponent from '../components/commonComponent/Space/SpaceComponent';
 import TextComponent from '../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import FloatingActionButtonComponent from '../components/FloatButton/FloatingActionButtonComponent';
-import FormComponent from '../components/Form/FormComponent';
 import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
-import ModalComponent from '../components/Modal/ModalComponent';
 import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
-import Upload from '../components/Upload/Upload';
-import { addFolder } from '../firebase/folderAPI';
-import { uploadImage } from '../firebase/utils/uploadImage';
 import { useAuth } from '../hooks/useAuth';
 import { useMessage } from '../hooks/useMessage';
 import { useResponsive } from '../hooks/useResponsive';
 import useTheme from '../hooks/useTheme';
-import FolderType from '../types/FolderType';
-import FormItemType from '../types/FormItemType';
 import { MenuItemInterface } from '../types/MenuItemType';
 import './MainLayout.scss';
 
@@ -54,7 +42,6 @@ function MainLayout() {
 
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
-    const [newFolderImage, setNewFolderImage] = useState<File | null>(null);
     // keep track of the active page in the sidebar menu
     const [activePage, setActivePage] = React.useState<'home' | 'folders' | 'none'>('home');
     const [inlineCollapsed, setInlineCollapsed] = useState<
@@ -81,9 +68,7 @@ function MainLayout() {
     }, [!md]);
 
     // open modal to add new folder
-    const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
     // new folder name relate add add new folder modal
-    const [createFolder_name, setCreateFolder_name] = useState<string>('');
     // function declaration ---------------------------------------------------------------
     const handleNavigatePage = (key: 'home' | 'folders') => {
         switch (key) {
@@ -99,77 +84,6 @@ function MainLayout() {
     //  data declaration ---------------------------------------------------------------
     // ADD MENU ITEMS - floating action button
     // function to add a new folder
-    const formItems: FormItemType[] = [
-        {
-            label: 'Folder Name',
-            type: 'text',
-            placeholder: 'Enter folder name',
-            value: createFolder_name,
-            onChange: (value) => {
-                setCreateFolder_name(value);
-            }
-        }
-    ];
-    const handleAddFolder = () => {
-        setOpenModalAddNewFolder(true);
-    };
-
-    const handleAddFolderFinishMutation = useMutation({
-        mutationFn: async () => {
-            const imageUrl = newFolderImage ? await uploadImage(newFolderImage) : '';
-
-            const folder: FolderType = {
-                name: createFolder_name,
-                createAt: Timestamp.now(),
-                modifiedAt: Timestamp.now(),
-
-                imageUrl: imageUrl,
-
-                wordSets: []
-            };
-
-            const newFolder = await addFolder(folder);
-            return newFolder;
-        },
-        mutationKey: ['addFolder']
-    });
-
-    const checkFolderNameIsValid = () => {
-        return createFolder_name.trim() !== '';
-    };
-    const handleAddFolderFinish = async () => {
-        if (user === null) throw new Error('User is not logged in');
-
-        try {
-            const newFolder = await handleAddFolderFinishMutation.mutateAsync();
-
-            setCreateFolder_name('');
-            setNewFolderImage(null);
-            setOpenModalAddNewFolder(false);
-
-            message('success', 'Create folder successfully', 3000);
-
-            if (!RegExp('/user/.*/folders$').test(location.pathname)) {
-                navigate(`/user/${user?.uid}/folders/${newFolder.id}`);
-            }
-        } catch (exception) {
-            console.log(exception);
-        }
-    };
-    const menuItemsAdd: MenuItemInterface[] = [
-        {
-            text: 'Học phần',
-            icon: <Additem size={20} />,
-            key: 'subject',
-            onClick: () => console.log('Học phần')
-        },
-        {
-            text: 'Thư mục',
-            icon: <FolderAdd size="20" />,
-            key: 'folder',
-            onClick: handleAddFolder
-        }
-    ];
 
     // SETTING MENU ITEMS
     // function to change the theme of the app
@@ -263,43 +177,6 @@ function MainLayout() {
 
     return (
         <div className="main-layout">
-            {/* Modal Add Folder */}
-            <ModalComponent
-                animationType="zoomIn"
-                isCloseIcon={true}
-                width="600px"
-                closeOnOverlayClick={true}
-                open={openModalAddNewFolder}
-                isFooter={true}
-                onCancel={() => {
-                    setOpenModalAddNewFolder(false);
-                    setCreateFolder_name('');
-                    setNewFolderImage(null);
-                }}
-                onConfirm={handleAddFolderFinish}
-                disableButtonConfirm={!checkFolderNameIsValid()}
-                buttonComfirmLoading={handleAddFolderFinishMutation.isPending}
-                title="Create new folder">
-                <FormComponent
-                    // onFinished={handleAddFolderFinish}
-                    formItems={formItems}
-                    haveSubmitButton={false}
-                    submitButtonText="Create"
-                />
-                <SpaceComponent height={32} />
-                <RowComponent justifyContent="center" alignItems="flex-start">
-                    <Upload
-                        action={(f) => setNewFolderImage(f as File)}
-                        type="picture"
-                        onRemove={() => setNewFolderImage(null)}
-                        name="Cover Image"
-                        style={{
-                            width: '260px',
-                            height: '140px'
-                        }}
-                    />
-                </RowComponent>
-            </ModalComponent>
             {/* Header ------------------------------------------------------------------------------ */}
             <header className="headerContainer">
                 <div
@@ -328,27 +205,6 @@ function MainLayout() {
                 <RowComponent alignItems="center" justifyContent="space-around" style={{}}>
                     {user ? (
                         <>
-                            <FloatingActionButtonComponent
-                                backgroundColor="var(--primary-color)"
-                                backgroundHoverColor="var(--primary-hover-color)"
-                                backgroundActiveColor="var(--primary-active-color)"
-                                icon={<Add size="32" color="#fff" />}
-                                menuItems={menuItemsAdd}
-                            />
-                            <SpaceComponent width={32} />
-                            <ButtonComponent
-                                text="Nâng cấp lên Plus"
-                                backgroundColor="var(--secondary-color)"
-                                backgroundHoverColor="var(--secondary-hover-color)"
-                                backgroundActiveColor="var(--secondary-active-color)"
-                                textColor="var(--black-color)"
-                                fontSize="1.1em"
-                                style={{
-                                    height: '40px'
-                                }}
-                            />
-                            <SpaceComponent width={32} />
-
                             <FloatingActionButtonComponent
                                 headerComponent={menuItemsSettingHeader}
                                 icon={

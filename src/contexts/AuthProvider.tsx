@@ -4,6 +4,7 @@ import {
     authStateChange,
     signInWithFacebook,
     signInWithGoogle,
+    signInWithEmailLink,
     signOut
 } from '../firebase/userAPI';
 import AuthContextType from '../types/AuthContextType';
@@ -38,6 +39,7 @@ function AuthProvider(props: AuthProviderProps) {
             user,
             signInWithGoogle,
             signInWithFacebook,
+            signInWithEmailLink,
             signOut
         };
     }, [user]);

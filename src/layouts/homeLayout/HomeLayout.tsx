@@ -1,102 +1,100 @@
-import { Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
+import TabsComponent from '../../components/Tabs/TabsComponent';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
-import InputComponent from '../../components/commonComponent/Input/InputComponent';
-import GridCol from '../../components/Grid/GridCol';
-import GridRow from '../../components/Grid/GridRow';
-import {
-    addWordSet,
-    getWordSet,
-    getWordSets,
-    removeWordSet,
-    updateWordSet
-} from '../../firebase/wordSetAPI';
-import { useMessage } from '../../hooks/useMessage';
 import { getFolders } from '../../firebase/folderAPI';
+import { getWordSet, getWordSets } from '../../firebase/wordSetAPI';
 
 function HomeLayout() {
-    const message = useMessage();
-
-    const [folderId, setFolderId] = useState<string>('');
-    const [wordSetId, setWordSetId] = useState<string>('');
+    const [activeTab, setActiveTab] = useState('recently added');
 
     return (
-        <div className="flex flex-col">
-            <InputComponent
-                onChange={(value) => setFolderId(value)}
-                value={folderId}
-                type="text"
-                borderType="all"
-                label="Folder ID"
-            />
-            <InputComponent
-                onChange={(value) => setWordSetId(value)}
-                value={wordSetId}
-                type="text"
-                borderType="all"
-                label="WordSet ID"
-            />
-            <GridRow gutter={[16, 16]} className="w-full">
-                <GridCol span={2}>
-                    <ButtonComponent
-                        text="addWordSet"
-                        onClick={async () => {
-                            await getFolders(
-                                '6e6E7UuYArfdv32s0silzBgmxt32',
-                                0,
-                                10,
-                                '12',
-                                'nameLowercase'
-                            );
-                        }}
-                    />
-                </GridCol>
-                <GridCol span={2}>
-                    <ButtonComponent
-                        text="updateWordSet"
-                        onClick={async () => {
-                            const wordSet = await getWordSet(wordSetId);
-                            const rs = await updateWordSet(
-                                wordSetId,
-                                wordSet.name + ' updated',
-                                wordSet.visibility,
-                                wordSet.imageUrl,
-                                wordSet.words
-                            );
+        <TabsComponent
+            activeKey={activeTab}
+            items={[
+                {
+                    key: 'frequency usage',
+                    label: 'Frequency Usage',
+                    children: (
+                        <div>
+                            <ButtonComponent
+                                onClick={async () => {
+                                    const data3 = await getFolders(
+                                        '6e6E7UuYArfdv32s0silzBgmxt32',
+                                        0,
+                                        10,
+                                        'q',
+                                        'createAt'
+                                    );
+                                    const data4 = await getFolders(
+                                        '6e6E7UuYArfdv32s0silzBgmxt32',
+                                        0,
+                                        10,
+                                        'q',
+                                        'modifiedAt'
+                                    );
+                                }}
+                                text="Get Folders"
+                            />
 
-                            console.log(rs);
-                        }}
-                    />
-                </GridCol>
-                <GridCol span={2}>
-                    <ButtonComponent
-                        text="Delete WordSet"
-                        onClick={async () => {
-                            await removeWordSet(wordSetId);
-                            setWordSetId('');
-                        }}
-                    />
-                </GridCol>
-                <GridCol span={2}>
-                    <ButtonComponent
-                        text="Get WordSet"
-                        onClick={async () => {
-                            const rs = await getWordSet(wordSetId);
-                            console.log(rs);
-                        }}
-                    />
-                </GridCol>
-                <GridCol span={2}>
-                    <ButtonComponent
-                        onClick={async () => {
-                            const rs = await getWordSets(folderId, 0, 10, '', 'nameLowercase');
-                            console.log(rs);
-                        }}
-                        text="Get All WordSet"
-                    />
-                </GridCol>
-            </GridRow>
-        </div>
+                            <ButtonComponent
+                                onClick={async () => {
+                                    // const r = await getWordSets('cVLTXpkGwBYnQdTGEuiM');
+                                    // const rs = await getWordSets(
+                                    //     'cVLTXpkGwBYnQdTGEuiM',
+                                    //     0,
+                                    //     10,
+                                    //     'q',
+                                    //     'nameLowercase'
+                                    // );
+                                    // const data = await getWordSets(
+                                    //     'cVLTXpkGwBYnQdTGEuiM',
+                                    //     0,
+                                    //     10,
+                                    //     'q',
+                                    //     'createAt'
+                                    // );
+                                    const data1 = await getWordSets(
+                                        'cVLTXpkGwBYnQdTGEuiM',
+                                        0,
+                                        10,
+                                        'q',
+                                        'modifiedAt'
+                                    );
+                                }}
+                            />
+                        </div>
+                    )
+                },
+                {
+                    key: 'rating',
+                    label: 'Rating',
+                    children: (
+                        <div
+                            style={{
+                                height: 40,
+                                width: '100%',
+                                backgroundColor: 'blue'
+                            }}></div>
+                    )
+                },
+                {
+                    key: 'recently added',
+                    label: 'Recently Added',
+                    children: (
+                        <div
+                            style={{
+                                height: 40,
+                                width: '100%',
+                                backgroundColor: 'green'
+                            }}></div>
+                    )
+                }
+            ]}
+            onChange={(key) => {
+                setActiveTab(key);
+            }}
+            fontSize="1.2em"
+        />
     );
 }
 

@@ -1,6 +1,17 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Unsubscribe } from 'firebase/auth/web-extension';
-import { Card, Edit, Element3, Refresh2, TableDocument, Text, Timer, Trash } from 'iconsax-react';
+import {
+    Add,
+    Card,
+    Edit,
+    Element3,
+    FolderAdd,
+    Refresh2,
+    TableDocument,
+    Text,
+    Timer,
+    Trash
+} from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
@@ -24,6 +35,7 @@ import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
 import {
+    addFolder,
     getFolders,
     getFolderViewModeDefault,
     onSnapshotFolders,
@@ -39,6 +51,10 @@ import { useMessage } from '../../hooks/useMessage';
 import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import './FoldersLayout.scss';
+import { Timestamp } from 'firebase/firestore';
+import FormItemType from '../../types/FormItemType';
+import FloatingActionButtonComponent from '../../components/FloatButton/FloatingActionButtonComponent';
+import { MenuItemInterface } from '../../types/MenuItemType';
 
 function FoldersLayout() {
     // State management -------------------------------------------------------------
@@ -51,7 +67,7 @@ function FoldersLayout() {
     const { md, lg, xl, xxl } = useResponsive();
     const [openModalEditFolder, setOpenModalEditFolder] = useState(false);
     const [folderEditing, setFolderEditing] = useState<FolderType | null>(null);
-    const [folderImageEditing, setFolderImageEditing] = useState<File | null>(null);
+    const [folderImageEditing, setFolderImageEditing] = useState<File | null | string>(null);
 
     const [sortBy, setSortBy] = useState<'nameLowercase' | 'modifiedAt' | 'createAt'>();
     const sortByOptions = [
@@ -62,6 +78,60 @@ function FoldersLayout() {
 
     // Data
     // command state
+
+    const [newFolderImage, setNewFolderImage] = useState<File | null | string>(null);
+
+    const handleAddFolderFinishMutation = useMutation({
+        mutationFn: async () => {
+            const imageUrl =
+                typeof newFolderImage === 'string'
+                    ? newFolderImage
+                    : newFolderImage !== null
+                    ? await uploadImage(newFolderImage)
+                    : '';
+
+            const folder: FolderType = {
+                name: createFolder_name,
+                createAt: Timestamp.now(),
+                modifiedAt: Timestamp.now(),
+
+                imageUrl: imageUrl,
+
+                wordSets: []
+            };
+
+            const newFolder = await addFolder(folder);
+            return newFolder;
+        },
+        mutationKey: ['addFolder']
+    });
+
+    const checkFolderNameIsValid = () => {
+        return createFolder_name.trim() !== '';
+    };
+
+    const [openModalAddNewFolder, setOpenModalAddNewFolder] = useState(false);
+    const [createFolder_name, setCreateFolder_name] = useState<string>('');
+
+    const handleAddFolderFinish = async () => {
+        if (currentUser === null) throw new Error('User is not logged in');
+
+        try {
+            const newFolder = await handleAddFolderFinishMutation.mutateAsync();
+
+            setCreateFolder_name('');
+            setNewFolderImage(null);
+            setOpenModalAddNewFolder(false);
+
+            message('success', 'Create folder successfully', 3000);
+
+            if (!RegExp('/user/.*/folders$').test(location.pathname)) {
+                navigate(`/user/${currentUser?.uid}/folders/${newFolder.id}`);
+            }
+        } catch (exception) {
+            console.log(exception);
+        }
+    };
 
     const [startAt, setStartAt] = useState(0);
     const [limit, setLimit] = useState(10);
@@ -88,7 +158,7 @@ function FoldersLayout() {
             icon: <TableDocument size="16" />
         },
         {
-            label: 'Large card',
+            label: 'Card',
             value: 'card',
             icon: <Card size="16" />
         }
@@ -107,6 +177,30 @@ function FoldersLayout() {
         {
             label: '20',
             value: '20'
+        }
+    ];
+
+    const formItems: FormItemType[] = [
+        {
+            label: 'Folder Name',
+            type: 'text',
+            placeholder: 'Enter folder name',
+            value: createFolder_name,
+            onChange: (value) => {
+                setCreateFolder_name(value);
+            }
+        }
+    ];
+
+    const topBar_command_1: MenuItemInterface[] = [
+        {
+            key: 'addFolder',
+            text: 'Create folder',
+            icon: <FolderAdd size="20" />,
+            onClick: () => {
+                setOpenModalAddNewFolder(true);
+            },
+            disabled: currentUser?.uid !== userid
         }
     ];
 
@@ -170,19 +264,21 @@ function FoldersLayout() {
 
     const updateFolderMutation = useMutation({
         mutationFn: async () => {
-            let url;
+            let url = '';
 
             if (!checkCanEditFolder()) return null;
 
-            if (folderImageEditing) {
-                url = await uploadImage(folderImageEditing);
+            if (!folderEditing) return null;
+            if (folderImageEditing && typeof folderImageEditing !== 'string') {
+                url = (await uploadImage(folderImageEditing)) ?? '';
+            }
+            if (folderImageEditing && typeof folderImageEditing === 'string') {
+                url = folderImageEditing;
             }
 
-            //
-            if (!folderEditing) return null;
             const folder: FolderType = {
                 ...folderEditing,
-                imageUrl: url || folderEditing?.imageUrl
+                imageUrl: url
             };
 
             return await updateFolder(folder.folderId || '', folder.name, folder.imageUrl || '');
@@ -192,6 +288,46 @@ function FoldersLayout() {
 
     return (
         <div className="folder-layout-container" style={{}}>
+            {/* Modal Add Folder */}
+            <ModalComponent
+                animationType="zoomIn"
+                isCloseIcon={true}
+                width="600px"
+                closeOnOverlayClick={true}
+                open={openModalAddNewFolder}
+                isFooter={true}
+                onCancel={() => {
+                    setOpenModalAddNewFolder(false);
+                    setCreateFolder_name('');
+                    setNewFolderImage(null);
+                }}
+                onConfirm={handleAddFolderFinish}
+                disableButtonConfirm={!checkFolderNameIsValid()}
+                buttonComfirmLoading={handleAddFolderFinishMutation.isPending}
+                title="Create new folder">
+                <FormComponent
+                    // onFinished={handleAddFolderFinish}
+                    formItems={formItems}
+                    haveSubmitButton={false}
+                    submitButtonText="Create"
+                />
+                <SpaceComponent height={32} />
+                <RowComponent justifyContent="center" alignItems="flex-start">
+                    <Upload
+                        action={(f) => {
+                            if (!f) return;
+                            setNewFolderImage(f);
+                        }}
+                        type="picture"
+                        onRemove={() => setNewFolderImage(null)}
+                        name="Cover Image"
+                        style={{
+                            width: '260px',
+                            height: '140px'
+                        }}
+                    />
+                </RowComponent>
+            </ModalComponent>
             <ModalComponent
                 animationType="zoomIn"
                 width="600px"
@@ -267,7 +403,10 @@ function FoldersLayout() {
                         </>
                     ) : (
                         <Upload
-                            action={(file) => setFolderImageEditing(file as File)}
+                            action={(file) => {
+                                if (!file) return;
+                                setFolderImageEditing(file);
+                            }}
                             type="picture"
                             onRemove={() => setFolderImageEditing(null)}
                             name="Cover Image"
@@ -341,7 +480,7 @@ function FoldersLayout() {
                     defaultValue={'table'}
                     value={viewMode}
                     positionPopup="bottom"
-                    width="150px"
+                    width="120px"
                     color="var(--secondary-text-color)"
                     style={{
                         backgroundColor: 'var(--bg-color)',
@@ -361,7 +500,7 @@ function FoldersLayout() {
                     options={sortByOptions}
                     defaultValue="nameLowercase"
                     positionPopup="bottom"
-                    width="150px"
+                    width="120px"
                     color="var(--secondary-text-color)"
                     style={{
                         backgroundColor: 'var(--bg-color)',
@@ -376,6 +515,19 @@ function FoldersLayout() {
                     }}
                     value={sortBy}
                     title="Sort by"
+                />
+                <SpaceComponent width={8} />
+                <FloatingActionButtonComponent
+                    containerStyle={{
+                        height: '40px',
+                        width: '40px',
+                        border: '1px solid var(--border-color)'
+                    }}
+                    backgroundColor="var(--bg-color)"
+                    backgroundHoverColor="var(--bg-hover-color)"
+                    backgroundActiveColor="var(--bg-active-color)"
+                    icon={<Add size={26} />}
+                    menuItems={topBar_command_1}
                 />
             </div>
             <div
@@ -412,7 +564,31 @@ function FoldersLayout() {
                 ) : (
                     <GridRow gutter={[24, 24]} wrap={true} className={`w-full`}>
                         {query.data?.folders.length === 0 && (
-                            <EmptyComponent text="No folders found" className="mt-24" />
+                            <ColumnComponent
+                                style={{
+                                    width: '100%'
+                                }}>
+                                <EmptyComponent text="No folders" className="mt-24 mb-4" />
+                                <ButtonComponent
+                                    tabindex={-1}
+                                    icon={<Add size={20} />}
+                                    onClick={() => {
+                                        setOpenModalAddNewFolder(true);
+                                    }}
+                                    text="Create folder"
+                                    backgroundColor="transparent"
+                                    backgroundHoverColor="var(--primary-color-light)"
+                                    backgroundActiveColor="var(--primary-hover-color-light)"
+                                    isBorder={false}
+                                    borderColor="var(--border-color)"
+                                    textColor="var(--text-color)"
+                                    fontSize="1.5em"
+                                    style={{
+                                        height: '40px',
+                                        padding: '12px 26px'
+                                    }}
+                                />
+                            </ColumnComponent>
                         )}
                         {query.data?.folders.map((folder, index) => {
                             return (

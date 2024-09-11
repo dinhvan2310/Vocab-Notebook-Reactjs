@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Timestamp } from 'firebase/firestore';
-import { Add, Setting2 } from 'iconsax-react';
-import { useState } from 'react';
+import { Add, Export, Setting2 } from 'iconsax-react';
+import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
@@ -16,20 +16,21 @@ import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
 import WordCardComponent from '../../components/WordCard/WordCardComponent';
 import { uploadImage } from '../../firebase/utils/uploadImage';
+import { getWords } from '../../firebase/wordAPI';
 import { addWordSet, updateWordSet } from '../../firebase/wordSetAPI';
 import { useAuth } from '../../hooks/useAuth';
 import { useMessage } from '../../hooks/useMessage';
 import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 
-export interface WordEditType extends WordType {
-    titleErrorText?: string;
-    meaningErrorText?: string;
-    contextErrorText?: {
-        index: number;
-        contextErrorText: string;
-    };
-}
+// export interface WordEditType extends WordType {
+//     titleErrorText?: string;
+//     meaningErrorText?: string;
+//     contextErrorText?: {
+//         index: number;
+//         contextErrorText: string;
+//     };
+// }
 
 function WordEditLayout() {
     // props
@@ -43,6 +44,9 @@ function WordEditLayout() {
     const wordSet = useLoaderData() as WordSetType;
 
     // state --------------------------------------------------------------------------------------------------
+    const [modalImportOpen, setModalImportOpen] = useState(false);
+    const [dataImport, setDataImport] = useState<string>('');
+
     const [modalSettingOpen, setModalSettingOpen] = useState(false);
 
     const [title, setTitle] = useState(wordSet?.name ?? '');
@@ -62,23 +66,17 @@ function WordEditLayout() {
         wordSet?.editablePassword ?? ''
     );
 
-    const [data, setData] = useState<WordEditType[]>(() => {
-        if (wordSet) return wordSet.words;
-        return [
-            {
-                name: '',
-                meaning: '',
-                contexts: [''],
-                imageURL: ''
-            },
-            {
-                name: '',
-                meaning: '',
-                contexts: [''],
-                imageURL: ''
+    const [data, setData] = useState<WordType[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (wordSet) {
+                const wordSetData = await getWords(wordSet.wordsetId ?? '');
+                setData(wordSetData);
             }
-        ];
-    });
+        };
+        fetchData();
+    }, [wordSet]);
 
     // options ui
 
@@ -94,9 +92,64 @@ function WordEditLayout() {
         });
     };
 
+    const handleDeleteWord = (index: number) => {
+        console.log(index);
+        const newData = [...data];
+        newData.splice(index, 1);
+        console.log('newData', newData);
+        setData([...newData]);
+    };
+
     // query
+    const importDataMutation = useMutation({
+        mutationFn: async () => {
+            try {
+                const importData = JSON.parse(dataImport);
+                if (!Array.isArray(importData)) {
+                    message('error', 'Data is not an array');
+                    return;
+                }
+                if (importData.length === 0) {
+                    message('error', 'Data is empty');
+                    return;
+                }
+
+                if (
+                    importData[0].name === undefined ||
+                    importData[0].meaning === undefined ||
+                    importData[0].contexts === undefined ||
+                    importData[0].imageURL === undefined
+                ) {
+                    message('error', 'Data is not valid');
+                    return;
+                }
+
+                const newData = importData.map((item: WordType) => {
+                    return {
+                        name: item.name,
+                        meaning: item.meaning,
+                        contexts: item.contexts,
+                        imageURL: item.imageURL,
+                        learned: false,
+                        createdAt: Timestamp.now()
+                    };
+                });
+
+                setData(newData);
+
+                message('success', 'Import successfully');
+
+                setDataImport('');
+            } catch (error) {
+                message('error', 'Data is not valid');
+            }
+        },
+        mutationKey: ['importData', dataImport]
+    });
     const mutation = useMutation({
         mutationFn: async () => {
+            console.log('data', data);
+
             if (title === '') {
                 setTitleError('Title is required');
                 message('error', 'Title is required !');
@@ -104,46 +157,46 @@ function WordEditLayout() {
             }
 
             // reset error text
-            setData((prev) => {
-                const newData = [...prev];
-                newData.forEach((item) => {
-                    item.titleErrorText = undefined;
-                    item.meaningErrorText = undefined;
-                    item.contextErrorText = undefined;
-                });
-                return newData;
-            });
+            // setData((prev) => {
+            //     const newData = [...prev];
+            //     newData.forEach((item) => {
+            //         item.titleErrorText = undefined;
+            //         item.meaningErrorText = undefined;
+            //         item.contextErrorText = undefined;
+            //     });
+            //     return newData;
+            // });
 
             if (checkCanSave() === false) {
                 message('error', 'Please fill all fields !');
 
-                data.forEach((item, index) => {
-                    if (item.name === '') {
-                        setData((prev) => {
-                            const newData = [...prev];
-                            newData[index].titleErrorText = 'Name is required';
-                            return newData;
-                        });
-                    }
-                    if (item.meaning === '') {
-                        setData((prev) => {
-                            const newData = [...prev];
-                            newData[index].meaningErrorText = 'Meaning is required';
-                            return newData;
-                        });
-                    }
-                    if (!item.contexts.every((context) => context !== '')) {
-                        const i = item.contexts.findIndex((context) => context === '');
-                        setData((prev) => {
-                            const newData = [...prev];
-                            newData[index].contextErrorText = {
-                                index: i,
-                                contextErrorText: 'Context is required'
-                            };
-                            return newData;
-                        });
-                    }
-                });
+                // data.forEach((item, index) => {
+                //     if (item.name === '') {
+                //         setData((prev) => {
+                //             const newData = [...prev];
+                //             newData[index].titleErrorText = 'Name is required';
+                //             return newData;
+                //         });
+                //     }
+                //     if (item.meaning === '') {
+                //         setData((prev) => {
+                //             const newData = [...prev];
+                //             newData[index].meaningErrorText = 'Meaning is required';
+                //             return newData;
+                //         });
+                //     }
+                //     if (!item.contexts.every((context) => context !== '')) {
+                //         const i = item.contexts.findIndex((context) => context === '');
+                //         setData((prev) => {
+                //             const newData = [...prev];
+                //             newData[index].contextErrorText = {
+                //                 index: i,
+                //                 contextErrorText: 'Context is required'
+                //             };
+                //             return newData;
+                //         });
+                //     }
+                // });
 
                 return;
             }
@@ -168,28 +221,12 @@ function WordEditLayout() {
                 visibility: visibility,
                 editableBy: editableBy,
                 editablePassword: editableBy === 'everyone' ? editableByPublicPass : '',
-
-                createAt: wordSet?.createAt ?? Timestamp.now(),
-                modifiedAt: Timestamp.now(),
-
-                words: data.map((item) => {
-                    return {
-                        name: item.name.trim(),
-                        meaning: item.meaning,
-                        contexts: item.contexts,
-                        imageURL: item.imageURL,
-                        learned: false,
-                        createdAt: Timestamp.now(),
-                        nameLowercase: item.name.toLowerCase().trim()
-                    };
-                })
+                createAt: Timestamp.now(),
+                modifiedAt: Timestamp.now()
             };
-
-            console.log(newWordSet);
 
             let wordSetId = '';
             if (wordSet) {
-                // update word set
                 wordSetId = await updateWordSet(
                     wordSet.wordsetId ?? '',
                     newWordSet.name,
@@ -197,15 +234,19 @@ function WordEditLayout() {
                     newWordSet.editableBy,
                     newWordSet.editablePassword ?? '',
                     newWordSet.imageUrl ?? '',
-                    newWordSet.words
+                    data
                 );
             } else {
-                wordSetId = await addWordSet(newWordSet);
+                wordSetId = await addWordSet(newWordSet, data);
             }
 
             navigate(
                 `/user/${currentUser?.uid}/folders/${
-                    folderId === undefined ? wordSet.folderRef.id : folderId
+                    folderId === undefined
+                        ? typeof wordSet.folderRef !== 'string'
+                            ? wordSet.folderRef.id
+                            : wordSet.folderRef
+                        : folderId
                 }/wordset/${wordSetId}`
             );
         },
@@ -214,6 +255,78 @@ function WordEditLayout() {
 
     return (
         <div className="word-layout-container">
+            {/* modal */}
+            <ModalComponent
+                open={modalImportOpen}
+                disableButtonConfirm={dataImport === ''}
+                animationType="zoomIn"
+                width="760px"
+                isCloseIcon={true}
+                buttonComfirmLoading={importDataMutation.isPending}
+                closeOnOverlayClick={true}
+                onCancel={() => {
+                    setModalImportOpen(false);
+                    setDataImport('');
+                }}
+                onConfirm={async () => {
+                    // save setting on state
+                    await importDataMutation.mutateAsync();
+                    // await updateWordSetMutation.mutateAsync();
+                    setModalImportOpen(false);
+                }}
+                title="Import"
+                buttonConfirmText="Import"
+                isFooter={true}>
+                <ColumnComponent
+                    alignItems="flex-start"
+                    className="w-full 
+                ">
+                    <div className="w-full">
+                        <div
+                            className={`
+                            w-full max-h-56 overflow-x-auto
+                            scrollbar dark:scrollbarDark
+                                px-2 py-2
+                                border border-borderLight dark:border-borderDark
+                                rounded-md
+
+                        `}>
+                            <InputComponent
+                                type="textarea"
+                                value={dataImport}
+                                fontSize="1.2em"
+                                style={{
+                                    borderRadius: '0px'
+                                }}
+                                borderType="none"
+                                placeholder='Paste your data here. Example: [{"name":"hello","meaning":"xin chào","contexts":[""],"imageURL":""}]'
+                                onChange={function (value: string): void {
+                                    setDataImport(value);
+                                }}
+                                inputStyle={{}}
+                            />
+                        </div>
+                    </div>
+                    <TextComponent text="Or upload a file" className="mt-4 mb-2" fontSize="1.2em" />
+                    <Upload
+                        type="file"
+                        action={(file) => {
+                            if (file && typeof file !== 'string') {
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    const text = e.target?.result;
+                                    setDataImport(text as string);
+                                };
+                                reader.readAsText(file);
+                            }
+                        }}
+                        onRemove={() => {
+                            setDataImport('');
+                        }}
+                        accept=".json"
+                    />
+                </ColumnComponent>
+            </ModalComponent>
             {/* modal */}
             <ModalComponent
                 open={modalSettingOpen}
@@ -362,7 +475,7 @@ function WordEditLayout() {
                             fontWeight={700}
                         />
                     </RowComponent>
-                    <SpaceComponent height={12} />
+                    <SpaceComponent height={8} />
                     <RowComponent
                         justifyContent="space-between"
                         style={{
@@ -391,23 +504,24 @@ function WordEditLayout() {
                                 marginLeft: '12px'
                             }}>
                             <ButtonComponent
-                                tabindex={-1}
-                                icon={<Add size={20} />}
-                                text="Import"
-                                onClick={() => {}}
+                                style={{
+                                    height: '40px',
+                                    paddingLeft: '16px',
+                                    paddingRight: '16px'
+                                }}
+                                tooltip="Import"
+                                icon={<Export size={20} />}
+                                onClick={() => {
+                                    setModalImportOpen(true);
+                                }}
                                 backgroundColor="var(--bg-color)"
                                 backgroundHoverColor="var(--bg-hover-color)"
                                 backgroundActiveColor="var(--bg-active-color)"
                                 isBorder={true}
-                                borderColor="var(--border-color)"
                                 textColor="var(--secondary-text-color)"
-                                style={{
-                                    height: '40px',
-                                    padding: '0 12px'
-                                }}
                             />
 
-                            <SpaceComponent width={12} />
+                            <SpaceComponent width={8} />
                             <ButtonComponent
                                 tabindex={-1}
                                 text={wordSet ? 'Update' : 'Create'}
@@ -427,7 +541,7 @@ function WordEditLayout() {
                                     padding: '0 12px'
                                 }}
                             />
-                            <SpaceComponent width={12} />
+                            <SpaceComponent width={8} />
                             <ButtonComponent
                                 tabindex={-1}
                                 icon={<Setting2 size={20} />}
@@ -455,10 +569,8 @@ function WordEditLayout() {
                     return (
                         <WordCardComponent
                             key={index}
-                            onDelete={(i) => {
-                                const newData = [...data];
-                                newData.splice(i, 1);
-                                setData(newData);
+                            onDelete={() => {
+                                handleDeleteWord(index);
                             }}
                             className="word-card mb-12"
                             index={index}
@@ -466,6 +578,17 @@ function WordEditLayout() {
                             onWordChange={(i, word) => {
                                 const newData = [...data];
                                 newData[i] = word;
+                                // if (
+                                //     data.length > 1 &&
+                                //     data.find(
+                                //         (item, index) => i !== index && item.name === word.name
+                                //     )
+                                // ) {
+                                //     newData[i].titleErrorText = `${word.name} is duplicated`;
+                                // } else {
+                                //     newData[i].titleErrorText = undefined;
+                                // }
+
                                 setData(newData);
                             }}
                         />
@@ -484,7 +607,9 @@ function WordEditLayout() {
                                 name: '',
                                 meaning: '',
                                 contexts: [''],
-                                imageURL: ''
+                                imageURL: '',
+                                learned: false,
+                                createdAt: Timestamp.now()
                             }
                         ]);
                     }}

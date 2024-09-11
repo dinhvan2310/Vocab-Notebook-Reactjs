@@ -9,17 +9,29 @@ interface TabsComponentProps {
     activeColor?: string;
     onChange: (activeKey: string) => void;
     centered?: boolean;
+
+    style?: React.CSSProperties;
+    fontSize?: string;
 }
 
 function TabsComponent(props: TabsComponentProps) {
-    const { items, activeKey, onChange, centered, activeColor = 'var(--primary-color)' } = props;
+    const {
+        items,
+        activeKey,
+        onChange,
+        centered,
+        activeColor = 'var(--primary-color)',
+        style,
+        fontSize = '1.6em'
+    } = props;
 
     return (
         <div
             className="tab-container"
             style={{
                 justifyContent: centered ? 'center' : 'flex-start',
-                position: 'relative'
+                position: 'relative',
+                ...style
             }}>
             {items.map((item, index) => {
                 const isActive = activeKey === item.key;
@@ -46,11 +58,11 @@ function TabsComponent(props: TabsComponentProps) {
                                 </div>
                             )}
                             <TitleComponent
-                                fontSize="2em"
                                 title={item.label}
                                 titleStyle={{
                                     color: isActive ? activeColor : 'var(--text-color)'
                                 }}
+                                fontSize={fontSize}
                             />
                         </RowComponent>
                         {isActive && <div className="tab-content">{item.children}</div>}

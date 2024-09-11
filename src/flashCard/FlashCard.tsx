@@ -3,12 +3,10 @@ import TitleComponent from '../components/commonComponent/Title/TitleComponent';
 import { VolumeHigh } from 'iconsax-react';
 import ButtonComponent from '../components/commonComponent/Button/ButtonComponent';
 import TextComponent from '../components/commonComponent/Text/TextComponent';
-import { useAudio } from '../hooks/useAudio';
 
 interface FlashCardProps {
     question: string;
     answer: string;
-    audioUrl?: string;
 
     style?: React.CSSProperties;
     className?: string;
@@ -16,9 +14,7 @@ interface FlashCardProps {
 
 function FlashCard(props: FlashCardProps) {
     // props
-    const { question, answer, style, className = '', audioUrl = '' } = props;
-
-    const audio = useAudio(audioUrl);
+    const { question, answer, style, className = '' } = props;
 
     // state
     const [showAnswer, setShowAnswer] = useState(false);
@@ -39,7 +35,10 @@ function FlashCard(props: FlashCardProps) {
             <ButtonComponent
                 onClick={(e) => {
                     e.preventDefault();
-                    audio.play();
+
+                    const synth = window.speechSynthesis;
+                    const utterThis = new SpeechSynthesisUtterance(question);
+                    synth.speak(utterThis);
                 }}
                 style={{
                     position: 'absolute',
@@ -49,10 +48,9 @@ function FlashCard(props: FlashCardProps) {
                     padding: '8px'
                 }}
                 backgroundColor="transparent"
-                disabled={audioUrl === ''}
                 backgroundHoverColor="var(--bg-hover-color)"
                 backgroundActiveColor="var(--bg-active-color)">
-                <VolumeHigh size={20} className="" variant={audioUrl === '' ? 'Bold' : 'Linear'} />
+                <VolumeHigh size={20} className="" />
             </ButtonComponent>
             <div
                 className="absolute w-full h-full 

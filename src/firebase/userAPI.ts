@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase/firebase-config';
-import { GoogleAuthProvider, signInWithPopup, FacebookAuthProvider, User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, FacebookAuthProvider, User, sendSignInLinkToEmail } from 'firebase/auth';
 import { UserType } from '../types/UserType';
 
 const ggProvider = new GoogleAuthProvider();
@@ -68,6 +68,25 @@ export const signInWithFacebook = async () => {
         });
     });
 };
+
+export const signInWithEmailLink = async (email: string) => {
+    const actionCodeSettings = {
+        url: 'http://localhost:5173/',
+        handleCodeInApp: true,
+    };
+    sendSignInLinkToEmail(
+        auth,
+        email,
+        actionCodeSettings
+    ).then(() => {
+        localStorage.setItem('emailForSignIn', email);
+    }
+    
+    ).catch((error) => {
+        console.log(error);
+    })
+}
+
 export const signOut = () => {
     auth.signOut().then(() => {
     });

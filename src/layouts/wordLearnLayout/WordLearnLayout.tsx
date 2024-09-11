@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
     Aave,
+    Copy,
     Edit2,
-    Export,
     Import,
     Notepad,
     Setting2,
@@ -28,13 +28,16 @@ import GridRow from '../../components/Grid/GridRow';
 import ModalComponent from '../../components/Modal/ModalComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
-import { getWordSet, updateWord, updateWordSet } from '../../firebase/wordSetAPI';
+import { getWordSet, updateWordSet } from '../../firebase/wordSetAPI';
 import FlashCard from '../../flashCard/FlashCard';
+import { useMessage } from '../../hooks/useMessage';
 import FolderType from '../../types/FolderType';
 import { UserType } from '../../types/UserType';
 import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 import { timeAgo } from '../../utils/timeAgo';
+import LinkComponent from '../../components/Link/LinkComponent';
+import { getWords, updateWord } from '../../firebase/wordAPI';
 
 function WordLearnLayout() {
     // meta data
@@ -43,13 +46,45 @@ function WordLearnLayout() {
     const user: UserType = loaderData.user;
     const folder: FolderType = loaderData.folder;
     const { wordsetid } = useParams();
-
+    const message = useMessage();
     const navigate = useNavigate();
 
-    const wordSetQuery = useQuery<WordSetType>({
-        queryKey: ['wordSet', wordsetid],
+    // state
+    // const [autoPlayFlashCard, setAutoPlayFlashCard] = useState(false);
+    const [modalExportOpen, setModalExportOpen] = useState(false);
+    const [modalSettingOpen, setModalSettingOpen] = useState(false);
+    const [learnedSelected, setLearnedSelected] = useState<'all' | 'starred'>('all');
+    const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Created' | 'Learned'>('Created');
+
+    const wordSetQuery = useQuery<{
+        WordSet: WordSetType;
+        words: WordType[];
+    }>({
+        queryKey: ['wordSet', wordsetid, sortSelected],
         queryFn: async () => {
-            return await getWordSet(wordsetid ?? '');
+            const wordSet = await getWordSet(wordsetid ?? '');
+            const words = await getWords(wordsetid ?? '');
+            if (words.some((word) => word.createdAt === undefined)) throw new Error('Error');
+
+            if (sortSelected === 'Amphabet') {
+                return {
+                    WordSet: wordSet,
+                    words: words.sort((a, b) => a.name.localeCompare(b.name))
+                };
+            }
+            if (sortSelected === 'Created') {
+                return {
+                    WordSet: wordSet,
+                    words: words.sort(
+                        (a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0)
+                    )
+                };
+            } else {
+                return {
+                    WordSet: wordSet,
+                    words: words.sort((a) => (a.learned ? -1 : 1))
+                };
+            }
         }
     });
 
@@ -57,40 +92,31 @@ function WordLearnLayout() {
         mutationFn: async () => {
             // save setting to database
             await updateWordSet(
-                wordSetQuery.data?.wordsetId ?? '',
-                wordSetQuery.data?.name ?? '',
+                wordSetQuery.data?.WordSet.wordsetId ?? '',
+                wordSetQuery.data?.WordSet.name ?? '',
                 visibility,
                 editableBy,
                 editableByPublicPass,
                 imageCover ?? '',
-                wordSetQuery.data?.words ?? []
+                undefined
             );
             wordSetQuery.refetch();
         },
         mutationKey: ['updateWordSet']
     });
 
-    // state
-    // const [autoPlayFlashCard, setAutoPlayFlashCard] = useState(false);
-    const [modalExportOpen, setModalExportOpen] = useState(false);
-    const [modalSettingOpen, setModalSettingOpen] = useState(false);
-    const [learnedSelected, setLearnedSelected] = useState<'all' | 'starred'>('all');
-    const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Created' | 'Learned'>(
-        'Amphabet'
-    );
-
     const [imageCover, setImageCover] = useState<File | null | string>(
-        wordSetQuery.data?.imageUrl ? wordSetQuery.data.imageUrl : null
+        wordSetQuery.data?.WordSet.imageUrl ? wordSetQuery.data.WordSet.imageUrl : null
     );
 
     const [editableBy, setEditableBy] = useState<'owner' | 'everyone'>(
-        wordSetQuery.data?.editableBy ?? 'owner'
+        wordSetQuery.data?.WordSet.editableBy ?? 'owner'
     );
     const [editableByPublicPass, setEditableByPublicPass] = useState<string>(
-        wordSetQuery.data?.editablePassword ?? ''
+        wordSetQuery.data?.WordSet.editablePassword ?? ''
     );
     const [visibility, setVisibility] = useState<'public' | 'private'>(
-        wordSetQuery.data?.visibility ?? 'public'
+        wordSetQuery.data?.WordSet.visibility ?? 'public'
     );
 
     //options UI
@@ -126,7 +152,9 @@ function WordLearnLayout() {
 
     // handlers
     const handleEditWordSet = () => {
-        navigate(`/edit-wordset/${wordSetQuery.data?.wordsetId}?inFolder=${folder.folderId}`);
+        navigate(
+            `/edit-wordset/${wordSetQuery.data?.WordSet.wordsetId}?inFolder=${folder.folderId}`
+        );
     };
 
     return (
@@ -145,41 +173,108 @@ function WordLearnLayout() {
                 closeOnOverlayClick={true}
                 onCancel={() => {
                     setModalExportOpen(false);
-                    // reset state
-                    // if (!wordSetQuery.data) {
-                    //     setImageCover(null);
-                    //     setVisibility('public');
-                    //     setEditableBy('owner');
-                    //     setEditableByPublicPass('');
-                    // } else {
-                    //     setImageCover(wordSetQuery.data.imageUrl ?? null);
-                    //     setVisibility(wordSetQuery.data.visibility);
-                    //     setEditableBy(wordSetQuery.data.editableBy);
-                    //     setEditableByPublicPass(wordSetQuery.data.editablePassword ?? '');
-                    // }
                 }}
                 onConfirm={async () => {
                     // save setting on state
                     // await updateWordSetMutation.mutateAsync();
                     setModalExportOpen(false);
+
+                    // create file in browser
+                    const fileName = 'data';
+                    const json = JSON.stringify(
+                        wordSetQuery.data?.words.map((word) => {
+                            return {
+                                name: word.name,
+                                meaning: word.meaning,
+                                contexts: word.contexts,
+                                imageURL: word.imageURL
+                            };
+                        }),
+                        null,
+                        2
+                    );
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const href = URL.createObjectURL(blob);
+
+                    // create "a" HTLM element with href to file
+                    const link = document.createElement('a');
+                    link.href = href;
+                    link.download = fileName + '.json';
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // clean up "a" element & remove ObjectURL
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(href);
+
+                    message('success', 'Exported successfully');
                 }}
                 title="Export"
-                buttonConfirmText="Export"
+                buttonConfirmText="Export to JSON"
                 isFooter={true}>
                 <ColumnComponent
-                    className="w-full px-4 overflow-x-auto max-h-32
-                    scrollbar dark:scrollbarDark
+                    alignItems="flex-start"
+                    className="w-full 
                 ">
-                    <InputComponent
-                        type="textarea"
-                        value={JSON.stringify(wordSetQuery.data?.words)}
-                        style={{
-                            borderRadius: '0px'
+                    <div className="w-full">
+                        <div
+                            className={`
+                            w-full max-h-56 overflow-x-auto
+                            scrollbar dark:scrollbarDark
+                                px-2 py-2
+                                border border-borderLight dark:border-borderDark
+                                rounded-md
+
+                        `}>
+                            <InputComponent
+                                type="textarea"
+                                value={JSON.stringify(
+                                    wordSetQuery.data?.words.map((word) => {
+                                        return {
+                                            name: word.name,
+                                            meaning: word.meaning,
+                                            contexts: word.contexts,
+                                            imageURL: word.imageURL
+                                        };
+                                    })
+                                )}
+                                fontSize="1.2em"
+                                style={{
+                                    borderRadius: '0px'
+                                }}
+                                borderType="none"
+                                placeholder='Paste your data here. Example: [{"name":"hello","meaning":"xin chào","contexts":[""],"imageURL":"","audioURL":""}]'
+                                animationType="slideCenter"
+                                onChange={function (): void {}}
+                                inputStyle={{}}
+                                readonly={true}
+                            />
+                        </div>
+                        <TextComponent
+                            text="Export data depend on your current sort and filter, please make sure you have the right data before exporting"
+                            className="mt-2 text-red"
+                            fontSize="1.2em"
+                            textColor="var(--red-color)"
+                        />
+                    </div>
+                    <TextComponent text="Copy text" className="mt-4 mb-2" fontSize="1.2em" />
+                    <ButtonComponent
+                        tabindex={-1}
+                        icon={<Copy size={20} />}
+                        onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(wordSetQuery.data?.words));
+                            message('success', 'Copied to clipboard');
                         }}
-                        borderType="bottom"
-                        label={'Words'}
-                        animationType="slideCenter"
-                        readonly={true}
+                        backgroundColor="var(--bg-color)"
+                        backgroundHoverColor="var(--bg-hover-color)"
+                        backgroundActiveColor="var(--bg-active-color)"
+                        isBorder={true}
+                        borderColor="var(--border-color)"
+                        textColor="var(--secondary-text-color)"
+                        style={{
+                            height: '40px',
+                            padding: '0 12px'
+                        }}
                     />
                 </ColumnComponent>
             </ModalComponent>
@@ -200,10 +295,10 @@ function WordLearnLayout() {
                         setEditableBy('owner');
                         setEditableByPublicPass('');
                     } else {
-                        setImageCover(wordSetQuery.data.imageUrl ?? null);
-                        setVisibility(wordSetQuery.data.visibility);
-                        setEditableBy(wordSetQuery.data.editableBy);
-                        setEditableByPublicPass(wordSetQuery.data.editablePassword ?? '');
+                        setImageCover(wordSetQuery.data.WordSet.imageUrl ?? null);
+                        setVisibility(wordSetQuery.data.WordSet.visibility);
+                        setEditableBy(wordSetQuery.data.WordSet.editableBy);
+                        setEditableByPublicPass(wordSetQuery.data.WordSet.editablePassword ?? '');
                     }
                 }}
                 onConfirm={async () => {
@@ -318,17 +413,19 @@ function WordLearnLayout() {
                     )}
                 </ColumnComponent>
             </ModalComponent>
-            <TitleComponent title={wordSetQuery.data?.name} className="mb-8" fontSize="3em" />
+            <TitleComponent
+                title={wordSetQuery.data?.WordSet.name}
+                className="mb-8"
+                fontSize="3em"
+            />
             <RowComponent className="relative">
                 <Carousel
-                    autoPlay={false}
                     screens={wordSetQuery.data?.words.map((word: WordType) => (
                         <FlashCard
                             key={word.name}
                             question={word.name}
                             answer={word.meaning}
                             className="bg-bgLight dark:bg-bgDark"
-                            audioUrl={word.audio}
                         />
                     ))}
                     style={{
@@ -358,7 +455,7 @@ function WordLearnLayout() {
                             <TextComponent
                                 text={
                                     'Created at ' +
-                                    timeAgo(wordSetQuery.data?.createAt.seconds || 0 * 1000)
+                                    timeAgo(wordSetQuery.data?.WordSet.createAt.seconds || 0 * 1000)
                                 }
                                 fontSize="1.3em"
                             />
@@ -368,7 +465,12 @@ function WordLearnLayout() {
                     <RowComponent>
                         <TextComponent text={'Belong to folder: '} fontSize="1.3em" />
                         <SpaceComponent width={8} />
-                        <TitleComponent title={folder.name} fontSize="1.5em" />
+                        <LinkComponent
+                            onClick={() => {
+                                navigate(`/user/${user.userId}/folders/${folder.folderId}`);
+                            }}>
+                            <TitleComponent title={folder.name} fontSize="1.5em" />
+                        </LinkComponent>
                     </RowComponent>
                 </ColumnComponent>
                 <RowComponent>
@@ -387,22 +489,7 @@ function WordLearnLayout() {
                         textColor="var(--secondary-text-color)"
                     />
                     <SpaceComponent width={8} />
-                    <ButtonComponent
-                        style={{
-                            height: '40px',
-                            paddingLeft: '16px',
-                            paddingRight: '16px'
-                        }}
-                        tooltip="Import"
-                        icon={<Import size={20} />}
-                        onClick={() => {}}
-                        backgroundColor="var(--bg-color)"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        isBorder={true}
-                        textColor="var(--secondary-text-color)"
-                    />
-                    <SpaceComponent width={8} />
+
                     <ButtonComponent
                         style={{
                             height: '40px',
@@ -410,7 +497,7 @@ function WordLearnLayout() {
                             paddingRight: '16px'
                         }}
                         tooltip="Export"
-                        icon={<Export size={20} />}
+                        icon={<Import size={20} />}
                         onClick={() => {
                             setModalExportOpen(true);
                         }}
@@ -501,7 +588,7 @@ function WordLearnLayout() {
                             learnedSelected === 'starred' && !word.learned ? 'hidden' : ''
                         }`}>
                         <CardComponent
-                            className="h-full relative
+                            className="h-full relative min-h-[124px]
                         "
                             style={{}}>
                             <GridRow>
@@ -529,7 +616,13 @@ function WordLearnLayout() {
                                 </GridCol>
                                 <GridCol span={8}>
                                     <ColumnComponent alignItems="flex-start" className="pr-8">
-                                        <TextComponent text={word.meaning} fontSize="1.6em" />
+                                        <TextComponent
+                                            text={word.meaning.replace(/\\n/g, '\n')}
+                                            fontSize="1.6em"
+                                            style={{
+                                                whiteSpace: 'pre-wrap'
+                                            }}
+                                        />
                                         <SpaceComponent height={12} />
                                         {word.contexts &&
                                             word.contexts.map((context: string) => (
@@ -558,15 +651,15 @@ function WordLearnLayout() {
                                 <ButtonComponent
                                     onClick={async (e) => {
                                         e.preventDefault();
-                                        if (word.audio === '') return;
 
-                                        const audio = new Audio(word.audio);
-                                        audio.play();
+                                        const synth = window.speechSynthesis;
+                                        console.log(synth.getVoices());
+                                        const utterThis = new SpeechSynthesisUtterance(word.name);
+                                        synth.speak(utterThis);
                                     }}
                                     style={{
                                         padding: '8px'
                                     }}
-                                    disabled={word.audio === ''}
                                     backgroundColor="transparent"
                                     backgroundHoverColor="var(--bg-hover-color)"
                                     backgroundActiveColor="var(--bg-active-color)">
@@ -574,21 +667,18 @@ function WordLearnLayout() {
                                         size={20}
                                         className="
                                     "
-                                        variant={word.audio === '' ? 'Bold' : 'Linear'}
                                     />
                                 </ButtonComponent>
                                 <ButtonComponent
                                     onClick={async (e) => {
                                         e.preventDefault();
                                         await updateWord(
-                                            wordSetQuery.data?.wordsetId ?? '',
-                                            word.name,
-                                            word.imageURL as string,
-                                            word.meaning,
-                                            word.contexts,
-                                            word.name,
-                                            !word.learned,
-                                            word.audio
+                                            word.wordId ?? '',
+                                            undefined,
+                                            undefined,
+                                            undefined,
+                                            undefined,
+                                            !word.learned
                                         );
                                         wordSetQuery.refetch();
                                     }}

@@ -12,7 +12,7 @@ function EmptyComponent(props: EmptyProps) {
     return (
         <div className={`empty-container ${className}`} style={style}>
             <img src={EmptySVG} alt="empty" />
-            <TextComponent className="empty-text" text={text ?? ''} />
+            <TextComponent className="empty-text mt-2" text={text ?? ''} />
         </div>
     );
 }

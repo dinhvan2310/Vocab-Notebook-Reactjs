@@ -8,7 +8,7 @@ import TextComponent from '../commonComponent/Text/TextComponent';
 interface UploadProps {
     name?: string;
     type: 'picture' | 'file';
-    action: (file: File | undefined) => void;
+    action: (file: File | undefined | string) => void;
     onRemove?: () => void;
 
     disabled?: boolean;
@@ -87,16 +87,17 @@ function Upload(props: UploadProps) {
         style
     } = props;
 
-    const [file, setFile] = useState<File | undefined>(undefined);
+    const [file, setFile] = useState<File | undefined | string>(undefined);
     const [showUrl, setShowUrl] = useState<boolean>(true);
 
     const [url, setUrl] = useState<string | undefined>(undefined);
 
     if (type === 'file') {
         return (
-            <div className={className}>
+            <div className={`cursor-pointer ${className ?? ''}`}>
                 <div
                     className=" 
+                    
                                 border-dashed
                                 border-[1px] 
                                 inline-flex 
@@ -104,15 +105,16 @@ function Upload(props: UploadProps) {
                                 rounded-lg 
                                 border-borderLight dark:border-borderDark
                                 hover:border-primaryLight-hover dark:hover:border-primaryDark-hover 
-
+                        
+                                flex-row justify-start
+                                relative
+                                h-full w-full
                 ">
                     <input
                         type="file"
-                        className="w-0 h-0"
+                        className="h-full w-full absolute top-0 left-0 opacity-0 cursor-pointer"
                         accept={accept}
                         onInput={(e) => {
-                            console.log(e);
-
                             const target = e.target as HTMLInputElement;
                             const file = target.files?.[0];
                             if (file) {
@@ -121,19 +123,27 @@ function Upload(props: UploadProps) {
                             }
                         }}
                     />
-                    <label className="flex flex-row cursor-pointer">
-                        <DocumentUpload size={18} className="mr-4" />
-                        <TextComponent text={name} />
+                    <label
+                        className="flex flex-row  cursor-pointer
+                        items-center w-full h-full justify-start
+                    ">
+                        <DocumentUpload size={18} className="mr-4 cursor-pointer" />
+                        <TextComponent text={name} className="cursor-pointer" />
                     </label>
                 </div>
                 <div className="flex flex-row items-center mt-4">
-                    <TextComponent text={file?.name || 'No file selected'} />
+                    <TextComponent
+                        text={
+                            typeof file === 'string' ? file : file ? file.name : 'No file selected'
+                        }
+                    />
                     {file && (
                         <div
-                            className="cursor-pointer ml-2"
+                            className="ml-2 cursor-pointer"
                             onClick={() => {
                                 setFile(undefined);
                                 action(undefined);
+                                onRemove?.();
                             }}>
                             <NoteRemove
                                 size={17}
@@ -191,25 +201,22 @@ function Upload(props: UploadProps) {
                         position: 'absolute',
                         bottom: '8px',
                         left: '12px',
-                        right: '12px'
+                        right: '12px',
+                        display: 'flex',
+                        justifyContent: 'center'
                     }}>
                     <InputComponent
-                        style={{}}
+                        style={{
+                            backdropFilter: 'blur(2px)'
+                        }}
                         value={url ?? ''}
-                        onChange={async (image) => {
-                            setUrl(image);
-                            if (image) {
-                                const response = await fetch(image);
-                                // here image is url/location of image
-                                const blob = await response.blob();
-                                const file = new File([blob], 'image.jpg', { type: blob.type });
-                                console.log(file);
-                                setFile(file);
-                                action(file);
-                            } else {
-                                setFile(undefined);
-                                action(undefined);
-                            }
+                        onChange={async (imageUrl) => {
+                            setUrl(imageUrl);
+                            action(imageUrl);
+                            setFile(imageUrl);
+                        }}
+                        inputStyle={{
+                            color: 'var(--secondary-text-color)'
                         }}
                         type="text"
                         borderType="bottom"

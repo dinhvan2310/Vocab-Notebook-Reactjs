@@ -1,5 +1,4 @@
 import { DocumentReference, Timestamp } from "firebase/firestore";
-import { WordType } from "./WordType";
 
 export interface WordSetType {
     wordsetId?: string;
@@ -17,5 +16,5 @@ export interface WordSetType {
     createAt: Timestamp;
     modifiedAt: Timestamp;
 
-    words: WordType[];
+    words?: DocumentReference[];
 }

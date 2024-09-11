@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 function SignUpLayout() {
     const { isDesktopOrLaptop } = useResponsive();
     const [activeKey, setActiveKey] = useState<'login' | 'signup'>('login');
-    const { signInWithGoogle, signInWithFacebook } = useAuth();
+    const { signInWithGoogle, signInWithFacebook, signInWithEmailLink } = useAuth();
 
     const [signInWithGoogleLoading, setSignInWithGoogleLoading] = useState(false);
     const [signInWithFacebookLoading, setSignInWithFacebookLoading] = useState(false);
@@ -33,7 +33,6 @@ function SignUpLayout() {
 
     const LoginForm = () => {
         const [email, setEmail] = useState('');
-        const [password, setPassword] = useState('');
         const [error, setError] = useState('');
 
         return (
@@ -54,22 +53,7 @@ function SignUpLayout() {
                         padding: '24px 16px'
                     }}
                 />
-                <SpaceComponent height={32} />
-                <InputComponent
-                    type="password"
-                    style={{}}
-                    inputStyle={{
-                        color: 'var(--secondary-text-color)',
-                        fontSize: '1.6em',
-                        padding: '24px 16px'
-                    }}
-                    placeholder="Nhập mật khẩu của bạn"
-                    onChange={(value) => {
-                        setPassword(value);
-                    }}
-                    value={password}
-                    borderType="all"
-                />
+
                 <SpaceComponent height={32} />
 
                 <ErrorTextComponent text={error} />
@@ -84,7 +68,8 @@ function SignUpLayout() {
                     textColor="var(--white-color)"
                     text="Đăng nhập"
                     onClick={() => {
-                        setError('Email hoặc mật khẩu không đúng');
+                        console.log(email);
+                        signInWithEmailLink(email);
                     }}
                 />
             </>
@@ -177,7 +162,7 @@ function SignUpLayout() {
                                 isLoading={signInWithFacebookLoading}
                             />
                             <SpaceComponent height={32} />
-                            <HorizontalRuleComponent text="or email" />
+                            <HorizontalRuleComponent text="or email" type={'center'} />
                             <SpaceComponent height={16} />
                             {activeKey === 'login' && <LoginForm />}
                             {activeKey === 'signup' && (

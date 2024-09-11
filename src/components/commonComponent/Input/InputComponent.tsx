@@ -59,7 +59,12 @@ function InputComponent(props: InputComponentProps) {
                     <TextareaAutosize
                         value={value}
                         onChange={(e) => {
-                            onChange(e.target.value);
+                            onChange(
+                                e.target.value
+                                    .replace(/[\r\n]+/g, '\\n')
+                                    .replace(/\s+/g, ' ')
+                                    .trim()
+                            );
                         }}
                         className={`text-area ${borderType}`}
                         placeholder={placeholder}

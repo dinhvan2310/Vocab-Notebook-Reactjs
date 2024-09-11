@@ -9,18 +9,44 @@ import GridCol from '../Grid/GridCol';
 import GridRow from '../Grid/GridRow';
 import Upload from '../Upload/Upload';
 import './WordCardComponent.scss';
-import { WordEditType } from '../../layouts/wordEditLayout/WordEditLayout';
+// import { WordEditType } from '../../layouts/wordEditLayout/WordEditLayout';
+import { useEffect, useState } from 'react';
+import useDebounce from '../../hooks/useDebounce';
+import { WordType } from '../../types/WordType';
 interface WordCardComponentProps {
     index: number;
     className?: string;
 
-    word: WordEditType;
-    onWordChange: (index: number, word: WordEditType) => void;
+    word: WordType;
+    onWordChange: (index: number, word: WordType) => void;
 
-    onDelete: (index: number) => void;
+    onDelete: () => void;
 }
 function WordCardComponent(props: WordCardComponentProps) {
     const { index, className, onDelete, word, onWordChange } = props;
+
+    const [name, setName] = useState<string>(word.name);
+    const [meaning, setMeaning] = useState<string>(word.meaning);
+    const [contexts, setContexts] = useState<string[]>(word.contexts ?? []);
+
+    useEffect(() => {
+        setName(word.name);
+        setMeaning(word.meaning);
+        setContexts(word.contexts ?? []);
+    }, [word]);
+
+    const nameDebounce = useDebounce(name, 500);
+    const meaningDebounce = useDebounce(meaning, 500);
+    const contextDebounce = useDebounce(contexts, 500);
+
+    useEffect(() => {
+        onWordChange(index, {
+            ...word,
+            name: nameDebounce,
+            meaning: meaningDebounce,
+            contexts: contextDebounce
+        });
+    }, [nameDebounce, meaningDebounce, contextDebounce]);
 
     return (
         <ColumnComponent
@@ -47,7 +73,7 @@ function WordCardComponent(props: WordCardComponentProps) {
                         backgroundColor="transparent"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
-                        onClick={() => onDelete(index)}
+                        onClick={() => onDelete()}
                         style={{
                             height: '40px',
                             padding: '0 12px',
@@ -65,8 +91,8 @@ function WordCardComponent(props: WordCardComponentProps) {
                             style={{
                                 marginRight: 64
                             }}
-                            value={word.name}
-                            onChange={(value) => onWordChange(index, { ...word, name: value })}
+                            value={name}
+                            onChange={(value) => setName(value)}
                             placeholder="Enter term"
                             label="Term"
                             type="text"
@@ -75,20 +101,22 @@ function WordCardComponent(props: WordCardComponentProps) {
                                 fontSize: '1.6em'
                             }}
                             animationType="slideInLeft"
-                            errorText={word.titleErrorText}
+                            // errorText={word.titleErrorText}
                         />
                     </GridCol>
                     <GridCol span={6}>
                         <InputComponent
                             style={{}}
-                            value={word.meaning}
-                            onChange={(value) => onWordChange(index, { ...word, meaning: value })}
+                            value={meaning.replace(/\\n/g, '\n')}
+                            onChange={(value) => {
+                                setMeaning(value);
+                            }}
                             placeholder="Enter definition"
                             label="Definition"
                             type="textarea"
                             animationType="slideInLeft"
                             borderType="bottom"
-                            errorText={word.meaningErrorText}
+                            // errorText={word.meaningErrorText}
                         />
                     </GridCol>
                 </GridRow>
@@ -104,7 +132,7 @@ function WordCardComponent(props: WordCardComponentProps) {
                 <div className="flex flex-row w-full">
                     <div className="flex flex-col w-full">
                         <div className="w-full">
-                            {word.contexts?.map((item, i) => {
+                            {contexts.map((item, i) => {
                                 return (
                                     <RowComponent alignItems="flex-end">
                                         <InputComponent
@@ -112,19 +140,19 @@ function WordCardComponent(props: WordCardComponentProps) {
                                             type="textarea"
                                             value={item}
                                             onChange={(value) => {
-                                                word.contexts[i] = value;
-                                                onWordChange(index, { ...word });
+                                                contexts[i] = value;
+                                                setContexts([...contexts]);
                                             }}
                                             borderType="bottom"
                                             label={'Context ' + (i + 1)}
                                             style={{
                                                 marginBottom: 16
                                             }}
-                                            errorText={
-                                                i === word.contextErrorText?.index
-                                                    ? word.contextErrorText?.contextErrorText
-                                                    : ''
-                                            }
+                                            // errorText={
+                                            //     i === word.contextErrorText?.index
+                                            //         ? word.contextErrorText?.contextErrorText
+                                            //         : ''
+                                            // }
                                         />
                                         <SpaceComponent width={16} />
                                         <ButtonComponent

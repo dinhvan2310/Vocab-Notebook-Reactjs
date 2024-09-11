@@ -28,6 +28,9 @@ export const uploadImage = async (file?: File) => {
 }
 
 export const deleteImage = async (url: string) => {
+    // check if url is belong firebase storage
+    if (!url.includes('firebasestorage.googleapis.com')) return;
+
     const imagePath = getPathStorageFromUrl(url);
 
     const storageRef = ref(storage, imagePath);

@@ -32,7 +32,7 @@ export const addFolder = async (folder: FolderType) => {
 
     validateFolder(folder);
 
-    const folderRef = collection(db, 'foldersGlobal');
+    const folderRef = collection(db, 'folders');
 
     // add folder
     return await addDoc(folderRef, {
@@ -60,7 +60,7 @@ export const updateFolder = async (
     if (!folderRef) throw new Error('Folder reference is not provided');
 
     const _folderRef =
-        typeof folderRef === 'string' ? doc(db, 'foldersGlobal', folderRef) : folderRef;
+        typeof folderRef === 'string' ? doc(db, 'folders', folderRef) : folderRef;
     const _folderDoc = await getDoc(_folderRef);
     if (!_folderDoc.exists()) throw new Error('Folder is not found');
     // Check permission to update the folder (only the owner can update the folder)
@@ -92,7 +92,7 @@ export const removeFolder = async (folderRef: string | DocumentReference) => {
     if (!user) throw new Error('User is not logged in');
 
     const _folderRef =
-        typeof folderRef === 'string' ? doc(db, 'foldersGlobal', folderRef) : folderRef;
+        typeof folderRef === 'string' ? doc(db, 'folders', folderRef) : folderRef;
     const _folderDoc = await getDoc(_folderRef);
     if (!_folderDoc.exists()) throw new Error('Folder is not found');
 
@@ -119,7 +119,7 @@ export const removeFolder = async (folderRef: string | DocumentReference) => {
 
 export const onSnapshotFolders = (userId: string, callback: () => void) => {
     const userRef = doc(db, 'users', userId);
-    const q = query(collection(db, 'foldersGlobal'), where('userRef', '==', userRef));
+    const q = query(collection(db, 'folders'), where('userRef', '==', userRef));
     return onSnapshot(q, () => {
         console.log('onSnapshotFolders');
         // const folders: FolderType[] = [];
@@ -186,7 +186,7 @@ export const getFolders = async (
     let q;
     if (search) {
         q = query(
-            collection(db, 'foldersGlobal'),
+            collection(db, 'folders'),
             where('userRef', '==', userRef),
             where('nameLoweprcase', '>=', search.toLowerCase()),
             where('nameLowercase', '<=', search.toLowerCase() + '\uf8ff'),
@@ -194,7 +194,7 @@ export const getFolders = async (
         );
     } else {
         q = query(
-            collection(db, 'foldersGlobal'),
+            collection(db, 'folders'),
             where('userRef', '==', userRef),
             orderBy(sortBy, sortBy === 'nameLowercase' ? 'asc' : 'desc')
         );
@@ -219,7 +219,7 @@ export const getFolder = async (folderId: string | undefined) => {
     console.log('getFolder');
     if (!folderId) throw new Error('Folder id is not provided');
 
-    const folderRef = doc(db, 'foldersGlobal', folderId);
+    const folderRef = doc(db, 'folders', folderId);
     const folderDoc = await getDoc(folderRef);
     if (folderDoc.exists()) {
         const folder = folderDoc.data() as FolderType;
