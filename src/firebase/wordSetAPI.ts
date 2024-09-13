@@ -121,21 +121,24 @@ export const updateWordSet = async (
     // delete the old image on storage if the new image is different
     if (_imageUrl && _imageUrl !== wordSetDoc.data().imageUrl) {
         if (wordSetDoc.data().imageUrl) {
-            deleteImage(wordSetDoc.data().imageUrl);
+            await deleteImage(wordSetDoc.data().imageUrl);
         }
     }
 
-    // const newWords = await Promise.all(
-    //     words.map(async (word) => {
-    //         return {
-    //             ...word,
-    //             imageURL:
-    //                 typeof word.imageURL === 'string'
-    //                     ? word.imageURL
-    //                     : await uploadImage(word.imageURL)
-    //         };
-    //     })
-    // );
+    // delete the old image on storage if the new image is different
+    if (words !== undefined) {
+        const oldWords = wordSetDoc.data().words;
+    for (let i = 0; i < oldWords.length; i++) {
+        const oldWord = (await getDoc(oldWords[i])).data() as WordType;
+        console.log('oldWord', oldWord);
+        if (oldWord.imageURL) {
+            if (typeof oldWord.imageURL === 'string' && oldWord.imageURL  && oldWord.imageURL !== words[i].imageURL) {
+                deleteImage(oldWord.imageURL);
+            }
+        }
+    }
+    }
+
 
     // add words to the wordSet
     const newWordRefs = words === undefined ? undefined : await Promise.all(
@@ -165,18 +168,7 @@ export const updateWordSet = async (
         editablePassword: editableBy === 'owner' ? '' : editablePassword || ''
     };
 
-    // delete the old image on storage if the new image is different
-    if (words !== undefined) {
-        const oldWords = wordSetDoc.data().words;
-    for (let i = 0; i < oldWords.length; i++) {
-        const oldWord = (await getDoc(oldWords[i])).data() as WordType;
-        if (oldWord.imageURL) {
-            if (typeof oldWord.imageURL === 'string' && oldWord.imageURL  && oldWord.imageURL !== words[i].imageURL) {
-                deleteImage(oldWord.imageURL);
-            }
-        }
-    }
-    }
+    
     // update wordset
     updateDoc(wordSetRef, newWordSet);
     // update wordset array in folder document

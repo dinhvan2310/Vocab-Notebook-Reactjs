@@ -5,7 +5,6 @@ import WebFont from 'webfontloader';
 import AuthProvider from './contexts/AuthProvider';
 import ProtectedRoute from './features/authentication/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
-import ExamsLayout from './layouts/examsLayout/ExamsLayout';
 import FoldersLayout from './layouts/foldersLayout/FoldersLayout';
 import HomeLayout from './layouts/homeLayout/HomeLayout';
 import NotFoundLayout from './layouts/notFoundLayout/NotFoundLayout';

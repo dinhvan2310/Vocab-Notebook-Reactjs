@@ -4,4 +4,5 @@ export default interface TabItemType {
     disabled?: boolean;
     icon?: React.ReactNode;
     children?: React.ReactNode;
+    tooltip?: string;
 }

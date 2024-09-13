@@ -260,7 +260,9 @@ function WordEditLayout() {
                 open={modalImportOpen}
                 disableButtonConfirm={dataImport === ''}
                 animationType="zoomIn"
-                width="760px"
+                style={{
+                    width: '760px'
+                }}
                 isCloseIcon={true}
                 buttonComfirmLoading={importDataMutation.isPending}
                 closeOnOverlayClick={true}
@@ -332,7 +334,9 @@ function WordEditLayout() {
                 open={modalSettingOpen}
                 disableButtonConfirm={editableBy === 'everyone' && editableByPublicPass === ''}
                 animationType="zoomIn"
-                width="760px"
+                style={{
+                    width: '760px'
+                }}
                 isCloseIcon={true}
                 closeOnOverlayClick={true}
                 onCancel={() => {

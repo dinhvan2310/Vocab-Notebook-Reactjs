@@ -190,3 +190,10 @@ export const updateWordGlobal = async (word: WordType) => {
         })
     }
 }
+
+// export const getWordGlobals = async (text: string) => {
+//     const q = query(collection(db, 'wordGlobals'), 
+//     where('name', '>=', text),
+//     where('name', '<=', text + '\uf8ff'));
+
+// }

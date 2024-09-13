@@ -20,7 +20,6 @@ import FloatingActionButtonComponent from '../components/FloatButton/FloatingAct
 import MenuItemsComponent from '../components/MenuItems/MenuItemsComponent';
 import SearchBoxComponent from '../components/SearchBox/SearchBoxComponent';
 import { useAuth } from '../hooks/useAuth';
-import { useMessage } from '../hooks/useMessage';
 import { useResponsive } from '../hooks/useResponsive';
 import useTheme from '../hooks/useTheme';
 import { MenuItemInterface } from '../types/MenuItemType';
@@ -38,7 +37,6 @@ function MainLayout() {
     // navigation
     const navigate = useNavigate();
     const location = useLocation();
-    const message = useMessage();
 
     // search value in the search box
     const [searchValue, setSearchValue] = React.useState('');
@@ -155,7 +153,12 @@ function MainLayout() {
     // render --------------------------------------------------------------------------------------------
     // setting header for the setting button
     const menuItemsSettingHeader = (
-        <RowComponent alignItems="center">
+        <RowComponent
+            alignItems="center"
+            justifyContent="space-between"
+            style={{
+                width: '280px'
+            }}>
             <img
                 src={user?.photoURL || ''}
                 alt="avatar"
@@ -166,7 +169,6 @@ function MainLayout() {
                     borderRadius: '50%'
                 }}
             />
-            <SpaceComponent width={16} />
             <ColumnComponent alignItems="flex-start">
                 <TitleComponent title={user?.displayName || ''} fontSize="1.5em" />
                 <SpaceComponent height={4} />
@@ -220,7 +222,7 @@ function MainLayout() {
                                     />
                                 }
                                 menuItems={menuItemsSetting}
-                                menuItemWidth={312}
+                                menuItemWidth={500}
                             />
                         </>
                     ) : (

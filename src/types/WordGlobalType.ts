@@ -6,9 +6,6 @@ export interface WordGlobalType {
     meanings: MeaningGlobalType[];
 
     contexts: string[];
-
-    imageUrl: string[];
-
 }
 
 export interface MeaningGlobalType {

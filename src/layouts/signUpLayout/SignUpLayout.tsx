@@ -15,7 +15,7 @@ import TabsComponent from '../../components/Tabs/TabsComponent';
 import { useNavigate } from 'react-router-dom';
 
 function SignUpLayout() {
-    const { isDesktopOrLaptop } = useResponsive();
+    const { lg } = useResponsive();
     const [activeKey, setActiveKey] = useState<'login' | 'signup'>('login');
     const { signInWithGoogle, signInWithFacebook, signInWithEmailLink } = useAuth();
 
@@ -33,7 +33,7 @@ function SignUpLayout() {
 
     const LoginForm = () => {
         const [email, setEmail] = useState('');
-        const [error, setError] = useState('');
+        const [error] = useState('');
 
         return (
             <>
@@ -76,14 +76,10 @@ function SignUpLayout() {
         );
     };
 
-    const SignUpForm = () => {
-        return <></>;
-    };
-
     return (
         <div>
             <div className="sign-up-container">
-                {isDesktopOrLaptop && (
+                {lg && (
                     <div className="wallpaperContainer">
                         <img className="wallpaper" src={imageWallpaper} alt="wallpaper" />
                     </div>

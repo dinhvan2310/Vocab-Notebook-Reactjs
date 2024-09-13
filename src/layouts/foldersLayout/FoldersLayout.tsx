@@ -291,8 +291,10 @@ function FoldersLayout() {
             {/* Modal Add Folder */}
             <ModalComponent
                 animationType="zoomIn"
+                style={{
+                    width: '600px'
+                }}
                 isCloseIcon={true}
-                width="600px"
                 closeOnOverlayClick={true}
                 open={openModalAddNewFolder}
                 isFooter={true}
@@ -330,7 +332,9 @@ function FoldersLayout() {
             </ModalComponent>
             <ModalComponent
                 animationType="zoomIn"
-                width="600px"
+                style={{
+                    width: '600px'
+                }}
                 isCloseIcon={true}
                 buttonComfirmLoading={updateFolderMutation.isPending}
                 disableButtonConfirm={!checkCanEditFolder()}

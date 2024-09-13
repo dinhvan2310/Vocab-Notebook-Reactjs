@@ -60,10 +60,11 @@ function FlashCard(props: FlashCardProps) {
                 onClick={handleToggleAnswer}>
                 <TitleComponent
                     title={showAnswer ? answer : question}
-                    fontSize="2.6em"
+                    fontSize={showAnswer ? '2em' : '2.8em'}
                     className="text-center"
                     titleStyle={{
-                        wordWrap: 'break-word'
+                        wordWrap: 'break-word',
+                        whiteSpace: 'pre-line'
                     }}
                     containerStyle={{}}
                 />

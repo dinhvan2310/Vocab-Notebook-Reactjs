@@ -1,7 +1,8 @@
 import TextareaAutosize from 'react-textarea-autosize';
-import TextComponent from '../Text/TextComponent';
 import './InputComponent.scss';
 import TitleComponent from '../Title/TitleComponent';
+import MenuItemsComponent from '../../MenuItems/MenuItemsComponent';
+import { useEffect, useState } from 'react';
 
 interface InputComponentProps {
     type: 'text' | 'textarea' | 'password' | 'email';
@@ -22,6 +23,10 @@ interface InputComponentProps {
     errorText?: string;
 
     readonly?: boolean;
+
+    // suggest
+    suggest?: boolean;
+    suggestData?: (text: string) => Promise<string[] | undefined>;
 }
 
 function InputComponent(props: InputComponentProps) {
@@ -40,8 +45,20 @@ function InputComponent(props: InputComponentProps) {
         animationType = 'none',
         tabindex,
         errorText,
-        readonly = false
+        readonly = false,
+        suggest = false,
+        suggestData
     } = props;
+
+    const [suggestDataState, setSuggestDataState] = useState<string[]>();
+    const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+    useEffect(() => {
+        if (suggest && suggestData) {
+            suggestData(value).then((data) => {
+                setSuggestDataState(data ?? []);
+            });
+        }
+    }, [value, suggestData, suggest, isSuggestionsVisible]);
 
     return (
         <div
@@ -57,14 +74,20 @@ function InputComponent(props: InputComponentProps) {
                 }}>
                 {type === 'textarea' ? (
                     <TextareaAutosize
+                        onFocus={() => {
+                            if (suggest) {
+                                setIsSuggestionsVisible(true);
+                            }
+                        }}
+                        onBlur={() => {
+                            if (suggest) {
+                                setTimeout(() => setIsSuggestionsVisible(false), 500);
+                            }
+                        }}
                         value={value}
                         onChange={(e) => {
-                            onChange(
-                                e.target.value
-                                    .replace(/[\r\n]+/g, '\\n')
-                                    .replace(/\s+/g, ' ')
-                                    .trim()
-                            );
+                            setIsSuggestionsVisible(true);
+                            onChange(e.target.value.replace(/[\r\n]+/g, '\\n'));
                         }}
                         className={`text-area ${borderType}`}
                         placeholder={placeholder}
@@ -80,6 +103,16 @@ function InputComponent(props: InputComponentProps) {
                     />
                 ) : (
                     <input
+                        onFocus={() => {
+                            if (suggest) {
+                                setIsSuggestionsVisible(true);
+                            }
+                        }}
+                        onBlur={() => {
+                            if (suggest) {
+                                setTimeout(() => setIsSuggestionsVisible(false), 500);
+                            }
+                        }}
                         tabIndex={tabindex}
                         type={type}
                         className={`input ${borderType}`}
@@ -91,6 +124,7 @@ function InputComponent(props: InputComponentProps) {
                         placeholder={placeholder}
                         value={value}
                         onChange={(e) => {
+                            setIsSuggestionsVisible(true);
                             onChange(e.target.value);
                         }}
                         readOnly={readonly}
@@ -110,10 +144,38 @@ function InputComponent(props: InputComponentProps) {
                     color="var(--red-color)"
                 />
             ) : (
-                <TitleComponent
-                    title={label?.toUpperCase() ?? ''}
-                    fontSize="1.1em"
-                    className="label mt-1"
+                !isSuggestionsVisible && (
+                    <TitleComponent
+                        title={label?.toUpperCase() ?? ''}
+                        fontSize="1.1em"
+                        className="label mt-1"
+                    />
+                )
+            )}
+            {suggest && isSuggestionsVisible && suggestData && (
+                <MenuItemsComponent
+                    width={'100%'}
+                    border={true}
+                    containerStyle={{
+                        borderRadius: 0,
+                        padding: '0'
+                    }}
+                    menuItems={
+                        suggestDataState?.map((item, index) => {
+                            return {
+                                text: item,
+                                onClick: () => {
+                                    onChange(item);
+                                    setIsSuggestionsVisible(false);
+                                },
+                                key: item,
+                                borderType:
+                                    index === suggestDataState.length - 1
+                                        ? undefined
+                                        : ('bottom' as 'bottom' | 'top' | 'top-bottom' | undefined)
+                            };
+                        }) ?? []
+                    }
                 />
             )}
         </div>

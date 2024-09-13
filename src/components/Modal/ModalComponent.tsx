@@ -1,9 +1,8 @@
 import { CloseSquare } from 'iconsax-react';
-import './ModalComponent.scss';
-import SpaceComponent from '../commonComponent/Space/SpaceComponent';
-import TitleComponent from '../commonComponent/Title/TitleComponent';
-import RowComponent from '../commonComponent/Row/RowComponent';
 import ButtonComponent from '../commonComponent/Button/ButtonComponent';
+import RowComponent from '../commonComponent/Row/RowComponent';
+import TitleComponent from '../commonComponent/Title/TitleComponent';
+import './ModalComponent.scss';
 
 interface ModalComponentProps {
     title?: string;
@@ -13,7 +12,6 @@ interface ModalComponentProps {
     open: boolean;
     style?: React.CSSProperties;
     closeOnOverlayClick?: boolean;
-    width?: string;
     isCloseIcon?: boolean;
     isFooter?: boolean;
     animationType?: 'slideIn' | 'fadeIn' | 'zoomIn' | 'none';
@@ -21,6 +19,7 @@ interface ModalComponentProps {
     disableButtonConfirm?: boolean;
     buttonConfirmText?: string;
     buttonComfirmLoading?: boolean;
+    className?: string;
 }
 
 function ModalComponent(props: ModalComponentProps) {
@@ -32,13 +31,13 @@ function ModalComponent(props: ModalComponentProps) {
         open,
         style,
         closeOnOverlayClick,
-        width,
         isCloseIcon,
         isFooter,
         animationType = 'none',
         buttonConfirmText = 'Confirm',
         disableButtonConfirm = false,
-        buttonComfirmLoading = false
+        buttonComfirmLoading = false,
+        className = ''
     } = props;
     return (
         open && (
@@ -61,25 +60,42 @@ function ModalComponent(props: ModalComponentProps) {
                     // }
                 }}>
                 <div
-                    className={`modal-content ${animationType === 'none' ? '' : animationType}`}
+                    className={`modal-content
+                        display: flex; flex-col
+                    ${animationType === 'none' ? '' : animationType} ${className}`}
                     onClick={(event) => event.stopPropagation()}
-                    style={{ ...style, width: width || 'auto' }}>
+                    style={{ ...style }}>
                     {isCloseIcon && (
-                        <CloseSquare
-                            className="close-icon"
+                        <RowComponent
+                            justifyContent="space-between"
+                            className="mb-3"
                             style={{
-                                position: 'absolute',
-                                top: 16,
-                                right: 16
-                            }}
-                            size={24}
-                            onClick={onCancel}
-                        />
+                                height: 36
+                            }}>
+                            {title && (
+                                <TitleComponent title={title} fontSize="2.8em" fontWeight={600} />
+                            )}
+                            <CloseSquare
+                                className="close-icon"
+                                style={
+                                    {
+                                        // position: 'absolute',
+                                        // top: 16,
+                                        // right: 16
+                                    }
+                                }
+                                size={24}
+                                onClick={onCancel}
+                            />
+                        </RowComponent>
                     )}
-                    {title && <SpaceComponent height={24} />}
-                    {title && <TitleComponent title={title} fontSize="2.8em" fontWeight={700} />}
-                    {title && <SpaceComponent height={24} />}
-                    <div className="modal-body">{children}</div>
+
+                    <div
+                        className="modal-body overflow-y-auto
+                        h-[calc(100%-36px)]
+                    ">
+                        {children}
+                    </div>
                     {isFooter && (
                         <RowComponent className="modal-footer" justifyContent="flex-end">
                             <ButtonComponent

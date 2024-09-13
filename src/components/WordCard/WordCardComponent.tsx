@@ -1,4 +1,4 @@
-import { AddSquare, MinusSquare, Trash } from 'iconsax-react';
+import { AddSquare, BookSaved, Image, MinusSquare, People, Trash } from 'iconsax-react';
 import ButtonComponent from '../commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../commonComponent/Column/ColumnComponent';
 import InputComponent from '../commonComponent/Input/InputComponent';
@@ -11,8 +11,12 @@ import Upload from '../Upload/Upload';
 import './WordCardComponent.scss';
 // import { WordEditType } from '../../layouts/wordEditLayout/WordEditLayout';
 import { useEffect, useState } from 'react';
+import { suggestContext, suggestDefinition, suggestWord } from '../../firebase/suggestAPI';
 import useDebounce from '../../hooks/useDebounce';
 import { WordType } from '../../types/WordType';
+import ImageSearchComponent from '../ImageSearch/ImageSearchComponent';
+import ModalComponent from '../Modal/ModalComponent';
+import TabsComponent from '../Tabs/TabsComponent';
 interface WordCardComponentProps {
     index: number;
     className?: string;
@@ -24,6 +28,8 @@ interface WordCardComponentProps {
 }
 function WordCardComponent(props: WordCardComponentProps) {
     const { index, className, onDelete, word, onWordChange } = props;
+
+    // state ------------------------------------------------------------
 
     const [name, setName] = useState<string>(word.name);
     const [meaning, setMeaning] = useState<string>(word.meaning);
@@ -38,6 +44,12 @@ function WordCardComponent(props: WordCardComponentProps) {
     const nameDebounce = useDebounce(name, 500);
     const meaningDebounce = useDebounce(meaning, 500);
     const contextDebounce = useDebounce(contexts, 500);
+
+    const [definitionSuggestType, setDefinitionSuggestType] = useState<'community' | 'dictionary'>(
+        'community'
+    );
+
+    const [showImageModal, setShowImageModal] = useState(false);
 
     useEffect(() => {
         onWordChange(index, {
@@ -54,7 +66,35 @@ function WordCardComponent(props: WordCardComponentProps) {
                 animate-fadeIn    
             `}
             justifyContent="space-between"
-            style={{}}>
+            style={{
+                width: '100%'
+            }}>
+            {/* // Modal  */}
+            <ModalComponent
+                open={showImageModal}
+                isCloseIcon={true}
+                title="Search image"
+                onCancel={() => setShowImageModal(false)}
+                animationType="zoomIn"
+                className="
+                    h-[calc(100vh-158px)] w-full ml-2 mr-2
+                    md:ml-4 md:mr-4
+                    lg:ml-8 lg:mr-8
+                    xl:ml-12 xl:mr-12
+                "
+                style={{}}
+                closeOnOverlayClick={true}
+                isFooter={false}
+                onConfirm={() => {}}>
+                <ImageSearchComponent
+                    onChoose={(url) => {
+                        onWordChange(index, { ...word, imageURL: url });
+                        setShowImageModal(false);
+                    }}
+                    searchInitial={name}
+                />
+            </ModalComponent>
+
             <RowComponent
                 className="word-card-header"
                 justifyContent="space-between"
@@ -68,8 +108,35 @@ function WordCardComponent(props: WordCardComponentProps) {
                 />
                 <RowComponent>
                     <ButtonComponent
+                        tooltip="Search image"
                         tabindex={-1}
-                        icon={<Trash size={20} className="word-card-header-icon-command-delete" />}
+                        icon={<Image size={20} className="" />}
+                        backgroundColor="transparent"
+                        backgroundHoverColor="var(--bg-hover-color)"
+                        backgroundActiveColor="var(--bg-active-color)"
+                        onClick={() => {
+                            setShowImageModal(true);
+                        }}
+                        textColor="var(--text-color)"
+                        text="Search image"
+                        style={{
+                            height: '40px',
+                            padding: '0 12px',
+                            color: 'var(--text-color)'
+                        }}
+                    />
+                    <ButtonComponent
+                        className="group"
+                        tooltip="Delete word"
+                        tabindex={-1}
+                        icon={
+                            <Trash
+                                size={20}
+                                className="
+                            group-hover:text-red
+                        "
+                            />
+                        }
                         backgroundColor="transparent"
                         backgroundHoverColor="var(--bg-hover-color)"
                         backgroundActiveColor="var(--bg-active-color)"
@@ -92,7 +159,9 @@ function WordCardComponent(props: WordCardComponentProps) {
                                 marginRight: 64
                             }}
                             value={name}
-                            onChange={(value) => setName(value)}
+                            onChange={async (value) => {
+                                setName(value);
+                            }}
                             placeholder="Enter term"
                             label="Term"
                             type="text"
@@ -102,9 +171,18 @@ function WordCardComponent(props: WordCardComponentProps) {
                             }}
                             animationType="slideInLeft"
                             // errorText={word.titleErrorText}
+                            suggest={true}
+                            suggestData={async (value) => {
+                                return await suggestWord(value);
+                            }}
                         />
                     </GridCol>
-                    <GridCol span={6}>
+                    <GridCol
+                        span={6}
+                        style={{
+                            position: 'relative',
+                            width: '100%'
+                        }}>
                         <InputComponent
                             style={{}}
                             value={meaning.replace(/\\n/g, '\n')}
@@ -117,6 +195,45 @@ function WordCardComponent(props: WordCardComponentProps) {
                             animationType="slideInLeft"
                             borderType="bottom"
                             // errorText={word.meaningErrorText}
+                            suggest={true}
+                            suggestData={async (text) => {
+                                const rs = await suggestDefinition(
+                                    name,
+                                    text,
+                                    definitionSuggestType
+                                );
+                                return rs;
+                            }}
+                        />
+                        <TabsComponent
+                            type="vertical"
+                            verticalTabWidth="124px"
+                            fontSize="1.2em"
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: -36,
+                                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+                                borderRadius: '4px'
+                            }}
+                            items={[
+                                {
+                                    label: 'Dictionary',
+                                    key: 'dictionary',
+                                    icon: <BookSaved size={20} />,
+                                    tooltip: 'Suggest from dictionary'
+                                },
+                                {
+                                    label: 'Community',
+                                    key: 'community',
+                                    icon: <People size={20} />,
+                                    tooltip: 'Suggest from community'
+                                }
+                            ]}
+                            activeKey={definitionSuggestType}
+                            onChange={(key) => {
+                                setDefinitionSuggestType(key as 'community' | 'dictionary');
+                            }}
                         />
                     </GridCol>
                 </GridRow>
@@ -153,6 +270,15 @@ function WordCardComponent(props: WordCardComponentProps) {
                                             //         ? word.contextErrorText?.contextErrorText
                                             //         : ''
                                             // }
+                                            suggest={item.trim() === '' ? true : false}
+                                            suggestData={async (text) => {
+                                                return await suggestContext(
+                                                    name,
+                                                    text,
+                                                    contexts,
+                                                    6
+                                                );
+                                            }}
                                         />
                                         <SpaceComponent width={16} />
                                         <ButtonComponent

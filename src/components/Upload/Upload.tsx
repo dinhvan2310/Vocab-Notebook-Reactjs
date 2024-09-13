@@ -1,5 +1,5 @@
 import { Add, DocumentUpload, GallerySlash, NoteRemove } from 'iconsax-react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import ColumnComponent from '../commonComponent/Column/ColumnComponent';
 import InputComponent from '../commonComponent/Input/InputComponent';
 import RowComponent from '../commonComponent/Row/RowComponent';
@@ -64,7 +64,7 @@ function Upload(props: UploadProps) {
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center">
+                        <div className="flex flex-col items-center" onClick={() => {}}>
                             <Add size={20} />
                             <TextComponent text={name || 'Upload'} />
                         </div>
@@ -91,6 +91,10 @@ function Upload(props: UploadProps) {
     const [showUrl, setShowUrl] = useState<boolean>(true);
 
     const [url, setUrl] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        setShowUrl(false);
+    }, [file]);
 
     if (type === 'file') {
         return (

@@ -243,7 +243,9 @@ function WordSetsLayout() {
     ">
             <ModalComponent
                 animationType="zoomIn"
-                width="600px"
+                style={{
+                    width: '600px'
+                }}
                 isCloseIcon={true}
                 buttonComfirmLoading={updateFolderMutation.isPending}
                 disableButtonConfirm={!checkCanEditFolder()}
@@ -504,7 +506,7 @@ function WordSetsLayout() {
                 ) : (
                     <GridRow gutter={[24, 24]} className="w-full ">
                         {query.data?.numOfTotalWordSets === 0 && (
-                            <EmptyComponent text="No folders found" className="h-full mt-24" />
+                            <EmptyComponent text="No word sets" className="mt-24 mb-4 w-full" />
                         )}
                         {query.data?.wordSets.map((item, index) => {
                             return (
@@ -542,7 +544,7 @@ function WordSetsLayout() {
                                         key={index}
                                         title={item.name}
                                         hoverable={true}
-                                        subTitle={item.words.length + ' words'}
+                                        subTitle={(item.words?.length ?? 0) + ' words'}
                                         onClick={() => {
                                             handleClickWordSet(item.wordsetId ?? '');
                                         }}

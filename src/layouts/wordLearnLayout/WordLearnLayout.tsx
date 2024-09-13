@@ -167,7 +167,9 @@ function WordLearnLayout() {
                 open={modalExportOpen}
                 // disableButtonConfirm={editableBy === 'everyone' && editableByPublicPass === ''}
                 animationType="zoomIn"
-                width="760px"
+                style={{
+                    width: '760px'
+                }}
                 isCloseIcon={true}
                 // buttonComfirmLoading={updateWordSetMutation.isPending}
                 closeOnOverlayClick={true}
@@ -282,7 +284,9 @@ function WordLearnLayout() {
                 open={modalSettingOpen}
                 disableButtonConfirm={editableBy === 'everyone' && editableByPublicPass === ''}
                 animationType="zoomIn"
-                width="760px"
+                style={{
+                    width: '760px'
+                }}
                 isCloseIcon={true}
                 buttonComfirmLoading={updateWordSetMutation.isPending}
                 closeOnOverlayClick={true}
@@ -424,7 +428,7 @@ function WordLearnLayout() {
                         <FlashCard
                             key={word.name}
                             question={word.name}
-                            answer={word.meaning}
+                            answer={word.meaning.replace(/\\n/g, '\n')}
                             className="bg-bgLight dark:bg-bgDark"
                         />
                     ))}
@@ -709,8 +713,8 @@ function WordLearnLayout() {
                         paddingBottom: '10px',
                         paddingTop: '10px',
                         width: 'fit-content',
-                        fontSize: '1.4em',
-                        fontWeight: '500'
+                        fontSize: '1.2em',
+                        fontWeight: '400'
                     }}
                     text="Add or edit word"
                     onClick={() => {
@@ -721,7 +725,7 @@ function WordLearnLayout() {
                     backgroundActiveColor="var(--bg-active-color)"
                     isBorder={true}
                     icon={<Edit2 size={20} />}
-                    textColor="var(--secondary-text-color)"
+                    textColor="var(--text-color)"
                 />
             </RowComponent>
             <SpaceComponent height={64} />
