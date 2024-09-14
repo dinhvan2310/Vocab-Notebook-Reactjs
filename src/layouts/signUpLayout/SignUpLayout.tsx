@@ -88,6 +88,7 @@ function SignUpLayout() {
                     <div className="container">
                         <div className="sub-container">
                             <TabsComponent
+                                type="horizontal"
                                 items={[
                                     {
                                         key: 'login',

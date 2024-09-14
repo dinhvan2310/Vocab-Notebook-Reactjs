@@ -45,6 +45,7 @@ function WordCardComponent(props: WordCardComponentProps) {
     const meaningDebounce = useDebounce(meaning, 500);
     const contextDebounce = useDebounce(contexts, 500);
 
+    const [showTabDefinitionSuggest, setShowTabDefinitionSuggest] = useState(false);
     const [definitionSuggestType, setDefinitionSuggestType] = useState<'community' | 'dictionary'>(
         'community'
     );
@@ -71,18 +72,24 @@ function WordCardComponent(props: WordCardComponentProps) {
             }}>
             {/* // Modal  */}
             <ModalComponent
+                bodyStyle={{
+                    overflowY: 'auto',
+                    height: 'calc(100% - 42px)'
+                }}
                 open={showImageModal}
                 isCloseIcon={true}
                 title="Search image"
                 onCancel={() => setShowImageModal(false)}
                 animationType="zoomIn"
                 className="
-                    h-[calc(100vh-158px)] w-full ml-2 mr-2
+                    h-[calc(100vh-158px)] ml-2 mr-2
                     md:ml-4 md:mr-4
-                    lg:ml-8 lg:mr-8
-                    xl:ml-12 xl:mr-12
+                    lg:ml-24 lg:mr-24
+                    xl:ml-64 xl:mr-64
                 "
-                style={{}}
+                style={{
+                    width: '100%'
+                }}
                 closeOnOverlayClick={true}
                 isFooter={false}
                 onConfirm={() => {}}>
@@ -110,6 +117,7 @@ function WordCardComponent(props: WordCardComponentProps) {
                     <ButtonComponent
                         tooltip="Search image"
                         tabindex={-1}
+                        disabled={name.trim() === '' ? true : false}
                         icon={<Image size={20} className="" />}
                         backgroundColor="transparent"
                         backgroundHoverColor="var(--bg-hover-color)"
@@ -184,10 +192,14 @@ function WordCardComponent(props: WordCardComponentProps) {
                             width: '100%'
                         }}>
                         <InputComponent
+                            onFocused={() => {
+                                setShowTabDefinitionSuggest(true);
+                            }}
                             style={{}}
                             value={meaning.replace(/\\n/g, '\n')}
                             onChange={(value) => {
                                 setMeaning(value);
+                                setShowTabDefinitionSuggest(false);
                             }}
                             placeholder="Enter definition"
                             label="Definition"
@@ -205,36 +217,38 @@ function WordCardComponent(props: WordCardComponentProps) {
                                 return rs;
                             }}
                         />
-                        <TabsComponent
-                            type="vertical"
-                            verticalTabWidth="124px"
-                            fontSize="1.2em"
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: -36,
-                                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-                                borderRadius: '4px'
-                            }}
-                            items={[
-                                {
-                                    label: 'Dictionary',
-                                    key: 'dictionary',
-                                    icon: <BookSaved size={20} />,
-                                    tooltip: 'Suggest from dictionary'
-                                },
-                                {
-                                    label: 'Community',
-                                    key: 'community',
-                                    icon: <People size={20} />,
-                                    tooltip: 'Suggest from community'
-                                }
-                            ]}
-                            activeKey={definitionSuggestType}
-                            onChange={(key) => {
-                                setDefinitionSuggestType(key as 'community' | 'dictionary');
-                            }}
-                        />
+                        {showTabDefinitionSuggest && (
+                            <TabsComponent
+                                type="vertical"
+                                verticalTabWidth="124px"
+                                fontSize="1.2em"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: -36,
+                                    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+                                    borderRadius: '4px'
+                                }}
+                                items={[
+                                    {
+                                        label: 'Dictionary',
+                                        key: 'dictionary',
+                                        icon: <BookSaved size={20} />,
+                                        tooltip: 'Suggest from dictionary'
+                                    },
+                                    {
+                                        label: 'Community',
+                                        key: 'community',
+                                        icon: <People size={20} />,
+                                        tooltip: 'Suggest from community'
+                                    }
+                                ]}
+                                activeKey={definitionSuggestType}
+                                onChange={(key) => {
+                                    setDefinitionSuggestType(key as 'community' | 'dictionary');
+                                }}
+                            />
+                        )}
                     </GridCol>
                 </GridRow>
                 <SpaceComponent height={16} />

@@ -20,6 +20,7 @@ interface ModalComponentProps {
     buttonConfirmText?: string;
     buttonComfirmLoading?: boolean;
     className?: string;
+    bodyStyle?: React.CSSProperties;
 }
 
 function ModalComponent(props: ModalComponentProps) {
@@ -37,7 +38,8 @@ function ModalComponent(props: ModalComponentProps) {
         buttonConfirmText = 'Confirm',
         disableButtonConfirm = false,
         buttonComfirmLoading = false,
-        className = ''
+        className = '',
+        bodyStyle
     } = props;
     return (
         open && (
@@ -64,7 +66,7 @@ function ModalComponent(props: ModalComponentProps) {
                         display: flex; flex-col
                     ${animationType === 'none' ? '' : animationType} ${className}`}
                     onClick={(event) => event.stopPropagation()}
-                    style={{ ...style }}>
+                    style={{ width: 760, ...style }}>
                     {isCloseIcon && (
                         <RowComponent
                             justifyContent="space-between"
@@ -91,9 +93,11 @@ function ModalComponent(props: ModalComponentProps) {
                     )}
 
                     <div
-                        className="modal-body overflow-y-auto
-                        h-[calc(100%-36px)]
-                    ">
+                        className="modal-body "
+                        style={{
+                            marginBottom: 20,
+                            ...bodyStyle
+                        }}>
                         {children}
                     </div>
                     {isFooter && (

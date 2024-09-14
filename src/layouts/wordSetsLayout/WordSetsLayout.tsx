@@ -50,9 +50,12 @@ import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import { useMessage } from '../../hooks/useMessage';
 import { useResponsive } from '../../hooks/useResponsive';
+import NotFoundUser from '../../assets/image/no_avatar.png';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './WordSetsLayout.scss';
+import { getUser } from '../../firebase/userAPI';
+import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
 
 function WordSetsLayout() {
     // state --------------------------------------------------------------------------------
@@ -66,6 +69,15 @@ function WordSetsLayout() {
     const [viewMode, setViewMode] = useState<'table' | 'list' | 'card'>(() => {
         return getWordSetViewMode();
     });
+
+    const userQuery = useQuery({
+        queryKey: ['users', userid],
+        queryFn: async () => {
+            const data = await getUser(userid ?? '');
+            return data;
+        }
+    });
+
     const viewModeOptions = [
         {
             label: 'Table',
@@ -330,6 +342,35 @@ function WordSetsLayout() {
                     )}
                 </RowComponent>
             </ModalComponent>
+            {currentUser?.uid !== userQuery.data?.userId && (
+                <>
+                    <RowComponent
+                        alignItems="center"
+                        justifyContent="flex-start"
+                        className="w-full mb-4">
+                        <img
+                            src={userQuery.data?.photoURL || NotFoundUser}
+                            alt="avatar"
+                            style={{
+                                objectFit: 'cover',
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '50%'
+                            }}
+                        />
+                        <SpaceComponent width={16} />
+                        <ColumnComponent alignItems="flex-start">
+                            <TitleComponent
+                                title={userQuery.data?.name || 'Unknown user'}
+                                fontSize="1.5em"
+                            />
+                            <SpaceComponent height={4} />
+                            <TextComponent text={userQuery.data?.email || '...'} fontSize="1.3em" />
+                        </ColumnComponent>
+                    </RowComponent>
+                    <HorizontalRuleComponent text="" type="center" />
+                </>
+            )}
             <RowComponent justifyContent="space-between" className="top-bar" alignItems="flex-end">
                 {lg && (
                     <>
@@ -506,7 +547,33 @@ function WordSetsLayout() {
                 ) : (
                     <GridRow gutter={[24, 24]} className="w-full ">
                         {query.data?.numOfTotalWordSets === 0 && (
-                            <EmptyComponent text="No word sets" className="mt-24 mb-4 w-full" />
+                            <ColumnComponent
+                                style={{
+                                    width: '100%'
+                                }}>
+                                <EmptyComponent text="No word sets" className="mt-24 mb-4 w-full" />
+                                {search === '' && (
+                                    <ButtonComponent
+                                        tabindex={-1}
+                                        icon={<Add size={20} />}
+                                        onClick={() => {
+                                            navigate(`/create-wordset?inFolder=${folderid}`);
+                                        }}
+                                        text="Create Word Set"
+                                        backgroundColor="transparent"
+                                        backgroundHoverColor="var(--primary-color-light)"
+                                        backgroundActiveColor="var(--primary-hover-color-light)"
+                                        isBorder={false}
+                                        borderColor="var(--border-color)"
+                                        textColor="var(--text-color)"
+                                        fontSize="1.5em"
+                                        style={{
+                                            height: '40px',
+                                            padding: '12px 26px'
+                                        }}
+                                    />
+                                )}
+                            </ColumnComponent>
                         )}
                         {query.data?.wordSets.map((item, index) => {
                             return (
@@ -530,6 +597,7 @@ function WordSetsLayout() {
                                     }
                                     key={index}>
                                     <CardComponent
+                                        visible={item.visibility === 'public'}
                                         type={viewMode === 'card' ? 'card-image' : 'card-text'}
                                         imageSrc={
                                             item.imageUrl === '' ? FolderImage : item.imageUrl
@@ -552,8 +620,9 @@ function WordSetsLayout() {
                                             {
                                                 text: 'Edit',
                                                 onClick: () => {
+                                                    // '/user/:userid/folders/:folderid/edit-wordset/:wordsetid';
                                                     navigate(
-                                                        `/edit-wordset/${item.wordsetId}?inFolder=${folderid}`
+                                                        `/user/${userid}/folders/${folderid}/edit-wordset/${item.wordsetId}`
                                                     );
                                                 },
                                                 key: 'edit',

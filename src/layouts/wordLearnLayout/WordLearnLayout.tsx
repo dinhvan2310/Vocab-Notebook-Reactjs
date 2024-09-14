@@ -1,15 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-    Aave,
-    Copy,
-    Edit2,
-    Import,
-    Notepad,
-    Setting2,
-    Star1,
-    Timer1,
-    VolumeHigh
-} from 'iconsax-react';
+import { Aave, Copy, Edit2, Import, Notepad, Setting2, Star1, VolumeHigh } from 'iconsax-react';
 import { useState } from 'react';
 import { useLoaderData, useNavigate, useParams } from 'react-router-dom';
 import NotFoundUser from '../../assets/image/no_avatar.png';
@@ -25,19 +15,22 @@ import TextComponent from '../../components/commonComponent/Text/TextComponent';
 import TitleComponent from '../../components/commonComponent/Title/TitleComponent';
 import GridCol from '../../components/Grid/GridCol';
 import GridRow from '../../components/Grid/GridRow';
+import LinkComponent from '../../components/Link/LinkComponent';
 import ModalComponent from '../../components/Modal/ModalComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
-import { getWordSet, updateWordSet } from '../../firebase/wordSetAPI';
+import { getWords, updateWord } from '../../firebase/wordAPI';
+import { getWordSet, updateWordSet, updateWordSetEditableBy } from '../../firebase/wordSetAPI';
 import FlashCard from '../../flashCard/FlashCard';
+import { useAuth } from '../../hooks/useAuth';
+import useDebounce from '../../hooks/useDebounce';
 import { useMessage } from '../../hooks/useMessage';
+import { useResponsive } from '../../hooks/useResponsive';
 import FolderType from '../../types/FolderType';
 import { UserType } from '../../types/UserType';
 import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 import { timeAgo } from '../../utils/timeAgo';
-import LinkComponent from '../../components/Link/LinkComponent';
-import { getWords, updateWord } from '../../firebase/wordAPI';
 
 function WordLearnLayout() {
     // meta data
@@ -48,13 +41,16 @@ function WordLearnLayout() {
     const { wordsetid } = useParams();
     const message = useMessage();
     const navigate = useNavigate();
+    const { md, lg } = useResponsive();
+    const { user: currentUser } = useAuth();
 
     // state
     // const [autoPlayFlashCard, setAutoPlayFlashCard] = useState(false);
     const [modalExportOpen, setModalExportOpen] = useState(false);
     const [modalSettingOpen, setModalSettingOpen] = useState(false);
     const [learnedSelected, setLearnedSelected] = useState<'all' | 'starred'>('all');
-    const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Created' | 'Learned'>('Created');
+    const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Learned'>('Amphabet');
+    const [showDefinition, setShowDefinition] = useState(true);
 
     const wordSetQuery = useQuery<{
         WordSet: WordSetType;
@@ -64,20 +60,27 @@ function WordLearnLayout() {
         queryFn: async () => {
             const wordSet = await getWordSet(wordsetid ?? '');
             const words = await getWords(wordsetid ?? '');
-            if (words.some((word) => word.createdAt === undefined)) throw new Error('Error');
+
+            if (!wordSet) {
+                setTitle('');
+                setImageCover(null);
+                setVisibility('public');
+                setEditableBy('owner');
+                setEditableByPublicPass('');
+            } else {
+                setTitle(wordSet.name);
+                setImageCover(wordSet.imageUrl ?? null);
+                setVisibility(wordSet.visibility);
+                setEditableBy(wordSet.editableBy);
+                setEditableByPublicPass(
+                    currentUser?.uid === user.userId ? wordSet.editablePassword ?? '' : ''
+                );
+            }
 
             if (sortSelected === 'Amphabet') {
                 return {
                     WordSet: wordSet,
                     words: words.sort((a, b) => a.name.localeCompare(b.name))
-                };
-            }
-            if (sortSelected === 'Created') {
-                return {
-                    WordSet: wordSet,
-                    words: words.sort(
-                        (a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0)
-                    )
                 };
             } else {
                 return {
@@ -93,31 +96,41 @@ function WordLearnLayout() {
             // save setting to database
             await updateWordSet(
                 wordSetQuery.data?.WordSet.wordsetId ?? '',
-                wordSetQuery.data?.WordSet.name ?? '',
+                title,
                 visibility,
+                imageCover ?? ''
+            );
+            await updateWordSetEditableBy(
+                wordSetQuery.data?.WordSet.wordsetId ?? '',
                 editableBy,
-                editableByPublicPass,
-                imageCover ?? '',
-                undefined
+                editableByPublicPass
             );
             wordSetQuery.refetch();
         },
         mutationKey: ['updateWordSet']
     });
 
-    const [imageCover, setImageCover] = useState<File | null | string>(
-        wordSetQuery.data?.WordSet.imageUrl ? wordSetQuery.data.WordSet.imageUrl : null
-    );
+    const [imageCover, setImageCover] = useState<File | null | string>();
+    const [title, setTitle] = useState<string>('');
 
-    const [editableBy, setEditableBy] = useState<'owner' | 'everyone'>(
-        wordSetQuery.data?.WordSet.editableBy ?? 'owner'
-    );
-    const [editableByPublicPass, setEditableByPublicPass] = useState<string>(
-        wordSetQuery.data?.WordSet.editablePassword ?? ''
-    );
-    const [visibility, setVisibility] = useState<'public' | 'private'>(
-        wordSetQuery.data?.WordSet.visibility ?? 'public'
-    );
+    const [editableBy, setEditableBy] = useState<'owner' | 'everyone'>('owner');
+    const [editableByPublicPass, setEditableByPublicPass] = useState<string>('');
+    const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+    // pass to access word set
+    const [password, setPassword] = useState<string>('');
+    const passwordDebounce = useDebounce(password, 500);
+    const [errorTextPassword, setErrorTextPassword] = useState<string>('');
+
+    // useEffect(() => {
+    //     if (editableBy === 'everyone') {
+    //         if (passwordDebounce === wordSetQuery.data?.WordSet.editablePassword) {
+    //             setErrorTextPassword('');
+    //         } else {
+    //             if (passwordDebounce === '') setErrorTextPassword('');
+    //             else setErrorTextPassword('Password is incorrect');
+    //         }
+    //     }
+    // }, [passwordDebounce]);
 
     //options UI
     const learnedOptions = [
@@ -132,16 +145,21 @@ function WordLearnLayout() {
         }
     ];
 
+    const showDefinitionOptions = [
+        {
+            label: 'Show definition',
+            value: 'show'
+        },
+        {
+            label: 'Hide definition',
+            value: 'hide'
+        }
+    ];
     const sortOptions = [
         {
             label: 'Amphabet',
             value: 'Amphabet',
             icon: <Aave size={16} />
-        },
-        {
-            label: 'Created',
-            value: 'Created',
-            icon: <Timer1 size={16} />
         },
         {
             label: 'Learned',
@@ -152,9 +170,52 @@ function WordLearnLayout() {
 
     // handlers
     const handleEditWordSet = () => {
+        if (!checkPasswordIsCorrect(password)) {
+            setErrorTextPassword('Password is incorrect');
+            message('error', 'Password is incorrect');
+            return;
+        }
         navigate(
-            `/edit-wordset/${wordSetQuery.data?.WordSet.wordsetId}?inFolder=${folder.folderId}`
+            `/user/${user.userId}/folders/${folder.folderId}/edit-wordset/${wordSetQuery.data?.WordSet.wordsetId}`,
+            {
+                state: {
+                    password: passwordDebounce
+                }
+            }
         );
+    };
+    const checkPasswordIsCorrect = (password: string) => {
+        console.log('password', password, wordSetQuery.data?.WordSet.editablePassword);
+        console.log('editableBy', editableBy);
+
+        if (currentUser?.uid === user.userId) return true;
+
+        if (editableBy === 'everyone') {
+            if (password === wordSetQuery.data?.WordSet.editablePassword) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    };
+    const handleOpenModalSetting = () => {
+        if (currentUser?.uid === user.userId) {
+            setModalSettingOpen(true);
+        } else {
+            message('error', 'You do not have permission to open this setting');
+            setModalSettingOpen(false);
+        }
+    };
+
+    const isDisableIcon = () => {
+        if (currentUser?.uid === user.userId) return false;
+        if (editableBy === 'owner') {
+            return true;
+        }
+
+        return passwordDebounce !== '' ? false : true;
     };
 
     return (
@@ -294,11 +355,13 @@ function WordLearnLayout() {
                     setModalSettingOpen(false);
                     // reset state
                     if (!wordSetQuery.data) {
+                        setTitle('');
                         setImageCover(null);
                         setVisibility('public');
                         setEditableBy('owner');
                         setEditableByPublicPass('');
                     } else {
+                        setTitle(wordSetQuery.data.WordSet.name);
                         setImageCover(wordSetQuery.data.WordSet.imageUrl ?? null);
                         setVisibility(wordSetQuery.data.WordSet.visibility);
                         setEditableBy(wordSetQuery.data.WordSet.editableBy);
@@ -314,6 +377,22 @@ function WordLearnLayout() {
                 buttonConfirmText="Save"
                 isFooter={true}>
                 <ColumnComponent className="w-full px-4">
+                    <InputComponent
+                        className="mt-6"
+                        placeholder="Enter a title for your word set"
+                        type="text"
+                        style={{
+                            borderRadius: '0px',
+                            marginBottom: '16px'
+                        }}
+                        borderType="bottom"
+                        label={'Title'}
+                        value={title}
+                        animationType="slideInLeft"
+                        onChange={(value) => {
+                            setTitle(value);
+                        }}
+                    />
                     <Upload
                         defaultImage={imageCover ?? undefined}
                         type="picture"
@@ -478,21 +557,25 @@ function WordLearnLayout() {
                     </RowComponent>
                 </ColumnComponent>
                 <RowComponent>
-                    <ButtonComponent
-                        style={{
-                            height: '40px',
-                            paddingLeft: '16px',
-                            paddingRight: '16px'
-                        }}
-                        text="Share"
-                        onClick={() => {}}
-                        backgroundColor="var(--bg-color)"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        isBorder={true}
-                        textColor="var(--secondary-text-color)"
-                    />
-                    <SpaceComponent width={8} />
+                    {currentUser?.uid !== user.userId && editableBy === 'everyone' && (
+                        <>
+                            <InputComponent
+                                value={password}
+                                onChange={(value) => {
+                                    setPassword(value);
+                                    setErrorTextPassword('');
+                                }}
+                                placeholder="Enter correct password to edit this set"
+                                type="password"
+                                borderType="bottom"
+                                width="300px"
+                                animationType="slideInLeft"
+                                errorText={errorTextPassword}
+                                label="Password"
+                            />
+                            <SpaceComponent width={8} />
+                        </>
+                    )}
 
                     <ButtonComponent
                         style={{
@@ -529,13 +612,14 @@ function WordLearnLayout() {
                             height: '40px',
                             padding: '0 12px'
                         }}
+                        disabled={isDisableIcon()}
                     />
                     <SpaceComponent width={8} />
                     <ButtonComponent
                         tabindex={-1}
                         icon={<Setting2 size={20} />}
                         onClick={() => {
-                            setModalSettingOpen(true);
+                            handleOpenModalSetting();
                         }}
                         tooltip="Setting"
                         backgroundColor="var(--bg-color)"
@@ -548,26 +632,43 @@ function WordLearnLayout() {
                             height: '40px',
                             padding: '0 12px'
                         }}
+                        disabled={currentUser?.uid !== user.userId}
                     />
                 </RowComponent>
             </RowComponent>
 
             <SpaceComponent height={32} />
-            <RowComponent>
-                <HorizontalRuleComponent
-                    type="left"
-                    text={`Word in this set (${wordSetQuery.data?.words.length})`}
-                    style={{}}
-                />
+            <RowComponent justifyContent="flex-end">
+                {md && (
+                    <HorizontalRuleComponent
+                        type="left"
+                        text={
+                            lg
+                                ? `Word in this set (${wordSetQuery.data?.words.length})`
+                                : `${wordSetQuery.data?.words.length} words`
+                        }
+                        style={{}}
+                    />
+                )}
                 <SpaceComponent width={16} />
-                <RowComponent justifyContent="flex-end">
+                <RowComponent justifyContent="flex-end" style={{}}>
+                    <SelectComponent
+                        options={showDefinitionOptions}
+                        width="168px"
+                        value={showDefinition ? 'show' : 'hide'}
+                        defaultValue={showDefinition ? 'show' : 'hide'}
+                        onChange={(value) => {
+                            setShowDefinition(value === 'show');
+                        }}
+                    />
+                    <SpaceComponent width={8} />
                     <SelectComponent
                         options={sortOptions}
-                        width="140px"
+                        width={'130px'}
                         value={sortSelected}
                         defaultValue={sortSelected}
                         onChange={(value) => {
-                            setSortSelected(value as 'Amphabet' | 'Created' | 'Learned');
+                            setSortSelected(value as 'Amphabet' | 'Learned');
                         }}
                     />
                     <SpaceComponent width={8} />
@@ -576,7 +677,7 @@ function WordLearnLayout() {
                         onChange={(value) => {
                             setLearnedSelected(value as 'all' | 'starred');
                         }}
-                        width="120px"
+                        width="110px"
                         defaultValue={learnedSelected}
                         value={learnedSelected}
                     />
@@ -619,31 +720,33 @@ function WordLearnLayout() {
                                     </ColumnComponent>
                                 </GridCol>
                                 <GridCol span={8}>
-                                    <ColumnComponent alignItems="flex-start" className="pr-8">
-                                        <TextComponent
-                                            text={word.meaning.replace(/\\n/g, '\n')}
-                                            fontSize="1.6em"
-                                            style={{
-                                                whiteSpace: 'pre-wrap'
-                                            }}
-                                        />
-                                        <SpaceComponent height={12} />
-                                        {word.contexts &&
-                                            word.contexts.map((context: string) => (
-                                                <RowComponent
-                                                    alignItems="center"
-                                                    key={context}
-                                                    className="mb-2">
-                                                    <div>
-                                                        <Notepad size={12} className="mr-2" />
-                                                    </div>
-                                                    <TextComponent
-                                                        text={context}
-                                                        fontSize="1.3em"
-                                                    />
-                                                </RowComponent>
-                                            ))}
-                                    </ColumnComponent>
+                                    {showDefinition && (
+                                        <ColumnComponent alignItems="flex-start" className="pr-8">
+                                            <TextComponent
+                                                text={word.meaning.replace(/\\n/g, '\n')}
+                                                fontSize="1.6em"
+                                                style={{
+                                                    whiteSpace: 'pre-wrap'
+                                                }}
+                                            />
+                                            <SpaceComponent height={12} />
+                                            {word.contexts &&
+                                                word.contexts.map((context: string) => (
+                                                    <RowComponent
+                                                        alignItems="center"
+                                                        key={context}
+                                                        className="mb-2">
+                                                        <div>
+                                                            <Notepad size={12} className="mr-2" />
+                                                        </div>
+                                                        <TextComponent
+                                                            text={context}
+                                                            fontSize="1.3em"
+                                                        />
+                                                    </RowComponent>
+                                                ))}
+                                        </ColumnComponent>
+                                    )}
                                 </GridCol>
                             </GridRow>
                             <ColumnComponent
@@ -673,32 +776,34 @@ function WordLearnLayout() {
                                     "
                                     />
                                 </ButtonComponent>
-                                <ButtonComponent
-                                    onClick={async (e) => {
-                                        e.preventDefault();
-                                        await updateWord(
-                                            word.wordId ?? '',
-                                            undefined,
-                                            undefined,
-                                            undefined,
-                                            undefined,
-                                            !word.learned
-                                        );
-                                        wordSetQuery.refetch();
-                                    }}
-                                    style={{
-                                        padding: '8px'
-                                    }}
-                                    backgroundColor="transparent"
-                                    backgroundHoverColor="var(--bg-hover-color)"
-                                    backgroundActiveColor="var(--bg-active-color)">
-                                    <Star1
-                                        size={20}
-                                        className="
+                                {currentUser?.uid === user.userId && (
+                                    <ButtonComponent
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            await updateWord(
+                                                word.wordId ?? '',
+                                                undefined,
+                                                undefined,
+                                                undefined,
+                                                undefined,
+                                                !word.learned
+                                            );
+                                            wordSetQuery.refetch();
+                                        }}
+                                        style={{
+                                            padding: '8px'
+                                        }}
+                                        backgroundColor="transparent"
+                                        backgroundHoverColor="var(--bg-hover-color)"
+                                        backgroundActiveColor="var(--bg-active-color)">
+                                        <Star1
+                                            size={20}
+                                            className="
                                     "
-                                        variant={word.learned ? 'Bold' : 'Linear'}
-                                    />
-                                </ButtonComponent>
+                                            variant={word.learned ? 'Bold' : 'Linear'}
+                                        />
+                                    </ButtonComponent>
+                                )}
                             </ColumnComponent>
                         </CardComponent>
                     </GridCol>
@@ -726,6 +831,7 @@ function WordLearnLayout() {
                     isBorder={true}
                     icon={<Edit2 size={20} />}
                     textColor="var(--text-color)"
+                    disabled={isDisableIcon()}
                 />
             </RowComponent>
             <SpaceComponent height={64} />

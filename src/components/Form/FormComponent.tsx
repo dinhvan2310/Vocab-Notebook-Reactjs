@@ -11,14 +11,19 @@ interface FormComponentProps {
     haveSubmitButton?: boolean;
     submitButtonText?: string;
     formItems: FormItemType[];
+    style?: React.CSSProperties;
 }
 
 function FormComponent(props: FormComponentProps) {
-    const { onFinished, formItems, haveSubmitButton, submitButtonText } = props;
+    const { onFinished, formItems, haveSubmitButton, submitButtonText, style } = props;
     const [isButtonSubmitLoading, setIsButtonSubmitLoading] = useState(false);
 
     return (
         <form
+            style={{
+                width: '100%',
+                ...style
+            }}
             // Submit form when user press Enter
             onKeyDown={async (event) => {
                 if (event.key === 'Enter') {
@@ -33,7 +38,7 @@ function FormComponent(props: FormComponentProps) {
                 event.preventDefault();
             }}>
             {formItems.map((formItem, index) => (
-                <div key={index} className="form-item">
+                <div key={index} className="form-item w-full">
                     <InputComponent
                         label={formItem.label}
                         onChange={formItem.onChange ?? (() => {})}
@@ -41,6 +46,9 @@ function FormComponent(props: FormComponentProps) {
                         value={formItem.value ?? ''}
                         borderType="bottom"
                         placeholder={formItem.placeholder}
+                        style={{
+                            width: '100%'
+                        }}
                     />
                     <SpaceComponent height={12} />
                 </div>

@@ -115,3 +115,5 @@ body {
 
     transition: background-color 0.5s, color 0.2s;
 }
+
+input::-ms-reveal { display: none; }

@@ -14,6 +14,7 @@ interface MenuItemsComponentProps {
 
     inlineCollapsed?: 'none' | 'inline-collapsed' | 'popup-menu';
     className?: string;
+    menuItemStyle?: React.CSSProperties;
 }
 
 function MenuItemsComponent(props: MenuItemsComponentProps) {
@@ -27,7 +28,9 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
         backGroundColor = 'var(--bg-color)',
         onSelectedKeyChange,
         inlineCollapsed = 'none',
-        className = ''
+        className = '',
+
+        menuItemStyle
     } = props;
 
     if (menuItems.length === 0) {
@@ -71,11 +74,16 @@ function MenuItemsComponent(props: MenuItemsComponentProps) {
                             }}>
                             <div className="menu-item-icon">{item.icon}</div>
                             <div
+                                className={'menu-item-text'}
                                 style={{
+                                    fontSize: '1.4em',
+                                    fontWeight: 600,
+                                    whiteSpace: 'pre-line',
+                                    transition: 'all 0.2s ease-in-out',
+                                    opacity: 1,
                                     marginLeft: item.icon ? '16px' : '0',
-                                    whiteSpace: 'pre-line'
-                                }}
-                                className={'menu-item-text'}>
+                                    ...menuItemStyle
+                                }}>
                                 {item.text.replace(/\\n/g, '\n')}
                             </div>
                         </div>

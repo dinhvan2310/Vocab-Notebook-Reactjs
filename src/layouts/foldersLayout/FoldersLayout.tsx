@@ -67,7 +67,9 @@ function FoldersLayout() {
     const { md, lg, xl, xxl } = useResponsive();
     const [openModalEditFolder, setOpenModalEditFolder] = useState(false);
     const [folderEditing, setFolderEditing] = useState<FolderType | null>(null);
-    const [folderImageEditing, setFolderImageEditing] = useState<File | null | string>(null);
+    const [folderImageEditing, setFolderImageEditing] = useState<File | undefined | string>(
+        undefined
+    );
 
     const [sortBy, setSortBy] = useState<'nameLowercase' | 'modifiedAt' | 'createAt'>();
     const sortByOptions = [
@@ -291,8 +293,12 @@ function FoldersLayout() {
             {/* Modal Add Folder */}
             <ModalComponent
                 animationType="zoomIn"
-                style={{
-                    width: '600px'
+                style={{}}
+                bodyStyle={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
                 }}
                 isCloseIcon={true}
                 closeOnOverlayClick={true}
@@ -308,13 +314,20 @@ function FoldersLayout() {
                 buttonComfirmLoading={handleAddFolderFinishMutation.isPending}
                 title="Create new folder">
                 <FormComponent
+                    style={{
+                        width: '100%'
+                    }}
                     // onFinished={handleAddFolderFinish}
                     formItems={formItems}
                     haveSubmitButton={false}
                     submitButtonText="Create"
                 />
-                <SpaceComponent height={32} />
-                <RowComponent justifyContent="center" alignItems="flex-start">
+                <ColumnComponent
+                    justifyContent="center"
+                    alignItems="flex-start"
+                    style={{
+                        width: '100%'
+                    }}>
                     <Upload
                         action={(f) => {
                             if (!f) return;
@@ -322,19 +335,18 @@ function FoldersLayout() {
                         }}
                         type="picture"
                         onRemove={() => setNewFolderImage(null)}
-                        name="Cover Image"
+                        name="Upload Image"
                         style={{
-                            width: '260px',
-                            height: '140px'
+                            width: '100%',
+                            height: '260px'
                         }}
                     />
-                </RowComponent>
+                    <TitleComponent title="FOLDER IMAGE" fontSize="1.1em" className="mt-1" />
+                </ColumnComponent>
             </ModalComponent>
             <ModalComponent
                 animationType="zoomIn"
-                style={{
-                    width: '600px'
-                }}
+                style={{}}
                 isCloseIcon={true}
                 buttonComfirmLoading={updateFolderMutation.isPending}
                 disableButtonConfirm={!checkCanEditFolder()}
@@ -355,6 +367,9 @@ function FoldersLayout() {
                 isFooter={true}>
                 <FormComponent
                     // onFinished={handleAddFolderFinish}
+                    style={{
+                        width: '100%'
+                    }}
                     formItems={[
                         {
                             type: 'text',
@@ -371,56 +386,23 @@ function FoldersLayout() {
                     haveSubmitButton={false}
                     submitButtonText="Create"
                 />
-                <SpaceComponent height={32} />
-                <RowComponent justifyContent="center" alignItems="center">
-                    {folderEditing?.imageUrl ? (
-                        <>
-                            <img
-                                src={
-                                    folderEditing?.imageUrl === ''
-                                        ? FolderImage
-                                        : folderEditing?.imageUrl
-                                }
-                                alt="folder"
-                                className="w-[260px] h-[140px] object-cover rounded-lg
-                            
-                            "
-                            />
-                            <ButtonComponent
-                                icon={
-                                    <Trash
-                                        size="24"
-                                        className="
-                                        text-textLight dark:text-textDark
-                                        hover:text-red
-                                    "
-                                    />
-                                }
-                                onClick={async () => {
-                                    setFolderImageEditing(null);
-                                    setFolderEditing({ ...folderEditing, imageUrl: '' });
-                                }}
-                                backgroundHoverColor="transparent"
-                                backgroundColor="transparent"
-                                backgroundActiveColor="transparent"
-                            />
-                        </>
-                    ) : (
-                        <Upload
-                            action={(file) => {
-                                if (!file) return;
-                                setFolderImageEditing(file);
-                            }}
-                            type="picture"
-                            onRemove={() => setFolderImageEditing(null)}
-                            name="Cover Image"
-                            style={{
-                                width: '260px',
-                                height: '140px'
-                            }}
-                        />
-                    )}
-                </RowComponent>
+                <ColumnComponent justifyContent="center" alignItems="flex-start" style={{}}>
+                    <Upload
+                        defaultImage={folderImageEditing}
+                        action={(f) => {
+                            if (!f) return;
+                            setFolderImageEditing(f);
+                        }}
+                        type="picture"
+                        onRemove={() => setFolderImageEditing(undefined)}
+                        name="Upload Image"
+                        style={{
+                            width: '100%',
+                            height: '260px'
+                        }}
+                    />
+                    <TitleComponent title="FOLDER IMAGE" fontSize="1.1em" className="mt-1" />
+                </ColumnComponent>
             </ModalComponent>
 
             <div className="top-bar">
@@ -573,25 +555,27 @@ function FoldersLayout() {
                                     width: '100%'
                                 }}>
                                 <EmptyComponent text="No folders" className="mt-24 mb-4" />
-                                <ButtonComponent
-                                    tabindex={-1}
-                                    icon={<Add size={20} />}
-                                    onClick={() => {
-                                        setOpenModalAddNewFolder(true);
-                                    }}
-                                    text="Create folder"
-                                    backgroundColor="transparent"
-                                    backgroundHoverColor="var(--primary-color-light)"
-                                    backgroundActiveColor="var(--primary-hover-color-light)"
-                                    isBorder={false}
-                                    borderColor="var(--border-color)"
-                                    textColor="var(--text-color)"
-                                    fontSize="1.5em"
-                                    style={{
-                                        height: '40px',
-                                        padding: '12px 26px'
-                                    }}
-                                />
+                                {search === '' && (
+                                    <ButtonComponent
+                                        tabindex={-1}
+                                        icon={<Add size={20} />}
+                                        onClick={() => {
+                                            setOpenModalAddNewFolder(true);
+                                        }}
+                                        text="Create folder"
+                                        backgroundColor="transparent"
+                                        backgroundHoverColor="var(--primary-color-light)"
+                                        backgroundActiveColor="var(--primary-hover-color-light)"
+                                        isBorder={false}
+                                        borderColor="var(--border-color)"
+                                        textColor="var(--text-color)"
+                                        fontSize="1.5em"
+                                        style={{
+                                            height: '40px',
+                                            padding: '12px 26px'
+                                        }}
+                                    />
+                                )}
                             </ColumnComponent>
                         )}
                         {query.data?.folders.map((folder, index) => {

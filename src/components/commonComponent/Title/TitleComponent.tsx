@@ -31,6 +31,7 @@ function TitleComponent(props: TitleComponentProps) {
             style={{
                 color: color || 'var(--text-color)',
                 fontWeight: fontWeight || 600,
+                overflowY: 'auto',
                 ...containerStyle
             }}
             className={`title-component ${className || ''}`}>

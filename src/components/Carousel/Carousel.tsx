@@ -76,9 +76,9 @@ function Carousel(props: CarouselProps) {
                     <ButtonComponent
                         onClick={handlePrevClick}
                         style={{
-                            padding: '0.5rem',
+                            padding: '56px 24px',
                             position: 'absolute',
-                            left: 16,
+                            left: 0,
                             top: '50%',
                             transform: 'translateY(-50%)'
                         }}
@@ -90,9 +90,9 @@ function Carousel(props: CarouselProps) {
                     <ButtonComponent
                         onClick={handleNextClick}
                         style={{
-                            padding: '0.5rem',
+                            padding: '56px 24px',
                             position: 'absolute',
-                            right: 16,
+                            right: 0,
                             top: '50%',
                             transform: 'translateY(-50%)'
                         }}

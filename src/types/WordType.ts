@@ -1,4 +1,4 @@
-import { DocumentReference, Timestamp } from "firebase/firestore";
+import { DocumentReference } from "firebase/firestore";
 
 export interface WordType {
 
@@ -8,7 +8,6 @@ export interface WordType {
     name: string;
 
     learned?: boolean;
-    createdAt?: Timestamp;
 
     wordSetRef?: DocumentReference;
     wordId?: string;

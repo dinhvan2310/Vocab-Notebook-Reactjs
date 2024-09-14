@@ -247,6 +247,9 @@ function MainLayout() {
                 <div className="leftContainer">
                     <MenuItemsComponent
                         backGroundColor="transparent"
+                        menuItemStyle={{
+                            whiteSpace: 'nowrap'
+                        }}
                         inlineCollapsed={inlineCollapsed}
                         containerStyle={{
                             display: 'flex',

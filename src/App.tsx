@@ -16,6 +16,7 @@ import { getWordSet } from './firebase/wordSetAPI';
 import WordLearnLayout from './layouts/wordLearnLayout/WordLearnLayout';
 import { getUser } from './firebase/userAPI';
 import { getFolder } from './firebase/folderAPI';
+import WordCreateLayout from './layouts/wordCreateLayout/WordCreateLayout';
 
 function App() {
     useEffect(() => {
@@ -44,7 +45,6 @@ function App() {
         {
             path: '/',
             element: <MainLayout />,
-            errorElement: <NotFoundLayout />,
             children: [
                 {
                     path: '/',
@@ -62,12 +62,12 @@ function App() {
                     path: '/create-wordset',
                     element: (
                         <ProtectedRoute>
-                            <WordEditLayout />
+                            <WordCreateLayout />
                         </ProtectedRoute>
                     )
                 },
                 {
-                    path: '/edit-wordset/:wordsetid',
+                    path: '/user/:userid/folders/:folderid/edit-wordset/:wordsetid',
                     element: (
                         <ProtectedRoute>
                             <WordEditLayout />

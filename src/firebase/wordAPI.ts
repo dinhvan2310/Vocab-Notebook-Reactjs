@@ -150,9 +150,6 @@ export const updateWordGlobal = async (word: WordType) => {
                 }
             ],
             contexts: word.contexts,
-            imageUrl: [
-                word.imageURL
-            ]
         })
     } else {
         const wordGlobalData = wordGlobalDoc.data() as WordGlobalType;
@@ -178,15 +175,12 @@ export const updateWordGlobal = async (word: WordType) => {
         }
 
         const _contexts = wordGlobalData.contexts.concat(word.contexts).filter((value, index, self) => self.indexOf(value) === index);
-        const wordImageUrl: string = typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL) as string;
-        const _imageUrl = wordGlobalData.imageUrl.concat(wordImageUrl).filter((value, index, self) => self.indexOf(value) === index);
 
     
 
         updateDoc(wordGlobalRef, {
             meanings: _meanings,
             contexts: _contexts,
-            imageUrl: _imageUrl
         })
     }
 }

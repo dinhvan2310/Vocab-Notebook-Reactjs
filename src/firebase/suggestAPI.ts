@@ -5,8 +5,6 @@ import { convertToWordType, getWordDefinition } from "../APIs/freeDictionary/fre
 
 export const suggestWord = async (text: string) => {
 
-    console.log('suggestWord', text);
-
     if (text.trim() === '') {
         return []
     }
@@ -37,7 +35,6 @@ export const suggestWord = async (text: string) => {
 
 export const suggestDefinition = async (word: string, text: string, type: 'dictionary' | 'community' = 'community', limit: number = 3) => {
 
-    console.log('suggestDefinition', word);
 
 
     if (type === 'dictionary') {
@@ -51,9 +48,8 @@ export const suggestDefinition = async (word: string, text: string, type: 'dicti
     }
 
 
-
-    // gợi ý 3 từ hoàn chỉnh
-    const q = query(collection(db, 'wordGlobals'),
+    try {
+        const q = query(collection(db, 'wordGlobals'),
         where('name', '==', word.trim().toLowerCase()),
     );
     const wordGlobal = (await getDocs(q)).docs.map(doc => doc.data())[0];
@@ -86,6 +82,11 @@ export const suggestDefinition = async (word: string, text: string, type: 'dicti
             return item.meaning;
         });
     }
+    }
+    catch (error) {
+        return []
+    }
+    
 
 }
 
@@ -115,7 +116,6 @@ export const suggestContext = async (word: string, text: string, exclude: string
             return !exclude.includes(context);
         });
         if (allContexts.length === 0) {
-            console.log('allContexts.length === 0');
             return []
         } else {
             allContexts = allContexts.sort(() => Math.random() - 0.5);

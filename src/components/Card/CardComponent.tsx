@@ -16,6 +16,7 @@ interface CardComponentProps {
     backGroundColor?: string;
 
     title?: string;
+    visible?: boolean;
     subTitle?: string;
 
     haveFloatingButton?: boolean;
@@ -41,6 +42,7 @@ function CardComponent(props: CardComponentProps) {
         subTitle,
         menuItems,
         haveFloatingButton,
+        visible = true,
         createAt,
         type = 'card-text'
     } = props;
@@ -79,20 +81,39 @@ function CardComponent(props: CardComponentProps) {
                     />
                 </div>
                 <div
-                    className="
-                        py-4 px-2
+                    className={`py-4 px-2
                         h-1/3
                         rounded-b-lg
                     bg-bgLight dark:bg-bgDark
                 transition-transform
-                    ">
+                `}>
                     <div
                         className="
                         h-full flex flex-col justify-between
                     ">
                         <div>
-                            <TitleComponent title={title ?? ''} fontSize="1.5em" fontWeight={600} />
-                            <TextComponent text={subTitle ?? ''} fontSize="1.2em" />
+                            <RowComponent justifyContent="space-between">
+                                <TitleComponent
+                                    title={title ?? ''}
+                                    fontSize="1.6em"
+                                    fontWeight={600}
+                                />
+                                <div
+                                    className={`
+                                        rounded-full
+                                    bg-primary
+                                    px-2
+                                    py-1
+                                    flex items-center
+                                    border-[1px] border-primary
+                                    `}>
+                                    <TextComponent
+                                        text={visible ? 'Public' : 'Private'}
+                                        fontSize="1.2em"
+                                    />
+                                </div>
+                            </RowComponent>
+                            <TitleComponent title={subTitle ?? ''} fontSize="1.2em" />
                         </div>
 
                         <RowComponent justifyContent="space-between">
@@ -151,7 +172,28 @@ function CardComponent(props: CardComponentProps) {
                             alignItems="center"
                             justifyContent="space-between"
                             className="mb-2 h-full w-full">
-                            <TitleComponent title={title ?? ''} fontSize="2em" fontWeight={600} />
+                            <RowComponent>
+                                <TitleComponent
+                                    title={title ?? ''}
+                                    fontSize="2em"
+                                    fontWeight={600}
+                                    className="mr-2"
+                                />
+                                <div
+                                    className={`
+                                        rounded-full
+                                    bg-primary
+                                    px-2
+                                    py-1
+                                    flex items-center
+                                    border-[1px] border-primary
+                                    `}>
+                                    <TextComponent
+                                        text={visible ? 'Public' : 'Private'}
+                                        fontSize="1.2em"
+                                    />
+                                </div>
+                            </RowComponent>
                             {haveFloatingButton && (
                                 <FloatingActionButtonComponent
                                     menuItems={menuItems ?? []}

@@ -87,13 +87,13 @@ function Upload(props: UploadProps) {
         style
     } = props;
 
-    const [file, setFile] = useState<File | undefined | string>(undefined);
+    const [file, setFile] = useState<File | undefined | string>(defaultImage);
     const [showUrl, setShowUrl] = useState<boolean>(true);
 
     const [url, setUrl] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        setShowUrl(false);
+        if (file) setShowUrl(false);
     }, [file]);
 
     if (type === 'file') {
@@ -203,7 +203,7 @@ function Upload(props: UploadProps) {
                     alignItems="flex-end"
                     style={{
                         position: 'absolute',
-                        bottom: '8px',
+                        bottom: '0px',
                         left: '12px',
                         right: '12px',
                         display: 'flex',
@@ -211,7 +211,8 @@ function Upload(props: UploadProps) {
                     }}>
                     <InputComponent
                         style={{
-                            backdropFilter: 'blur(2px)'
+                            backdropFilter: 'blur(2px)',
+                            backgroundColor: 'var(--background-color)'
                         }}
                         value={url ?? ''}
                         onChange={async (imageUrl) => {
@@ -224,7 +225,7 @@ function Upload(props: UploadProps) {
                         }}
                         type="text"
                         borderType="bottom"
-                        placeholder="URL"
+                        placeholder="Paste URL here"
                         fontSize="1em"
                     />
                 </RowComponent>

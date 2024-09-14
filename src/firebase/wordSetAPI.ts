@@ -16,6 +16,7 @@ import {
     updateDoc,
     where
 } from 'firebase/firestore';
+import FolderType from '../types/FolderType';
 import { WordSetType } from '../types/WordSetType';
 import { WordType } from '../types/WordType';
 import { auth, db } from './firebase-config';
@@ -23,8 +24,6 @@ import { deleteImage, uploadImage } from './utils/uploadImage';
 import { addWord } from './wordAPI';
 
 export const addWordSet = async (wordSet: WordSetType, words: WordType[]) => {
-    console.log('addWordSet', wordSet);
-    console.log('addWordSet', words);
 
     const user = auth.currentUser;
     if (!user) throw new Error('User is not logged in');
@@ -79,7 +78,6 @@ export const addWordSet = async (wordSet: WordSetType, words: WordType[]) => {
             return await addWord(wordSetRef.id, {
                 ...word,
                 imageURL: imageUrl,
-                createdAt: Timestamp.now(),
                 learned: false
             });
         })
@@ -92,14 +90,60 @@ export const addWordSet = async (wordSet: WordSetType, words: WordType[]) => {
     return wordSetRef.id;
 };
 
+export const updateWordSetEditableBy = async ( wordSetId: string, editableBy: 'owner' | 'everyone', password: string) => {
+    console.log('updateWordSetEditableBy', wordSetId, editableBy, password);
+
+    const user = auth.currentUser;
+    if (!user) throw new Error('User is not logged in');
+    if (!wordSetId) throw new Error('WordSet id is not provided');
+
+    const wordSetRef = doc(db, 'wordSets', wordSetId);
+    const wordSetDoc = await getDoc(wordSetRef);
+    if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
+
+    if (editableBy === 'everyone' && password === '') {
+        throw new Error('Password is required');
+    }
+
+    // check if user has permission to add wordSet to the folder
+    const folderDoc: DocumentData = await getDoc(wordSetDoc.data().folderRef);
+    if (!folderDoc.exists()) throw new Error('Folder is not found');
+    if (folderDoc.data().userRef?.id !== user.uid)
+        throw new Error('You do not have permission to add wordSet to this folder');
+
+    updateDoc(wordSetRef, {
+        editableBy: editableBy,
+        editablePassword: password
+    });
+
+    return wordSetRef.id;
+}
+const checkPassword = async (wordSetId: string, password: string) => {
+    const wordSetRef = doc(db, 'wordSets', wordSetId);
+    const wordSetDoc = await getDoc(wordSetRef);
+    if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
+    const user = auth.currentUser;
+    if (!user) throw new Error('User is not logged in');
+
+    const folderDoc: DocumentData = await getDoc(wordSetDoc.data().folderRef);
+    if (!folderDoc.exists()) throw new Error('Folder is not found');
+
+    if (folderDoc.data().userRef?.id === user.uid)
+        return true;
+
+    if (wordSetDoc.data().editableBy === 'owner') return false;
+    
+    console.log('password', password, 'pass' , wordSetDoc.data().editablePassword);
+    if (password !== wordSetDoc.data().editablePassword) {
+        return false;
+    }
+    return true;
+}
 export const updateWordSet = async (
     wordSetId: string,
     name: string,
     visibility: 'public' | 'private',
-    editableBy: 'owner' | 'everyone',
-    editablePassword: string,
     imageUrl: string | File,
-    words: WordType[] | undefined
 ): Promise<string> => {
     console.log('updateWordSet');
 
@@ -111,6 +155,7 @@ export const updateWordSet = async (
     const wordSetDoc = await getDoc(wordSetRef);
     if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
 
+    
     const folderDoc: DocumentData = await getDoc(wordSetDoc.data().folderRef);
     // check if user has permission to add wordSet to the folder
     if (!folderDoc.exists()) throw new Error('Folder is not found');
@@ -125,47 +170,16 @@ export const updateWordSet = async (
         }
     }
 
-    // delete the old image on storage if the new image is different
-    if (words !== undefined) {
-        const oldWords = wordSetDoc.data().words;
-    for (let i = 0; i < oldWords.length; i++) {
-        const oldWord = (await getDoc(oldWords[i])).data() as WordType;
-        console.log('oldWord', oldWord);
-        if (oldWord.imageURL) {
-            if (typeof oldWord.imageURL === 'string' && oldWord.imageURL  && oldWord.imageURL !== words[i].imageURL) {
-                deleteImage(oldWord.imageURL);
-            }
-        }
-    }
-    }
-
-
-    // add words to the wordSet
-    const newWordRefs = words === undefined ? undefined : await Promise.all(
-        words.map(async (word) => {
-            const imageUrl =
-                typeof word.imageURL === 'string'
-                    ? word.imageURL
-                    : await uploadImage(word.imageURL);
-            return await addWord(wordSetRef.id, {
-                meaning: word.meaning.trim(),
-                contexts: word.contexts,
-                name: word.name.trim().toLowerCase(),
-                imageURL: imageUrl,
-            });
-        })
-    );
-
     const newWordSet = {
         name: name.trim() || '',
         nameLowercase: name.trim().toLowerCase() || '',
         imageUrl: _imageUrl || '',
         visibility: visibility || 'public',
         modifiedAt: Timestamp.now(),
-        words: newWordRefs === undefined ? wordSetDoc.data().words : newWordRefs,
 
-        editableBy: editableBy || 'owner',
-        editablePassword: editableBy === 'owner' ? '' : editablePassword || ''
+        words: wordSetDoc.data().words,
+        editableBy: wordSetDoc.data().editableBy,
+        editablePassword: wordSetDoc.data().editablePassword
     };
 
     
@@ -176,11 +190,53 @@ export const updateWordSet = async (
         wordSets: arrayUnion(wordSetRef)
     });
 
-    console.log('updateWordSet', wordSetId);
-
     return wordSetRef.id;
 };
 
+export const updateWords = async (wordSetId: string, words: WordType[], password: string) => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User is not logged in');
+    if (!wordSetId) throw new Error('WordSet id is not provided');
+
+    const wordSetRef = doc(db, 'wordSets', wordSetId);
+    const wordSetDoc = await getDoc(wordSetRef);
+    if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
+
+    if (!(await checkPassword(wordSetId, password ?? ''))) {
+        console.log('Password is incorrect');
+        throw new Error('Password is incorrect');
+    }
+    
+    const oldWords = wordSetDoc.data().words;
+    oldWords.forEach(async (wordRef: DocumentReference) => {
+        const word = (await getDoc(wordRef)).data() as WordType;
+        const imageUrl =
+            typeof word.imageURL === 'string' ? word.imageURL : await uploadImage(word.imageURL);
+        if (imageUrl) {
+            deleteImage(imageUrl);
+        }
+        deleteDoc(wordRef);
+    })
+
+    const newWordRefs = await Promise.all(
+        words.map(async (word) => {
+            const imageUrl =
+                typeof word.imageURL === 'string'
+                    ? word.imageURL
+                    : await uploadImage(word.imageURL);
+            return await addWord(wordSetRef.id, {
+                ...word,
+                imageURL: imageUrl,
+            });
+        })
+    );
+
+    // update wordSet with words
+    updateDoc(wordSetRef, {
+        words: newWordRefs
+    });
+    return wordSetRef.id;
+}
 
 // -----------------------
 export const removeWordSet = async (wordSetId: string) => {
@@ -249,8 +305,26 @@ export const removeWordSet = async (wordSetId: string) => {
 
 
 export const getWordSet = async (wordSetId: string) => {
+    const user = auth.currentUser;
+
+
     const wordSetDoc = await getDoc(doc(db, 'wordSets', wordSetId));
     if (!wordSetDoc.exists()) throw new Error('WordSet is not found');
+
+    const folderDoc = await getDoc(wordSetDoc.data().folderRef);
+    if (!folderDoc.exists()) throw new Error('Folder is not found');
+    const folderData = folderDoc.data() as FolderType;
+
+    let isPermitted = false;
+    if (folderData.userRef?.id === user?.uid) {
+        isPermitted = true;
+    }
+
+    if (!isPermitted && wordSetDoc.data().visibility !== 'public') {
+        throw new Error('You do not have permission to view this wordSet');
+    }
+
+    
 
     return {
         ...wordSetDoc.data(),
@@ -265,8 +339,20 @@ export const getWordSets = async (
     search: string = '',
     sortBy: 'nameLowercase' | 'createAt' | 'modifiedAt' = 'nameLowercase'
 ) => {
+    const user = auth.currentUser;
+
     if (!folderRef) throw new Error('Folder reference is not provided');
     const _folderRef = typeof folderRef === 'string' ? doc(db, 'folders', folderRef) : folderRef;
+
+    const folderDoc = await getDoc(_folderRef);
+    if (!folderDoc.exists()) throw new Error('Folder is not found');
+
+    let isPermitted = false;
+    const folderData = folderDoc.data() as FolderType;
+    if (folderData.userRef?.id === user?.uid) {
+        isPermitted = true;
+    }
+
 
     let q;
 
@@ -284,6 +370,10 @@ export const getWordSets = async (
             where('folderRef', '==', _folderRef),
             orderBy(sortBy, sortBy === 'nameLowercase' ? 'asc' : 'desc')
         );
+    }
+
+    if (!isPermitted) {
+        q = query(q, where('visibility', '==', 'public'));
     }
 
     const querySnapshot = await getDocs(q);

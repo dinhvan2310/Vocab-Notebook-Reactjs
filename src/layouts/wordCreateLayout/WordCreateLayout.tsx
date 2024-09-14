@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { Timestamp } from 'firebase/firestore';
 import { Add, Export } from 'iconsax-react';
-import { useEffect, useState } from 'react';
-import { useLoaderData, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
 import InputComponent from '../../components/commonComponent/Input/InputComponent';
@@ -14,39 +14,28 @@ import EmptyComponent from '../../components/Empty/EmptyComponent';
 import ModalComponent from '../../components/Modal/ModalComponent';
 import Upload from '../../components/Upload/Upload';
 import WordCardComponent from '../../components/WordCard/WordCardComponent';
-import { getWords } from '../../firebase/wordAPI';
-import { updateWords } from '../../firebase/wordSetAPI';
+import { addWordSet } from '../../firebase/wordSetAPI';
+import { useAuth } from '../../hooks/useAuth';
 import { useMessage } from '../../hooks/useMessage';
-import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 
-function WordEditLayout() {
+function WordCreateLayout() {
     // props
     // meta data ------------------------------------------------------------------------------
-    // const { user: currentUser } = useAuth();
+    const { user: currentUser } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
-    const password = location.state?.password ?? '';
     const message = useMessage();
-    const { userid, folderid } = useParams();
-    // load word set if case edit or null if case create
-    const wordSet = useLoaderData() as WordSetType;
+    const [searchParams] = useSearchParams();
+    const folderId = searchParams.get('inFolder');
 
     // state --------------------------------------------------------------------------------------------------
     const [modalImportOpen, setModalImportOpen] = useState(false);
     const [dataImport, setDataImport] = useState<string>('');
 
-    const [data, setData] = useState<WordType[]>([]);
+    const [title, setTitle] = useState('');
+    const [titleError, setTitleError] = useState('');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (wordSet) {
-                const wordSetData = await getWords(wordSet.wordsetId ?? '');
-                setData(wordSetData);
-            }
-        };
-        fetchData();
-    }, [wordSet]);
+    const [data, setData] = useState<WordType[]>([]);
 
     // options ui
 
@@ -118,22 +107,37 @@ function WordEditLayout() {
     });
     const mutation = useMutation({
         mutationFn: async () => {
+            if (title === '') {
+                setTitleError('Title is required');
+                message('error', 'Title is required !');
+                return;
+            }
+
             if (checkCanSave() === false) {
                 message('error', 'Please fill all fields !');
                 return;
             }
 
-            const wordSetId = await updateWords(wordSet.wordsetId ?? '', data, password);
+            const wordSetId = await addWordSet(
+                {
+                    name: title.trim(),
+                    imageUrl: '',
+                    visibility: 'public',
+                    createAt: Timestamp.now(),
+                    editableBy: 'owner',
+                    modifiedAt: Timestamp.now(),
+                    folderRef: folderId ?? ''
+                },
+                data
+            );
 
-            navigate(`/user/${userid}/folders/${folderid}/wordset/${wordSetId}`);
+            navigate(`/user/${currentUser?.uid}/folders/${folderId}/wordset/${wordSetId}`);
         },
         mutationKey: ['handleSave']
     });
 
     return (
-        <div
-            className="word-layout-container flex flex-col
-            max-w-[1024px] m-auto">
+        <div className="word-layout-container">
             {/* modal */}
             <ModalComponent
                 open={modalImportOpen}
@@ -218,7 +222,7 @@ function WordEditLayout() {
                             width: '100%'
                         }}>
                         <TitleComponent
-                            title={wordSet ? 'Edit Word Set' : 'Create Word Set'}
+                            title={'Create Word Set'}
                             fontSize="2.4em"
                             fontWeight={700}
                         />
@@ -239,10 +243,13 @@ function WordEditLayout() {
                             }}
                             borderType="bottom"
                             label={'Title'}
-                            value={wordSet.name}
-                            animationType="none"
-                            onChange={() => {}}
-                            readonly={true}
+                            errorText={titleError}
+                            value={title}
+                            onChange={(value) => {
+                                setTitle(value);
+                                setTitleError('');
+                            }}
+                            animationType="slideInLeft"
                         />
                         <RowComponent
                             style={{
@@ -269,7 +276,7 @@ function WordEditLayout() {
                             <SpaceComponent width={8} />
                             <ButtonComponent
                                 tabindex={-1}
-                                text={wordSet ? 'Update' : 'Create'}
+                                text={'Create'}
                                 onClick={() => {
                                     mutation.mutate();
                                 }}
@@ -291,7 +298,7 @@ function WordEditLayout() {
                     </RowComponent>
                 </ColumnComponent>
             </header>
-            <main className="mt-16">
+            <main className="mt-16 sm:px-1 md:px-2 lg:px-3 xl:px-16 2xl:px-24">
                 {data.length === 0 && <EmptyComponent />}
                 {data.map((item, index) => {
                     return (
@@ -306,6 +313,17 @@ function WordEditLayout() {
                             onWordChange={(i, word) => {
                                 const newData = [...data];
                                 newData[i] = word;
+                                // if (
+                                //     data.length > 1 &&
+                                //     data.find(
+                                //         (item, index) => i !== index && item.name === word.name
+                                //     )
+                                // ) {
+                                //     newData[i].titleErrorText = `${word.name} is duplicated`;
+                                // } else {
+                                //     newData[i].titleErrorText = undefined;
+                                // }
+
                                 setData(newData);
                             }}
                         />
@@ -345,4 +363,4 @@ function WordEditLayout() {
     );
 }
 
-export default WordEditLayout;
+export default WordCreateLayout;

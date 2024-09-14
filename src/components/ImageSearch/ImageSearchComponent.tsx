@@ -13,12 +13,13 @@ interface ImageSearchProps {
     onChoose: (url: string) => void;
 
     searchInitial?: string;
+    perPage?: number;
     style?: React.CSSProperties;
     clasName?: string;
 }
 function ImageSearchComponent(props: ImageSearchProps) {
     // meta-data -------------------------------------------------------
-    const { onChoose, clasName = '', style, searchInitial } = props;
+    const { onChoose, clasName = '', style, searchInitial, perPage = 12 } = props;
     const message = useMessage();
 
     // state ------------------------------------------------------------
@@ -30,12 +31,21 @@ function ImageSearchComponent(props: ImageSearchProps) {
     const [totalRows, setTotalRows] = useState(0);
 
     useEffect(() => {
+        if (photos.length !== 0) {
+            setPhotos([]);
+            setPage(1);
+        }
+    }, [searchDebounce]);
+
+    useEffect(() => {
         (async () => {
+            console.log(photos.length, page * perPage);
+            if (page * perPage <= photos.length) return;
             try {
                 const response = await unsplash.search.getPhotos({
                     query: searchDebounce,
                     page: page,
-                    perPage: 12
+                    perPage: perPage
                 });
                 if (response.errors) {
                     console.log('error occurred: ', response.errors);
@@ -58,37 +68,6 @@ function ImageSearchComponent(props: ImageSearchProps) {
             }
         })();
     }, [page]);
-
-    useEffect(() => {
-        setPhotos([]);
-        setPage(1);
-        (async () => {
-            try {
-                const response = await unsplash.search.getPhotos({
-                    query: searchDebounce,
-                    page: page,
-                    perPage: 12
-                });
-                if (response.errors) {
-                    console.log('error occurred: ', response.errors);
-                    return [];
-                }
-                console.log('response: ', response.response.results);
-                setPhotos((pre) => [
-                    ...pre,
-                    ...response.response.results.map((item) => item.urls.regular)
-                ]);
-                setTotalRows(response.response.total);
-            } catch {
-                message(
-                    'error',
-                    `Error: Failed to fetch images from Unsplash, try again after a few minutes`
-                );
-                setPhotos([]);
-                setTotalRows(1);
-            }
-        })();
-    }, [searchDebounce]);
 
     return (
         <div

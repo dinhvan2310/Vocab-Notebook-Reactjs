@@ -53,20 +53,24 @@ function FlashCard(props: FlashCardProps) {
                 <VolumeHigh size={20} className="" />
             </ButtonComponent>
             <div
-                className="absolute w-full h-full 
+                className="absolute w-full h-full
                 flex items-center justify-center
-                px-24
+                px-24 py-12
                 "
                 onClick={handleToggleAnswer}>
                 <TitleComponent
                     title={showAnswer ? answer : question}
                     fontSize={showAnswer ? '2em' : '2.8em'}
-                    className="text-center"
+                    className="text-center scrollbar dark:scrollbarDark"
                     titleStyle={{
                         wordWrap: 'break-word',
-                        whiteSpace: 'pre-line'
+                        whiteSpace: 'pre-line',
+                        height: showAnswer ? '100%' : 'auto'
                     }}
-                    containerStyle={{}}
+                    containerStyle={{
+                        height: '100%',
+                        overflowY: 'auto'
+                    }}
                 />
             </div>
             <TextComponent

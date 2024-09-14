@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import TabItemType from '../../types/TabItemType';
 import RowComponent from '../commonComponent/Row/RowComponent';
 import SpaceComponent from '../commonComponent/Space/SpaceComponent';
