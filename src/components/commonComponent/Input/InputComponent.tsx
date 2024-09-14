@@ -1,10 +1,10 @@
-import TextareaAutosize from '../../../modules/react-textarea-autosize';
 import './InputComponent.scss';
 import TitleComponent from '../Title/TitleComponent';
 import MenuItemsComponent from '../../MenuItems/MenuItemsComponent';
 import { useEffect, useState } from 'react';
 import ButtonComponent from '../Button/ButtonComponent';
 import { Eye, EyeSlash } from 'iconsax-react';
+import TextareaAutosize from 'react-textarea-autosize';
 
 interface InputComponentProps {
     type: 'text' | 'textarea' | 'password' | 'email';

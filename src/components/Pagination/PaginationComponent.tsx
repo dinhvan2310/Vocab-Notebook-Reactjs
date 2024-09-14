@@ -27,7 +27,7 @@ function PaginationComponent(props: PaginationProps) {
     } = props;
     // state
     const totalPages = Math.ceil(total / pageSize);
-    const pages = [];
+    const pages: number[] = [];
 
     const firstPage = totalPages > 0 ? 1 : 0;
     const lastPage = totalPages;
