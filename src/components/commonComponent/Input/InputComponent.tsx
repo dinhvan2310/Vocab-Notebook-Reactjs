@@ -1,4 +1,4 @@
-import TextareaAutosize from 'react-textarea-autosize';
+import TextareaAutosize from '../../../modules/react-textarea-autosize';
 import './InputComponent.scss';
 import TitleComponent from '../Title/TitleComponent';
 import MenuItemsComponent from '../../MenuItems/MenuItemsComponent';
