@@ -1,6 +1,16 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Aave, Copy, Edit2, Import, Notepad, Setting2, Star1, VolumeHigh } from 'iconsax-react';
-import { useState } from 'react';
+import {
+    Aave,
+    Copy,
+    Edit2,
+    Import,
+    Notepad,
+    Setting2,
+    Star,
+    Star1,
+    VolumeHigh
+} from 'iconsax-react';
+import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate, useParams } from 'react-router-dom';
 import NotFoundUser from '../../assets/image/no_avatar.png';
 import CardComponent from '../../components/Card/CardComponent';
@@ -20,7 +30,12 @@ import ModalComponent from '../../components/Modal/ModalComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
 import { getWords, updateWord } from '../../firebase/wordAPI';
-import { getWordSet, updateWordSet, updateWordSetEditableBy } from '../../firebase/wordSetAPI';
+import {
+    getWordSet,
+    updateWordSet,
+    updateWordSetEditableBy,
+    updateWordSetStarCount
+} from '../../firebase/wordSetAPI';
 import FlashCard from '../../flashCard/FlashCard';
 import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
@@ -31,6 +46,7 @@ import { UserType } from '../../types/UserType';
 import { WordSetType } from '../../types/WordSetType';
 import { WordType } from '../../types/WordType';
 import { timeAgo } from '../../utils/timeAgo';
+import { updateRecentlyWordSet } from '../../firebase/userAPI';
 
 function WordLearnLayout() {
     // meta data
@@ -51,6 +67,12 @@ function WordLearnLayout() {
     const [learnedSelected, setLearnedSelected] = useState<'all' | 'starred'>('all');
     const [sortSelected, setSortSelected] = useState<'Amphabet' | 'Learned'>('Amphabet');
     const [showDefinition, setShowDefinition] = useState(true);
+    const [staredWordSet, setStaredWordSet] = useState<boolean>(false);
+    const [starCount, setStarCount] = useState<number>(0);
+
+    useEffect(() => {
+        updateRecentlyWordSet(wordsetid ?? '');
+    }, []);
 
     const wordSetQuery = useQuery<{
         WordSet: WordSetType;
@@ -67,6 +89,8 @@ function WordLearnLayout() {
                 setVisibility('public');
                 setEditableBy('owner');
                 setEditableByPublicPass('');
+                setStaredWordSet(false);
+                setStarCount(0);
             } else {
                 setTitle(wordSet.name);
                 setImageCover(wordSet.imageUrl ?? null);
@@ -75,6 +99,10 @@ function WordLearnLayout() {
                 setEditableByPublicPass(
                     currentUser?.uid === user.userId ? wordSet.editablePassword ?? '' : ''
                 );
+                setStaredWordSet(
+                    wordSet.star?.some((star) => star.id === currentUser?.uid) ?? false
+                );
+                setStarCount(wordSet.star?.length ?? 0);
             }
 
             if (sortSelected === 'Amphabet') {
@@ -496,11 +524,10 @@ function WordLearnLayout() {
                     )}
                 </ColumnComponent>
             </ModalComponent>
-            <TitleComponent
-                title={wordSetQuery.data?.WordSet.name}
-                className="mb-8"
-                fontSize="3em"
-            />
+            <RowComponent justifyContent="space-between" alignItems="center" className="mb-4">
+                <TitleComponent title={wordSetQuery.data?.WordSet.name} fontSize="3em" />
+            </RowComponent>
+
             <RowComponent className="relative">
                 <Carousel
                     screens={wordSetQuery.data?.words.map((word: WordType) => (
@@ -556,85 +583,120 @@ function WordLearnLayout() {
                         </LinkComponent>
                     </RowComponent>
                 </ColumnComponent>
-                <RowComponent>
-                    {currentUser?.uid !== user.userId && editableBy === 'everyone' && (
-                        <>
-                            <InputComponent
-                                value={password}
-                                onChange={(value) => {
-                                    setPassword(value);
-                                    setErrorTextPassword('');
-                                }}
-                                placeholder="Enter correct password to edit this set"
-                                type="password"
-                                borderType="bottom"
-                                width="300px"
-                                animationType="slideInLeft"
-                                errorText={errorTextPassword}
-                                label="Password"
-                            />
-                            <SpaceComponent width={8} />
-                        </>
-                    )}
+                <ColumnComponent alignItems="flex-end">
+                    <RowComponent className="mb-2">
+                        {currentUser?.uid !== user.userId && editableBy === 'everyone' && (
+                            <>
+                                <InputComponent
+                                    value={password}
+                                    onChange={(value) => {
+                                        setPassword(value);
+                                        setErrorTextPassword('');
+                                    }}
+                                    placeholder="Enter correct password to edit this set"
+                                    type="password"
+                                    borderType="bottom"
+                                    width="300px"
+                                    animationType="slideInLeft"
+                                    errorText={errorTextPassword}
+                                    label="Password"
+                                />
+                                <SpaceComponent width={8} />
+                            </>
+                        )}
 
-                    <ButtonComponent
-                        style={{
-                            height: '40px',
-                            paddingLeft: '16px',
-                            paddingRight: '16px'
-                        }}
-                        tooltip="Export"
-                        icon={<Import size={20} />}
-                        onClick={() => {
-                            setModalExportOpen(true);
-                        }}
-                        backgroundColor="var(--bg-color)"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        isBorder={true}
-                        textColor="var(--secondary-text-color)"
-                    />
-                    <SpaceComponent width={8} />
-                    <ButtonComponent
-                        tabindex={-1}
-                        icon={<Edit2 size={20} />}
-                        onClick={() => {
-                            handleEditWordSet();
-                        }}
-                        tooltip="Edit word set"
-                        backgroundColor="var(--bg-color)"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        isBorder={true}
-                        borderColor="var(--border-color)"
-                        textColor="var(--secondary-text-color)"
-                        style={{
-                            height: '40px',
-                            padding: '0 12px'
-                        }}
-                        disabled={isDisableIcon()}
-                    />
-                    <SpaceComponent width={8} />
-                    <ButtonComponent
-                        tabindex={-1}
-                        icon={<Setting2 size={20} />}
-                        onClick={() => {
-                            handleOpenModalSetting();
-                        }}
-                        tooltip="Setting"
-                        backgroundColor="var(--bg-color)"
-                        backgroundHoverColor="var(--bg-hover-color)"
-                        backgroundActiveColor="var(--bg-active-color)"
-                        isBorder={true}
-                        borderColor="var(--border-color)"
-                        textColor="var(--secondary-text-color)"
-                        style={{
-                            height: '40px',
-                            padding: '0 12px'
-                        }}
-                        disabled={currentUser?.uid !== user.userId}
-                    />
-                </RowComponent>
+                        <ButtonComponent
+                            style={{
+                                height: '40px',
+                                paddingLeft: '16px',
+                                paddingRight: '16px'
+                            }}
+                            tooltip="Export"
+                            icon={<Import size={20} />}
+                            onClick={() => {
+                                setModalExportOpen(true);
+                            }}
+                            backgroundColor="var(--bg-color)"
+                            backgroundHoverColor="var(--bg-hover-color)"
+                            backgroundActiveColor="var(--bg-active-color)"
+                            isBorder={true}
+                            textColor="var(--secondary-text-color)"
+                        />
+                        <SpaceComponent width={8} />
+                        <ButtonComponent
+                            tabindex={-1}
+                            icon={<Edit2 size={20} />}
+                            onClick={() => {
+                                handleEditWordSet();
+                            }}
+                            tooltip="Edit word set"
+                            backgroundColor="var(--bg-color)"
+                            backgroundHoverColor="var(--bg-hover-color)"
+                            backgroundActiveColor="var(--bg-active-color)"
+                            isBorder={true}
+                            borderColor="var(--border-color)"
+                            textColor="var(--secondary-text-color)"
+                            style={{
+                                height: '40px',
+                                padding: '0 12px'
+                            }}
+                            disabled={isDisableIcon()}
+                        />
+                        <SpaceComponent width={8} />
+                        <ButtonComponent
+                            tabindex={-1}
+                            icon={<Setting2 size={20} />}
+                            onClick={() => {
+                                handleOpenModalSetting();
+                            }}
+                            tooltip="Setting"
+                            backgroundColor="var(--bg-color)"
+                            backgroundHoverColor="var(--bg-hover-color)"
+                            backgroundActiveColor="var(--bg-active-color)"
+                            isBorder={true}
+                            borderColor="var(--border-color)"
+                            textColor="var(--secondary-text-color)"
+                            style={{
+                                height: '40px',
+                                padding: '0 12px'
+                            }}
+                            disabled={currentUser?.uid !== user.userId}
+                        />
+                    </RowComponent>
+                    <div className="relative">
+                        <ButtonComponent
+                            style={{
+                                height: '40px',
+                                paddingLeft: '16px',
+                                paddingRight: '16px'
+                            }}
+                            tooltip="Star this word set"
+                            icon={
+                                staredWordSet ? (
+                                    <Star size={26} variant="Bold" color="var(--text-color)" />
+                                ) : (
+                                    <Star size={26} color="var(--text-color)" />
+                                )
+                            }
+                            onClick={() => {
+                                updateWordSetStarCount(wordSetQuery.data?.WordSet.wordsetId ?? '');
+                                setStaredWordSet(!staredWordSet);
+                                setStarCount(staredWordSet ? starCount - 1 : starCount + 1);
+                            }}
+                            backgroundColor="transparent"
+                            backgroundHoverColor="var(--bg-hover-color)"
+                            backgroundActiveColor="var(--bg-active-color)"
+                            textColor="var(--secondary-text-color)"
+                        />
+                        <div>
+                            <TextComponent
+                                text={starCount.toString()}
+                                className="absolute top-0 right-2 text-red"
+                                fontSize="1.4em"
+                            />
+                        </div>
+                    </div>
+                </ColumnComponent>
             </RowComponent>
 
             <SpaceComponent height={32} />

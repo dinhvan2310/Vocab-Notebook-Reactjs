@@ -27,6 +27,8 @@ interface CardComponentProps {
 
     imageSrc?: string;
     type?: 'card-image' | 'card-text';
+
+    icon?: ReactNode;
 }
 
 function CardComponent(props: CardComponentProps) {
@@ -42,9 +44,10 @@ function CardComponent(props: CardComponentProps) {
         subTitle,
         menuItems,
         haveFloatingButton,
-        visible = true,
+        visible,
         createAt,
-        type = 'card-text'
+        type = 'card-text',
+        icon
     } = props;
     const cardContainerClass = hoverable ? 'card-container hoverable' : 'card-container';
 
@@ -56,6 +59,7 @@ function CardComponent(props: CardComponentProps) {
                 cursor-pointer
                 rounded-lg
                 group
+                relative
             "
                 style={style}>
                 <div
@@ -98,20 +102,22 @@ function CardComponent(props: CardComponentProps) {
                                     fontSize="1.6em"
                                     fontWeight={600}
                                 />
-                                <div
-                                    className={`
-                                        rounded-full
-                                    bg-primary
-                                    px-2
-                                    py-1
-                                    flex items-center
-                                    border-[1px] border-primary
-                                    `}>
-                                    <TextComponent
-                                        text={visible ? 'Public' : 'Private'}
-                                        fontSize="1.2em"
-                                    />
-                                </div>
+                                {visible !== undefined && (
+                                    <div
+                                        className={`
+                                            rounded-full
+                                        bg-primary
+                                        px-2
+                                        py-[1px]
+                                        flex items-center
+                                        border-[1px] border-primary
+                                        `}>
+                                        <TextComponent
+                                            text={visible ? 'Public' : 'Private'}
+                                            fontSize="1.2em"
+                                        />
+                                    </div>
+                                )}
                             </RowComponent>
                             <TitleComponent title={subTitle ?? ''} fontSize="1.2em" />
                         </div>
@@ -140,6 +146,20 @@ function CardComponent(props: CardComponentProps) {
                         </RowComponent>
                     </div>
                 </div>
+                {icon && (
+                    <div
+                        className="
+                            absolute
+                            top-0
+                            right-2
+                            bg-primary
+                            rounded-full
+                            p-2
+                            "
+                        style={{}}>
+                        {icon}
+                    </div>
+                )}
             </div>
         );
     }
@@ -150,6 +170,7 @@ function CardComponent(props: CardComponentProps) {
                     px-4 py-4 lg:px-6 lg:py-6 
                     h-full w-full
                     ${className}
+                    relative
                 `}
             onClick={onClick}
             style={{
@@ -172,28 +193,50 @@ function CardComponent(props: CardComponentProps) {
                             alignItems="center"
                             justifyContent="space-between"
                             className="mb-2 h-full w-full">
-                            <RowComponent>
-                                <TitleComponent
-                                    title={title ?? ''}
-                                    fontSize="2em"
-                                    fontWeight={600}
-                                    className="mr-2"
-                                />
-                                <div
-                                    className={`
-                                        rounded-full
-                                    bg-primary
-                                    px-2
-                                    py-1
-                                    flex items-center
-                                    border-[1px] border-primary
-                                    `}>
-                                    <TextComponent
-                                        text={visible ? 'Public' : 'Private'}
-                                        fontSize="1.2em"
+                            <RowComponent justifyContent="space-between" className="w-full">
+                                <div className="flex">
+                                    <TitleComponent
+                                        title={title ?? ''}
+                                        fontSize="2em"
+                                        fontWeight={600}
+                                        className="mr-3"
                                     />
+                                    {visible !== undefined && (
+                                        <div
+                                            className={`
+                                            rounded-full
+                                        bg-primary
+                                        px-2
+                                        py-[1px]
+                                        flex items-center
+                                        border-[1px] border-primary
+                                        `}>
+                                            <TextComponent
+                                                text={visible ? 'Public' : 'Private'}
+                                                fontSize="1.2em"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                <div
+                                    className="
+                            bg-primary
+                            rounded-full
+                            p-2
+                            "
+                                    style={{}}>
+                                    {icon}
                                 </div>
                             </RowComponent>
+                        </RowComponent>
+                        <RowComponent alignItems="flex-end">
+                            <ColumnComponent
+                                justifyContent="space-between"
+                                alignItems="flex-start"
+                                className="w-full">
+                                <TitleComponent title={subTitle ?? ''} fontSize="1.2em" />
+                                <TextComponent text={createAt ?? ''} fontSize="1.2em" />
+                            </ColumnComponent>
                             {haveFloatingButton && (
                                 <FloatingActionButtonComponent
                                     menuItems={menuItems ?? []}
@@ -209,10 +252,6 @@ function CardComponent(props: CardComponentProps) {
                                     menuItemsPosition="left"
                                 />
                             )}
-                        </RowComponent>
-                        <RowComponent justifyContent="space-between" className="w-full">
-                            <TextComponent text={subTitle ?? ''} fontSize="1.2em" />
-                            <TextComponent text={createAt ?? ''} fontSize="1.2em" />
                         </RowComponent>
                     </div>
                 )}

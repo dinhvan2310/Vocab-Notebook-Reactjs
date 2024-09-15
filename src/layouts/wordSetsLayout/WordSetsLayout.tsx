@@ -10,6 +10,7 @@ import {
     FolderCross,
     More,
     Refresh2,
+    Star,
     TableDocument,
     Text,
     Timer,
@@ -19,9 +20,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListLoadingAnimation from '../../assets/animation/listLoading.json';
 import FolderImage from '../../assets/image/folder.png';
+import NotFoundUser from '../../assets/image/no_avatar.png';
 import CardComponent from '../../components/Card/CardComponent';
 import ButtonComponent from '../../components/commonComponent/Button/ButtonComponent';
 import ColumnComponent from '../../components/commonComponent/Column/ColumnComponent';
+import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
 import RowComponent from '../../components/commonComponent/Row/RowComponent';
 import SpaceComponent from '../../components/commonComponent/Space/SpaceComponent';
 import SpinComponent from '../../components/commonComponent/Spin/SpinComponent';
@@ -38,24 +41,23 @@ import SearchBoxComponent from '../../components/SearchBox/SearchBoxComponent';
 import SelectComponent from '../../components/Select/SelectComponent';
 import Upload from '../../components/Upload/Upload';
 import { getFolder, removeFolder, updateFolder } from '../../firebase/folderAPI';
+import { getUser } from '../../firebase/userAPI';
 import { uploadImage } from '../../firebase/utils/uploadImage';
 import {
     getWordSets,
     getWordSetViewMode,
     onSnapshotWordSets,
     removeWordSet,
-    setWordSetViewMode
+    setWordSetViewMode,
+    updateWordSetStarCount
 } from '../../firebase/wordSetAPI';
 import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import { useMessage } from '../../hooks/useMessage';
 import { useResponsive } from '../../hooks/useResponsive';
-import NotFoundUser from '../../assets/image/no_avatar.png';
 import FolderType from '../../types/FolderType';
 import { MenuItemInterface } from '../../types/MenuItemType';
 import './WordSetsLayout.scss';
-import { getUser } from '../../firebase/userAPI';
-import HorizontalRuleComponent from '../../components/commonComponent/HorizontalRule/HorizontalRuleComponent';
 
 function WordSetsLayout() {
     // state --------------------------------------------------------------------------------
@@ -243,9 +245,9 @@ function WordSetsLayout() {
     });
 
     const handleClickWordSet = (wordSetId: string) => {
-        if (userid && folderid && wordSetId)
+        if (userid && folderid && wordSetId) {
             navigate(`/user/${userid}/folders/${folderid}/wordset/${wordSetId}`);
-        else message('error', 'Error when navigate to wordset');
+        } else message('error', 'Error when navigate to wordset');
     };
 
     return (
@@ -597,6 +599,63 @@ function WordSetsLayout() {
                                     }
                                     key={index}>
                                     <CardComponent
+                                        icon={
+                                            <div className="relative">
+                                                <ButtonComponent
+                                                    style={{
+                                                        height: '24px',
+                                                        paddingLeft: '8px',
+                                                        paddingRight: '8px',
+                                                        marginRight: '-8px',
+                                                        borderRadius: '50%'
+                                                    }}
+                                                    icon={
+                                                        item.star?.find(
+                                                            (i) => i.id === currentUser?.uid
+                                                        ) ? (
+                                                            <Star
+                                                                size={24}
+                                                                variant="Bold"
+                                                                className="text-textLight dark:text-textDark
+                                                                hover:text-textLight-hover
+                                                                "
+                                                            />
+                                                        ) : (
+                                                            <Star
+                                                                size={24}
+                                                                className="text-textLight dark:text-textDark
+                                                                hover:text-textLight-hover
+                                                                "
+                                                            />
+                                                        )
+                                                    }
+                                                    onClick={(e: React.MouseEvent) => {
+                                                        e.stopPropagation();
+                                                        updateWordSetStarCount(
+                                                            item.wordsetId ?? ''
+                                                        );
+                                                        // setStaredWordSet(!staredWordSet);
+                                                        // setStarCount(
+                                                        //     staredWordSet
+                                                        //         ? starCount - 1
+                                                        //         : starCount + 1
+                                                        // );
+                                                    }}
+                                                    backgroundColor="transparent"
+                                                    backgroundHoverColor="transparent"
+                                                    backgroundActiveColor="transparent"
+                                                    textColor="var(--secondary-text-color)"
+                                                />
+                                                <div>
+                                                    <TextComponent
+                                                        text={item.star?.length}
+                                                        className="absolute top-0 -right-2"
+                                                        textColor="var(--text-color)"
+                                                        fontSize="1.2em"
+                                                    />
+                                                </div>
+                                            </div>
+                                        }
                                         visible={item.visibility === 'public'}
                                         type={viewMode === 'card' ? 'card-image' : 'card-text'}
                                         imageSrc={

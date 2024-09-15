@@ -610,6 +610,7 @@ function FoldersLayout() {
                                             height: viewMode === 'card' ? '320px' : '100%'
                                         }}
                                         haveFloatingButton={true}
+                                        visible={undefined}
                                         createAt={folder.createAt?.toDate().toDateString()}
                                         key={index}
                                         title={folder.name}

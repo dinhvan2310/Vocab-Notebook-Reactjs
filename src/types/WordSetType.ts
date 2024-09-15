@@ -4,6 +4,7 @@ export interface WordSetType {
     wordsetId?: string;
     imageUrl?: string;
     folderRef: DocumentReference | string;
+    userRef: DocumentReference;
     
     name: string;
     nameLowercase?: string;
@@ -15,6 +16,8 @@ export interface WordSetType {
 
     createAt: Timestamp;
     modifiedAt: Timestamp;
+
+    star?: DocumentReference[];
 
     words?: DocumentReference[];
 }

@@ -188,7 +188,7 @@ export const getFolders = async (
         q = query(
             collection(db, 'folders'),
             where('userRef', '==', userRef),
-            where('nameLoweprcase', '>=', search.toLowerCase()),
+            where('nameLowercase', '>=', search.toLowerCase()),
             where('nameLowercase', '<=', search.toLowerCase() + '\uf8ff'),
             orderBy(sortBy, sortBy === 'nameLowercase' ? 'asc' : 'desc')
         );

@@ -242,7 +242,12 @@ function MainLayout() {
                 </RowComponent>
             </header>
             {/* Content -------------------------------------------------------------------------------------- */}
-            <section className="contentContainer">
+            <section
+                className="contentContainer"
+                style={{
+                    maxWidth: '100vw',
+                    overflowX: 'hidden'
+                }}>
                 {/* Left container - left menu -------------------------------------------------------------- */}
                 <div className="leftContainer">
                     <MenuItemsComponent
@@ -269,6 +274,7 @@ function MainLayout() {
                         className="rightContent
                             scrollbar
                             dark:scrollbarDark
+                            overflow-auto
                         "
                         style={{
                             paddingLeft: !md ? '16px' : '48px',
